@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm,v 1.1 2001/10/26 17:34:18 wsnyder Exp $
+# $Id: File.pm,v 1.3 2001/11/16 14:57:54 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.000';
+$VERSION = '2.010';
 use strict;
 
 structs('new',
@@ -129,8 +129,6 @@ sub signal_decl {
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     simple_type=>1, type=>'wire', array=>$array,
 	     comment=>undef, msb=>$msb, lsb=>$lsb,
-	     # we don't detect variable usage, so presume ok if declared
-	     _used_input=>1, _used_output=>1,	
 	     );
 	$self->{netref} = $net;
     }

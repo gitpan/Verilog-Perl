@@ -6,7 +6,12 @@ The contributors that suggested a given feature is shown in [].
 	
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
-* Changes in Verilog::Language 2.000 ********
+* Changes in Verilog::Language 2.010 11/16/2001
+
+***	Added netlist interconnectivity checks.
+
+
+* Changes in Verilog::Language 2.000 9/17/2001
 
 **	Added the Verilog::Netlist package.
 	This allows for simple scripts to extract pins, module
@@ -92,7 +97,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 
 ----------------------------------------------------------------------
-$Id: NEWS,v 1.21 2001/10/29 18:26:46 wsnyder Exp $
+$Id: NEWS,v 1.22 2001/11/16 14:57:51 wsnyder Exp $
 ----------------------------------------------------------------------
 Copyright information:
 

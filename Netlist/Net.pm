@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Net.pm,v 1.1 2001/10/26 17:34:18 wsnyder Exp $
+# $Id: Net.pm,v 1.4 2001/11/16 14:57:54 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -28,7 +28,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.000';
+$VERSION = '2.010';
 use strict;
 
 ######################################################################
@@ -48,8 +48,9 @@ structs('new',
 	   port		=> '$', #'	# Reference to port connected to
 	   msb		=> '$', #'	# MSB of signal (if known)
 	   lsb		=> '$', #'	# LSB of signal (if known)
-	   _used_input	=> '$', #'	# Declared as signal, or input to cell
-	   _used_output	=> '$', #'	# Declared as signal, or output from cell
+	   _used_in	=> '$', #'	# Driver count onto signal
+	   _used_out	=> '$', #'	# Receiver count on signal
+	   _used_inout	=> '$', #'	# Bidirect count on signal
 	   # SystemPerl only: below only after autos()
 	   simple_type	=> '$', #'	# True if is uint (as opposed to sc_signal)
 	   sp_autocreated	=> '$', #'	# Created by /*AUTOSIGNAL*/
@@ -57,8 +58,9 @@ structs('new',
 
 ######################################################################
 
-sub _link {}
-
+sub _used_in_inc { $_[0]->_used_in(1+($_[0]->_used_in()||0)); }
+sub _used_out_inc { $_[0]->_used_out(1+($_[0]->_used_out()||0)); }
+sub _used_inout_inc { $_[0]->_used_inout(1+($_[0]->_used_inout()||0)); }
 sub width {
     my $self = shift;
     # Return bit width (if known)
@@ -68,13 +70,30 @@ sub width {
     return undef;
 }
 
+######################################################################
+
+sub _link {}
+
 sub lint {
     my $self = shift;
-    # These tests don't work because we can't determine if sequential logic gen/uses a signal
-    if (0&&$self->_used_input() && !$self->_used_output()) {
+    # Sequential logic may gen/use a signal, so we have to be a little sloppy
+    if (0&&$self->_used_inout() && $self->_used_out()
+	&& !$self->array()) {   # if an array, different outputs might hit different bits
+	$self->warn("Signal is used as both a inout and output: ",$self->name(), "\n");
+	$self->dump_drivers(8);
+    }
+    elsif ($self->_used_out()) {
+	if ($self->_used_out()>1
+	    && !$self->array()) {   # if an array, different outputs might hit different bits
+	    $self->warn("Signal has multiple drivers (",
+			$self->_used_out(),"): ",$self->name(), "\n");
+	    $self->dump_drivers(8);
+	}
+    }
+    if (0&&$self->_used_in() && !$self->_used_out()) {
 	$self->warn("Signal is not generated (or needs signal declaration): ",$self->name(), "\n");
     }
-    if (0&&$self->_used_output() && !$self->_used_input()
+    if (0&&$self->_used_out() && !$self->_used_in()
 	&& $self->name() !~ /unused/) {
 	$self->dump(5);
 	$self->port->dump(10) if $self->port;
@@ -88,8 +107,27 @@ sub dump {
     my $self = shift;
     my $indent = shift||0;
     print " "x$indent,"Net:",$self->name()
-	,"  ",($self->_used_input() ? "I":""),($self->_used_output() ? "O":""),
+	,"  ",($self->_used_in() ? "I":""),($self->_used_out() ? "O":""),
 	,"  Type:",$self->type(),"  Array:",$self->array()||"","\n";
+}
+
+sub dump_drivers {
+    my $self = shift;
+    my $indent = shift||0;
+    print " "x$indent,"Net:",$self->name,"\n";
+    if (my $port = $self->port) {
+	print " "x$indent,"  Port: ",$port->name,"  ",$port->direction,"\n";
+    }
+    foreach my $cell ($self->module->cells_sorted) {
+	foreach my $pin ($cell->pins_sorted) {
+	    if ($pin->port && $pin->net == $self) {
+		print " "x$indent,"  Pin:  ",$cell->name,".",$pin->name
+		    ,"  ",$pin->port->direction,"\n";
+	    }
+	}
+    }
+    flush STDERR;
+    flush STDOUT;
 }
 
 ######################################################################

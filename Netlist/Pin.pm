@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Pin.pm,v 1.1 2001/10/26 17:34:18 wsnyder Exp $
+# $Id: Pin.pm,v 1.3 2001/11/16 14:57:54 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -33,7 +33,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.000';
+$VERSION = '2.010';
 use strict;
 
 structs('new',
@@ -67,15 +67,21 @@ sub netlist {
 
 sub _link {
     my $self = shift;
-    if ($self->netname) {
+    my $change;
+    if (!$self->net
+	&& $self->netname) {
 	$self->net($self->module->find_net($self->netname));
-	if ($self->net() && $self->port()) {
-	    $self->net->_used_input(1) if ($self->port->direction() =~ /in/); # in/inout
-	    $self->net->_used_output(1) if ($self->port->direction() =~ /out/); # out/inout
-	}
+	$change = 1;
     }
-    if ($self->name && $self->submod) {
+    if (!$self->port
+	&& $self->name && $self->submod) {
 	$self->port($self->submod->find_port($self->name));
+	$change = 1;
+    }
+    if ($change && $self->net && $self->port) {
+	$self->net->_used_in_inc()    if ($self->port->direction() eq 'in');
+	$self->net->_used_out_inc()   if ($self->port->direction() eq 'out');
+	$self->net->_used_inout_inc() if ($self->port->direction() eq 'inout');
     }
 }
 

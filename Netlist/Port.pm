@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Port.pm,v 1.1 2001/10/26 17:34:18 wsnyder Exp $
+# $Id: Port.pm,v 1.3 2001/11/16 14:57:54 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -28,7 +28,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.000';
+$VERSION = '2.010';
 use strict;
 
 structs('new',
@@ -61,11 +61,13 @@ sub _link {
 	     type=>$self->type, array=>$self->array,
 	     comment=>undef,
 	     );
+	$self->net($net);
+	$self->net->port($self);
+	# A input to the module is actually a "source" or thus "out" of the net.
+	$self->net->_used_in_inc()    if ($self->direction() eq 'out');
+	$self->net->_used_out_inc()   if ($self->direction() eq 'in');
+	$self->net->_used_inout_inc() if ($self->direction() eq 'inout');
     }
-    $self->net($net);
-    $self->net->port($self);
-    $self->net->_used_input(1)  if ($self->direction() =~ /in/); # in/inout
-    $self->net->_used_output(1) if ($self->direction() =~ /out/); # out/inout
 }
 sub lint {}
 

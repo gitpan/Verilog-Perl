@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.23 2001/10/29 18:26:46 wsnyder Exp $
+# $Id: Parser.pm,v 1.25 2001/11/16 14:57:51 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -206,7 +206,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.000';
+$VERSION = '2.010';
 
 #######################################################################
 
@@ -423,7 +423,7 @@ sub parse {
 	    elsif ($text =~ s/^([^\n]+)//) {
 		my $token = $1;
 		$self->{unreadback} .= $token;
-		carp $self->{line} . ":Unknown symbol, ignoring to eol: $token\n";
+		carp $self->{filename}.":".$self->{line} . ":Unknown symbol, ignoring to eol: $token\n";
 	    }
         }
     }

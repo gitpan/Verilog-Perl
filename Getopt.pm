@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm,v 1.11 2001/10/26 17:34:18 wsnyder Exp $
+# $Id: Getopt.pm,v 1.13 2001/11/16 14:57:51 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -36,7 +36,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.000';
+$VERSION = '2.010';
 
 #######################################################################
 #######################################################################
@@ -255,6 +255,7 @@ sub file_path {
     my $filename = shift;
     # return path to given filename using library directories & files, or undef
 
+    defined $filename or carp "%Error: Undefined filename,";
     return $filename if -r $filename;
     # Check each search path
     # We use both the incdir and moduledir.  This isn't strictly correct,
