@@ -1,4 +1,4 @@
-// $Revision: #16 $$Date: 2004/01/27 $$Author: wsnyder $  -*- C++ -*-
+// $Revision: #17 $$Date: 2004/03/31 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Preprocess verilog code
 //
@@ -69,9 +69,10 @@ public:
     // This probably will want to be overridden for given child users of this class.
     virtual void comment(string cmt);		// Comment detected (if keepComments==2)
     virtual void include(string filename);	// Request a include file be processed
-    virtual void define(string name, string value); // `define without any parameters
+    virtual void define(string name, string value, string params); // `define without any parameters
     virtual void undef(string name);		// Remove a definition
     virtual bool defExists(string name);	// Return true if define exists
+    virtual string defParams(string name);	// Return parameter list if define exists
     virtual string defValue(string name);	// Return value of given define (should exist)
     // We don't support parameterized macros (yet?)
     //virtual void defSet(string name, string value, int nargs, string args[]);

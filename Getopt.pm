@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #45 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #47 $$Date: 2004/04/01 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.232';
+$VERSION = '2.300';
 
 #######################################################################
 #######################################################################
@@ -349,28 +349,53 @@ sub libext_matches {
 #######################################################################
 # Getopt functions
 
+sub defparams {
+    my $self = shift;
+    my $token = shift;
+    my $val = $self->{defines}{$token};
+    if (!defined $val) {
+	return undef;
+    } elsif (ref $val) {
+	return $val->[1];  # Has parameters, return param list
+    } else {
+	return 0;
+    }
+}
 sub defvalue {
     my $self = shift;
     my $token = shift;
     my $val = $self->{defines}{$token};
     (defined $val) or carp "%Warning: ".$self->fileline().": No definition for $token,";
-    return $val;
+    if (ref $val) {
+	return $val->[0];  # Has parameters, return just value
+    } else {
+	return $val;
+    }
 }
 sub defvalue_nowarn {
     my $self = shift;
     my $token = shift;
     my $val = $self->{defines}{$token};
-    return $val;
+    if (ref $val) {
+	return $val->[0];  # Has parameters, return just value
+    } else {
+	return $val;
+    }
 }
 sub define {
     my $self = shift;
     if (@_) {
 	my $token = shift;
 	my $value = shift;
-	print "Define $token = $value\n" if $Debug;
+	my $params = shift||"";
+	print "Define $token $params= $value\n" if $Debug;
 	my $oldval = $self->{defines}{$token};
 	(!defined $oldval or ($oldval eq $value)) or warn "%Warning: ".$self->fileline().": Redefining `$token\n";
-	$self->{defines}{$token} = $value;
+	if ($params) {
+	    $self->{defines}{$token} = [$value, $params];
+	} else {
+	    $self->{defines}{$token} = $value;
+	}
     }
 }
 sub undef {
@@ -464,6 +489,11 @@ functions that are called:
 This method is called when a define is recognized.  The default behavior
 loads a hash that is used to fulfill define references.  This function may
 also be called outside parsing to predefine values.
+
+=item $self->defparams ( $token )
+
+This method returns the parameter list of the define.  This will be defined,
+but false, if the define does not have arguments.
 
 =item $self->defvalue ( $token )
 

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #25 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #27 $$Date: 2004/04/01 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -17,7 +17,7 @@
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '2.232';
+$VERSION = '2.300';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;
@@ -62,7 +62,11 @@ sub error {
 }
 
 sub exit_if_error {
-    exit(10) if ($Errors || $Warnings);
+    my $self = shift;
+    my %opts = @_;
+    my $allow = $opts{allow} || "";
+    exit(10) if ($Errors || ($Warnings && $allow !~ /warning/));
+    return ($Errors + $Warnings);
 }
 
 sub unlink_if_error {

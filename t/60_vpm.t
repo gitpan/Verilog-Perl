@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #14 $$Date: 2004/03/08 $$Author: wsnyder $
+# $Revision: #15 $$Date: 2004/03/26 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2004 by Wilson Snyder.  This program is free software;
@@ -14,8 +14,6 @@ BEGIN { plan tests => 4 }
 BEGIN { require "t/test_utils.pl"; }
 
 print "Checking vpm...\n";
-
-mkdir 'test_dir', 0777;
 
 # Preprocess the files
 mkdir "test_dir/.vpm", 0777;

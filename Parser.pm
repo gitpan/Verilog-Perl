@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Revision: #51 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #54 $$Date: 2004/04/01 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -88,7 +88,7 @@ appropriate:
 =item $self->comment ( $token )
 
 This method is called when any text in // or /**/ comments are recognized.
-The first argument, $token, is the contents of the comment excluding the
+The first argument, $token, is the contents of the comment including the
 comment delimiters.
 
 =item $self->string ( $token )
@@ -215,7 +215,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.232';
+$VERSION = '2.300';
 
 #######################################################################
 
@@ -439,7 +439,10 @@ sub parse {
 	    elsif ($text =~ s/^([^\n]+)//) {
 		my $token = $1;
 		$self->{unreadback} .= $token;
-		carp $self->{filename}.":".$self->{line} . ":Unknown symbol, ignoring to eol: $token\n";
+		if (!defined $self->{warning_limit} || $self->{warning_limit}) {
+		    $self->{warning_limit}--;
+		    carp $self->{filename}.":".$self->{line} . ":Unknown symbol, ignoring to eol: $token\n";
+		}
 	    }
         }
     }

@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Revision: #10 $$Date: 2004/01/27 $$Author: wsnyder $
+/* $Revision: #13 $$Date: 2004/03/31 $$Author: wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 
@@ -39,6 +39,7 @@ VPreprocLex* VPreprocLex::s_currentLexp = NULL;	// Current lexing point
 int  keepComments() { return VPreprocLex::s_currentLexp->m_keepComments; }
 bool pedantic() { return VPreprocLex::s_currentLexp->m_pedantic; }
 void yyerror(char* msg) { VPreprocLex::s_currentLexp->m_curFilelinep->error(msg); }
+void appendDefValue(char* t,int l) { VPreprocLex::s_currentLexp->appendDefValue(t,l); }
 
 /**********************************************************************/
 %}
@@ -46,6 +47,8 @@ void yyerror(char* msg) { VPreprocLex::s_currentLexp->m_curFilelinep->error(msg)
 %x CMTMODE
 %x STRMODE
 %x DEFMODE
+%x ARGMODE
+%x INCMODE
 
 WHITESPACE	[ \t\r\f]
 NEWLINE		[\n]
@@ -98,7 +101,17 @@ SYMBOL		[a-zA-Z_][a-zA-Z0-9_$]*
 			  BEGIN(INITIAL); }
 <STRMODE>[^\"\\]	{ yymore(); }
 <STRMODE>{BACKSLASH}.	{ yymore(); }
-<STRMODE>{QUOTE} 	{ yy_pop_state(); return (VP_STRING); }
+<STRMODE>{QUOTE} 	{ yy_pop_state();
+			  if (VPreprocLex::s_currentLexp->m_parenLevel) appendDefValue(yytext,yyleng);
+			  else return (VP_STRING); }
+
+	/* Pass-through include <> filenames */
+<INCMODE>{NEWLINE}	{ linenoInc();
+			  yyerror("Unterminated include filename");
+			  BEGIN(INITIAL); }
+<INCMODE>[^\>\\]	{ yymore(); }
+<INCMODE>{BACKSLASH}.	{ yymore(); }
+<INCMODE>[\>]	 	{ yy_pop_state(); return (VP_STRING); }
 
 	/* Reading definition */
 <DEFMODE>"/*"		{ yy_push_state(CMTMODE); yymore(); }
@@ -108,11 +121,26 @@ SYMBOL		[a-zA-Z_][a-zA-Z0-9_$]*
 			  return (VP_DEFVALUE); }	/* Note contains a return */
 <DEFMODE>[^\/\*\n\m\\]+	|
 <DEFMODE>[\\][^\n]	|
-<DEFMODE>.		{ VPreprocLex::s_currentLexp->appendDefValue(yytext,yyleng); }
-<DEFMODE>[\\]\n		{ linenoInc(); VPreprocLex::s_currentLexp->appendDefValue(" ",1); }
+<DEFMODE>.		{ appendDefValue(yytext,yyleng); }
+<DEFMODE>[\\]\n		{ linenoInc(); appendDefValue(" ",1); }
 
 	/* Define calls */
 "`"{SYMBOL}		{ return (VP_DEFREF); }
+
+	/* Define arguments */
+<ARGMODE>"/*"		{ yy_push_state(CMTMODE); yymore(); }
+<ARGMODE>"//"[^\n]*	{ if (keepComments()) return (VP_COMMENT);}
+<ARGMODE>{NEWLINE}	{ yytext="\n"; yyleng=1; return(VP_WHITE); }
+<ARGMODE>{QUOTE}	{ yy_push_state(STRMODE); yymore(); }
+<ARGMODE>[(]		{ VPreprocLex::s_currentLexp->m_parenLevel++; appendDefValue(yytext,yyleng); }
+<ARGMODE>[,)]		{ if (VPreprocLex::s_currentLexp->m_parenLevel>1) {
+			      appendDefValue(yytext,yyleng);
+			      if (yytext[0]==')') VPreprocLex::s_currentLexp->m_parenLevel--;
+			  } else {
+			      unput(yytext[0]); yy_pop_state(); return (VP_DEFARG);
+ 			}}
+<ARGMODE>[^\/\*\n\m\\(,)\"]+	|
+<ARGMODE>.		{ appendDefValue(yytext,yyleng); }
 
 	/* Generics */
 {SYMBOL}      		{ return (VP_SYMBOL); }
@@ -122,10 +150,33 @@ SYMBOL		[a-zA-Z_][a-zA-Z0-9_$]*
 .			{ return (VP_TEXT); }
 %%
 
+void VPreprocLex::setStateDefArg() {
+    // Enter define substitution argument state
+    yy_push_state(ARGMODE);
+    m_parenLevel = 1;
+    m_defValue = "";
+}
+
 void VPreprocLex::setStateDefValue() {
     // Enter define value state
     yy_push_state(DEFMODE);
+    m_parenLevel = 0;
     m_defValue = "";
+}
+
+void VPreprocLex::setStateIncFilename() {
+    // Enter include <> filename state
+    yy_push_state(INCMODE);
+    yymore();
+}
+
+void VPreprocLex::unputString(const char* textp) {
+    // Add characters to input stream in back-to-front order
+    const char* cp;
+    for (cp = textp; *cp; cp++);
+    for (cp--; cp >= textp; cp--) {
+	unput(*cp);
+    }
 }
 
 void VPreprocLex::appendDefValue(const char* textp, int len) {

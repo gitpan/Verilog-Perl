@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #29 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #31 $$Date: 2004/04/01 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.232';
+$VERSION = '2.300';
 use strict;
 
 structs('new',
@@ -36,6 +36,7 @@ structs('new',
 	   netlist	=> '$', #'	# Netlist is a member of
 	   userdata	=> '%',		# User information
 	   #
+	   attrs	=> '@',		# list of "category name[ =](.*)" strings
 	   ports	=> '%',		# hash of Verilog::Netlist::Ports
 	   portsordered	=> '@',		# list of Verilog::Netlist::Ports as ordered in list of ports   
 	   nets		=> '%',		# hash of Verilog::Netlist::Nets
@@ -88,6 +89,10 @@ sub find_net {
     return $self->nets->{$search};
 }
 
+sub attrs_sorted {
+    my $self = shift;
+    return (sort {$a cmp $b} @{$self->attrs});
+}
 sub nets_sorted {
     my $self = shift;
     return (sort {$a->name() cmp $b->name()} (values %{$self->nets}));
@@ -124,6 +129,12 @@ sub new_net {
     my $netref = new Verilog::Netlist::Net (direction=>'net', @_, module=>$self, );
     $self->nets ($netref->name(), $netref);
     return $netref;
+}
+
+sub new_attr {
+    my $self = shift;
+    my $clean_text = shift;
+    push @{$self->attrs}, $clean_text;
 }
 
 sub new_port {

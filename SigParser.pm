@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #43 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #46 $$Date: 2004/04/01 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -46,7 +46,7 @@ appropriate:
 
 =over 4
 
-=item $self->module ( $keyword, $name )
+=item $self->module ( $keyword, $name, $symbol_list, $in_celldefine )
 
 This method is called when a module is defined.
 
@@ -70,6 +70,18 @@ argument is the memory bits or "".
 This method is called when a instantiation is defined.  The first
 parameter is the name of the module being instantiated, and the second
 parameter is the name of the cell.
+
+=item $self->pin ( $name, $connection, $index )
+
+=item $self->ppdefine ( $defvar, $definition )
+
+=item $self->attribute ( $keyword, $text )
+
+Scanned an attribute (future: Verilog-2001) or meta-comment.  The parser
+inspects the first word of each comment line (C<//key rest> to end of line)
+or comment block (C</*key rest */).  It calls
+C<$self->attribute( prev_keyword, meta_text )> if the first word has a true
+value in hash C<$self->metacomment>.
 
 =back
 
@@ -105,7 +117,6 @@ require Exporter;
 
 use strict;
 use vars qw($VERSION @ISA $Debug);
-use English;
 use Carp;
 use Verilog::Parser;
 
@@ -117,7 +128,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.232';
+$VERSION = '2.300';
 
 #######################################################################
 
@@ -127,8 +138,14 @@ sub new {
 
     my $self = $class->SUPER::new(@_);
     bless $self, $class; 
+    $self->{metacomment} = {} unless defined $self->{metacomment};
     $self->reset();
     return $self;
+}
+
+sub metacomment {
+    my $self = shift;
+    return $self->{metacomment};
 }
 
 #######################################################################
@@ -140,6 +157,8 @@ sub module {
     my $self = shift;
     my $keyword = shift;
     my $name = shift;
+    my $symbol_list = shift;
+    my $in_celldefine = shift;
 }
 
 sub task {
@@ -175,6 +194,12 @@ sub pin {
     my $number = shift;
 }
 
+sub attribute {
+    my $self = shift;
+    my $keyword = shift;
+    my $text = shift;
+}
+
 sub ppdefine {
     my $self = shift;
     my $defvar = shift;
@@ -196,7 +221,8 @@ sub reset {
     $self->SUPER::reset();
 
     $self->{last_operator} = "";
-    $self->{last_keyword} = "";
+    $self->{last_keyword} = "";		# Cleared by ";", "end*", etc.
+    $self->{attr_keyword} = "";		# Cleared by "end*" only.
     $self->{last_module} = undef;
     $self->{last_function} = undef;
     $self->{last_task} = undef;
@@ -206,6 +232,7 @@ sub reset {
     $self->{is_pin_ok} = 0;
     $self->{is_signal_ok} = 1;
     $self->{in_preproc_line} = -1;
+    $self->{in_celldefine} = 0;
     $self->{in_vector} = 0;
     $self->{in_param_assign} = 0;
     $self->{possibly_in_param_assign} = 0;
@@ -231,15 +258,18 @@ sub keyword {
     if ($token =~ /^\`/) {
 	$self->{last_preproc} = $token;
 	$self->{in_preproc_line} = $self->line;
+	if ($token =~ /^\`(end)?celldefine$/) {
+	    $self->{in_celldefine} = !($1 || "");
+	}
     }
     if ($self->{in_preproc_line} != $self->line()) {
-	$self->{last_keyword} = $token;
+	$self->{last_keyword} = $self->{attr_keyword} = $token;
 	@{$self->{last_symbols}} = ();
 	$self->{last_vectors} = "";
     }
-    if ($token eq "end") {
+    if ($token =~ /^end/) {
 	# Prepare for next command
-	$self->{last_keyword} = "";
+	$self->{last_keyword} = $self->{attr_keyword} = "";
 	@{$self->{last_symbols}} = ();
 	$self->{last_vectors} = "";
 	$self->{is_inst_ok} = 1;
@@ -247,13 +277,28 @@ sub keyword {
 	$self->{is_pin_ok} = 0;
 	$self->{got_preproc} = 0;
     }
-    elsif ($token eq "endtask") {
+    if ($token eq "endtask") {
 	$self->{last_task} = undef;
     } elsif ($token eq "endmodule"
 	     || $token eq "endprimitive") {
 	$self->{last_module} = undef;
     } elsif ($token eq "endfunction") {
 	$self->{last_function} = undef;
+    }
+}
+
+sub comment {
+    my $self = shift;
+    my $text = shift;	# Includes comment delimiters
+    if ($text =~ m!^(/.)\s* ([\$A-Za-z]\w*)\s+ (\w+) !x) {
+	my ($delim, $category, $name) = ($1, $2, $3);
+	if ($self->{metacomment}->{$category}) {
+	    print "GotaMeta $category $name\n"    if ($Debug);
+	    if ($delim eq "/*") { $text =~ s!\s*\*/$!!; }
+	    else { $text =~ s!\s+$!!; }
+	    $text =~ s!^/.\s*!!;
+	    $self->attribute( $self->{attr_keyword}, $text );
+	}
     }
 }
 
@@ -363,7 +408,7 @@ sub operator {
 	    if ($token eq "," && $self->{is_pin_ok} && !$self->{paren_level}) {
 		# At the , that separates instances
 		$self->{last_symbols} = [$self->{last_inst_mod}];
-		$self->{last_keyword} = "";
+		$self->{last_keyword} = "";	# Keep {attr_keyword}
 		$self->{is_inst_ok} = 1;
 	    }
 
@@ -378,7 +423,8 @@ sub operator {
 		    my $mod = shift @{$self->{last_symbols}};
 		    $self->{last_module} = $mod;
 		    print "Gota$lkw $mod\n"    if ($Debug);
-		    $self->module ($lkw, $mod, $self->{last_symbols});
+		    $self->module ($lkw, $mod, $self->{last_symbols},
+				   $self->{in_celldefine});
 		} elsif ($lkw eq "function") {
 		    my $mod = $self->{last_symbols}[0];
 		    $self->{last_function} = $mod;
@@ -412,8 +458,8 @@ sub operator {
 		    }
 		}
 		# Prepare for next command
-		if( $token eq ";") {
-		    $self->{last_keyword} = "";
+		if ($token eq ";") {
+		    $self->{last_keyword} = "";  # Keep {attr_keyword}
 		    @{$self->{last_symbols}} = ();
 		    $self->{last_vectors} = "";
 		    $self->{is_inst_ok} = 1;

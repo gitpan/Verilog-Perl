@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #31 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #33 $$Date: 2004/04/01 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.232';
+$VERSION = '2.300';
 use strict;
 
 structs('new',
@@ -61,8 +61,16 @@ sub new {
     
     my @opt;
     push @opt, (options=>$params{netlist}{options}) if $params{netlist}{options};
-    my $preproc = Verilog::Preproc->new(@opt,
-					keep_comments=>0,);
+    my $meta = $params{metacomment};
+    if ($meta) {
+	die "'metacomment' arg of Netlist or read_file() must be a hash,"
+	    unless (ref($meta) eq 'HASH');
+	push @opt, metacomments=>[ grep({ $meta->{$_} } keys %$meta) ];
+	push @opt, keep_comments=>1;
+    } else {
+	push @opt, keep_comments=>0;
+    }
+    my $preproc = Verilog::Preproc->new(@opt);
     $preproc->open($params{filename});
     $parser->parse_preproc_file ($preproc);
     return $parser;
@@ -73,6 +81,7 @@ sub module {
     my $keyword = shift;
     my $module = shift;
     my $orderref = shift;
+    my $in_celldefine = shift;
 
     my $fileref = $self->{fileref};
     my $netlist = $self->{netlist};
@@ -80,10 +89,35 @@ sub module {
 
     $self->{modref} = $netlist->new_module
 	 (name=>$module,
-	  is_libcell=>$fileref->is_libcell(),
+	  is_libcell=>($fileref->is_libcell() || $in_celldefine),
 	  filename=>$self->filename, lineno=>$self->lineno);
     @{$self->{modref}->portsordered} = @$orderref;
     $fileref->_modules($module, $self->{modref});
+}
+
+sub attribute {
+    my $self = shift;
+    my $keyword = shift;
+    my $text = shift;
+
+    my $modref = $self->{modref};
+    my ($category, $name, $eql, $rest);
+    if ($text =~ m!^([\$A-Za-z]\w*)\s+ (\w+) (\s*=\s*)? (.*) !x) {
+	($category, $name, $eql, $rest) = ($1, $2, ($3 || ""), $4);
+	if ($eql ne "") { $eql = "="; }
+	my $cleaned = ($category ." ". $name . $eql . $rest);
+
+	if ($Verilog::Netlist::Debug) {
+	    printf +("%d: Attribute %s, '%s'\n",
+		     $self->lineno, $keyword, $cleaned);
+	}
+	# Treat as module-level if attribute appears before any declarations.
+	if ($keyword eq "module") {
+	    return $self->warn("Ignored '$category $name' attribute before end of '$keyword' statement")
+		unless $modref;
+	    my $attr = $modref->new_attr ($cleaned);
+	}
+    }
 }
 
 sub signal_decl {
@@ -208,6 +242,14 @@ sub error {
     $fileref->error ($self, "$text\n");
 }
 
+sub warn {
+    my $self = shift;
+    my $text = shift;
+
+    my $fileref = $self->{fileref};
+    $fileref->warn ($self, "$text\n");
+}
+
 package Verilog::Netlist::File;
 
 ######################################################################
@@ -215,7 +257,7 @@ package Verilog::Netlist::File;
 #### Functions
 
 sub read {
-    my %params = (@_);	# filename=>
+    my %params = (@_);	# netlist=>, filename=>, per-file options
 
     my $filename = $params{filename} or croak "%Error: ".__PACKAGE__."::read_file (filename=>) parameter required, stopped";
     my $netlist = $params{netlist} or croak ("Call Verilog::Netlist::read_file instead,");
@@ -231,10 +273,12 @@ sub read {
     my $fileref = $netlist->new_file (name=>$filepath,
 				      is_libcell=>$params{is_libcell}||0,
 				      );
+    my $metacomment = $params{metacomment} || $netlist->{metacomment};
 
     my $parser = Verilog::Netlist::File::Parser->new
 	( fileref=>$fileref,
 	  filename=>$filepath,	# for ->read
+	  metacomment=>$metacomment,
 	  );
     return $fileref;
 }

@@ -1,4 +1,4 @@
-# $Revision: #30 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #31 $$Date: 2004/03/26 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2004 by Wilson Snyder.  This program is free software;
@@ -58,7 +58,7 @@ WriteMakefile(
 	      VERSION_FROM  => 'Language.pm',
 	      #OPTIMIZE	=> '-ggdb',
 	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
-	      EXE_FILES => [qw( vrename vpm )],
+	      EXE_FILES => [qw( vrename vpm vppp )],
 	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpm simv ),},
 	      'dist'    => {COMPRESS => 'gzip -9f',
 			    SUFFIX   => '.gz', 

@@ -23,6 +23,9 @@ after installation.
    Included is `vrename', a program for renaming signals, modules, and
 parameters across many verilog files at once.
 
+   `vppp' is a Verilog preprocessor.  Low level classes allow
+preprocessing inside of Perl or C++ programs as a standard stream.
+
    Also included is `vpm' to convert macros that look like pli calls,
 such as $info, into different Verilog code.  This enables programs like
 Verilint and Synopsys dc_shell to ignore the macros (as they ignore pli

@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Revision: #15 $$Date: 2004/01/27 $$Author: wsnyder $
+#* $Revision: #16 $$Date: 2004/03/31 $$Author: wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
@@ -62,9 +62,9 @@ public:
     // Callback methods
     virtual void comment(string filename);	// Comment for keepComments=>sub
     virtual void include(string filename);	// Request a include file be processed
-    virtual void define(string name, string value); // `define without any parameters
+    virtual void define(string name, string value, string params); // `define with parameters
     virtual void undef(string name);		// Remove a definition
-    virtual bool defExists(string name);	// Return true if define exists
+    virtual string defParams(string name);	// Return parameter list if define exists
     virtual string defValue(string name);	// Return value of given define (should exist)
 
     void call(string* rtnStrp, int params, const char* method, ...);
@@ -111,16 +111,17 @@ void VPreprocXs::undef(string define) {
     static string holddefine; holddefine = define;
     call(NULL, 1,"undef", holddefine.c_str());
 }
-void VPreprocXs::define(string define, string value) {
+void VPreprocXs::define(string define, string value, string params) {
     static string holddefine; holddefine = define;
     static string holdvalue; holdvalue = value;
-    call(NULL, 2,"define", holddefine.c_str(), holdvalue.c_str());
+    static string holdparams; holdparams = params;
+    call(NULL, 3,"define", holddefine.c_str(), holdvalue.c_str(), holdparams.c_str());
 }
-bool VPreprocXs::defExists(string define) {
+string VPreprocXs::defParams(string define) {
     static string holddefine; holddefine = define;
-    string existStr;
-    call(&existStr, 1,"def_exists", holddefine.c_str());
-    return (existStr.length()>0);	// True if not null
+    string paramStr;
+    call(&paramStr, 1,"def_params", holddefine.c_str());
+    return paramStr;
 }
 string VPreprocXs::defValue(string define) {
     static string holddefine; holddefine = define;

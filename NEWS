@@ -4,6 +4,34 @@ The contributors that suggested a given feature is shown in [].
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.300 2004/04/01
+
+**	Added vppp preprocessor command.
+
+**	Preprocessor is now Verilog 2001 and SystemVerilog 3.1 compliant.
+	Adds arguments to defines, and `include <> syntax.
+
+**	Added SystemVerilog 3.1 keywords to Verilog::Language
+
+**	Added vrename --keywords and recursion on directory arguments.
+
+***	Added to SigParser::module callback "$in_celldefine" 4th argument.
+	Netlist::File sets $module->is_libcell() either if the file is a
+	library or the module is within "`celldefine ... `endcelldefine".
+
+***	Added to Verilog::Netlist (metacomment=>{ firstWord=>val, ... })
+	argument.  For each comment that begins with at least two words,
+	Verilog::SigParser calls back attribute() if the first word has a
+	true value in %metacomment.
+
+***	Module::attrs_sorted() now returns a list of "category name[ =]..."
+	strings from metacomments between "module" and the first declaration.
+
+****	(Verilog::Preproc receives the list of metacomment keywords but
+	does not yet filter the comments for speed.)
+
+****	Fixed ` substitution inside define value strings.
+
 * Changes in Verilog::Language 2.232 3/10/2004
 
 ***	Fix newline insertion in vpm $info messages.
@@ -142,7 +170,8 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 	hiearchy, etc from interconnected Verilog files.
 
 ***	Added Parser reset() method for clearing parse states
-	for new files.  [Joe Panec]
+	for new files.  [Joe Panec]
+
 * Changes in Verilog::Language 1.15 10/25/2001
 
 **	Added $assert_req_ack for checking simple handshakes.
@@ -209,7 +238,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: #67 $$Date: 2004/03/10 $$Author: wsnyder $
+$Revision: #76 $$Date: 2004/04/01 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

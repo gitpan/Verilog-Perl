@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #7 $$Date: 2004/01/27 $$Author: wsnyder $
+# $Revision: #8 $$Date: 2004/03/26 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2004 by Wilson Snyder.  This program is free software;
@@ -19,7 +19,6 @@ run_system ("${PERL} ./vrename -list -xref verilog/test.v");
 ok(1);
 ok(-r 'signals.vrename');
 
-mkdir 'test_dir', 0777;
 mkdir 'test_dir/verilog', 0777;
 run_system ("${PERL} ./vrename -change --changefile verilog/test.vrename"
 	    ." -o test_dir verilog/test.v");

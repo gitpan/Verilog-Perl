@@ -62,23 +62,55 @@ COMMENT: /* or this either */
 verilog/inc1.v:6:  
 COMMENT: // but not
 verilog/inc1.v:7:  
-verilog/inc1.v:8: 
-verilog/inc1.v:9:  
-verilog/inc1.v:11: 		  
-COMMENT: //===========================================================================
-verilog/inc1.v:12:  /*CMT*/ 
+COMMENT: /*CMT*/
+COMMENT: /*CMT*/
+verilog/inc1.v:8:  foo   /*CMT*/   bar     /*CMT*/  
+COMMENT: /*CMT*/
+verilog/inc1.v:9:  foobar2   /*CMT*/  
+verilog/inc1.v:10: 
+verilog/inc1.v:11:  
 verilog/inc1.v:13: 
-verilog/inc1.v:14:  
-verilog/inc1.v:15: 
-verilog/inc1.v:16:  
-verilog/inc1.v:17:  
-verilog/inc1.v:18: 
 COMMENT: /*******COMMENT*****/
-verilog/inc1.v:19:  /*CMT*/ 
-verilog/inc1.v:20:  foo  /*CMT*/  bar    /*CMT*/ 
-verilog/inc1.v:21:  foobar2  /*CMT*/ 
+verilog/inc1.v:14:  /*CMT*/ 
+verilog/inc1.v:15:  first part    		second part 
+verilog/inc1.v:16: 
+COMMENT: //===========================================================================
+verilog/inc1.v:17:  /*CMT*/ 
+verilog/inc1.v:18:  
+verilog/inc1.v:19: 
+verilog/inc1.v:20:  
+verilog/inc1.v:21:  
 verilog/inc1.v:22:   deep   deep  
-verilog/inc1.v:23:  first part    		second part 
-verilog/inc1.v:24: 
-verilog/inc1.v:25: 
-verilog/inc1.v:26:   
+verilog/inc1.v:23: 
+verilog/inc1.v:24:  
+verilog/inc1.v:25:  
+verilog/inc1.v:26: "Inside: `nosubst"
+verilog/inc1.v:27:  "`nosubst" 		  
+verilog/inc1.v:28: 
+verilog/inc1.v:29:  
+verilog/inc1.v:30:  x y LLZZ x y 
+verilog/inc1.v:31:   p q LLZZ p q     r   s  LLZZ  r   s   LLZZ  p q LLZZ p q     r   s  LLZZ  r   s   
+verilog/inc1.v:32: 
+verilog/inc1.v:33: 
+verilog/inc1.v:33: 
+verilog/inc1.v:33:  firstline	 	comma","line LLZZ firstline	 	comma","line 
+verilog/inc1.v:34: 
+verilog/inc1.v:35:  
+verilog/inc1.v:36:   x   y LLZZ "a"  y 
+verilog/inc1.v:37: 
+verilog/inc1.v:38:  
+verilog/inc1.v:39:  (a,b) (a,b)
+verilog/inc1.v:40: 
+verilog/inc1.v:41:  
+verilog/inc1.v:42: $display( "left side: \" right side\"" )
+verilog/inc1.v:43: 
+verilog/inc1.v:44:  
+verilog/inc1.v:45:  bar_suffix   
+verilog/inc1.v:46: 
+verilog/inc1.v:47:  
+verilog/inc1.v:48:  
+verilog/inc1.v:49:    
+verilog/inc1.v:50: 
+verilog/inc1.v:50: `line 50 "verilog/inc1.v" 0
+verilog/inc1.v:50: 
+verilog/inc1.v:51: 

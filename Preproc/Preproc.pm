@@ -1,4 +1,4 @@
-#$Revision: #29 $$Date: 2004/03/10 $$Author: wsnyder $
+#$Revision: #33 $$Date: 2004/04/01 $$Author: wsnyder $
 ######################################################################
 #
 # Copyright 2001-2004 by Wilson Snyder.  This program is free software;
@@ -22,7 +22,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '2.232';
+$VERSION = '2.300';
 
 ######################################################################
 #### Configuration Section
@@ -118,8 +118,8 @@ sub include {
     $self->open($filename);
 }
 
-# Not documented, as a derived Verilog::Getopt class can accomplish
-# the same thing.
+# Note rather then overriding these, a derived Verilog::Getopt class can
+# accomplish the same thing.
 
 sub undef {
     my $self = shift;
@@ -131,12 +131,13 @@ sub define {
     $self->{options}->fileline($self->filename.":".$self->lineno);
     $self->{options}->define(@_);
 }
-sub def_exists {
-    # Return if exists
+sub def_params {
+    # Return define parameters
     my $self = shift;
-    my $val = $self->{options}->defvalue_nowarn(@_);
-    #print "DEFEXISTS @_ -> $val\n" if $self->{debug};
-    return defined $val;
+    my $val = $self->{options}->defparams(@_);
+    #printf "DEFEXISTS @_ -> %s\n", $val if $self->{debug};
+    $val = "" if !defined $val;
+    return $val;
 }
 sub def_value {
     # Return value
@@ -167,6 +168,7 @@ Verilog::Preproc - Preprocess Verilog files Files
 =head1 EXAMPLE
 
     # This is a complete verilog pre-parser!
+    # For a command line version, see vppp
     use Verilog::Getopt;
     use Verilog::Preproc;
 
@@ -269,6 +271,30 @@ Derived classes may override these callbacks as needed.
 
 =over 4
 
+=item $self->comment(I<comment>)
+
+Called with each comment, when keep_comments=>'sub' is used.  Defaults to
+do nothing.
+
+=item $self->undef(I<defname>)
+
+Called with each `undef.  Defaults to use options object.
+
+=item $self->define(I<defname>, I<value>, I<params>)
+
+Called with each `define.  Defaults to use options object.
+
+=item $self->def_exists(I<defname>)
+
+Called to determine if the define exists.  Return true if the define
+exists, or argument list with leading parenthesis if the define has
+arguments.  Defaults to use options object.
+
+=item $self->def_value(I<defname>)
+
+Called to return value to substitute for specified define.  Defaults to use
+options object.
+
 =item $self->error(I<message>)
 
 Called on errors, with the error message as an argument.  Defaults
@@ -279,19 +305,17 @@ to die.
 Specifies a include file has been found.  Defaults to call $self->open
 after resolving the filename with the options parameter.
 
-=item $self->comment(I<comment>)
-
-Called with each comment, when keep_comments=>'sub' is used.
-
 =back
 
 =head1 COMPLIANCE
 
-Parameterized macros are not yet supported.  Otherwise, the preprocessor
-should be Verilog 2001 compliant.
+The preprocessor supports the constructs defined in the Verilog 2001 and
+SystemVerilog 3.1 standards.
 
 Verilog::Preproc adds the following features (unless the pedantic parameter
 is set.):
+
+=over 4
 
 =item `__FILE__  will be replaced by the current filename. (Like C++ __FILE__.)
 
@@ -300,6 +324,8 @@ is set.):
 =item `error I<"string"> will be reported whenever it is encountered. (Like C++ #error.)
 
 These are useful for error macros, similar to assert() in C++.
+
+=back
 
 =head1 SEE ALSO
 

@@ -2,6 +2,7 @@ COPYING
 Getopt.pm
 Language.pm
 MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
 Makefile.PL
 NEWS
 Netlist.pm
@@ -30,6 +31,7 @@ Preproc/typemap
 README
 SigParser.pm
 configure
+t/00_pod.t
 t/10_keywords.t
 t/12_splitbus.t
 t/20_getopt.opt
@@ -45,6 +47,10 @@ t/42_dumpcheck_2e.out
 t/42_dumpcheck_2v.out
 t/50_vrename.t
 t/60_vpm.t
+t/80_vppp.t
+t/80_vppp_cmped.out
+t/80_vppp_none.out
+t/80_vppp_simple.out
 t/test_utils.pl
 verilog/example.v
 verilog/inc1.v
@@ -60,5 +66,5 @@ verilog/v_hier_subsub.v
 verilog/v_hier_top.v
 verilog/v_hier_top2.v
 vpm
+vppp
 vrename
-META.yml                                 Module meta-data (added by MakeMaker)

@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: #49 $$Date: 2004/03/10 $$Author: wsnyder $
+# $Revision: #51 $$Date: 2004/04/01 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,6 +30,11 @@ Verilog::Language - Verilog language utilities
   $result = Verilog::Language::number_bits  ($number_string)
   @vec    = Verilog::Language::split_bus ($bus)
 
+  print Verilog::Language::is_compdirect ("`include");
+     1
+  print Verilog::Language::number_value ("32'h13");
+     19
+
 =head1 DESCRIPTION
 
 This package provides useful utilities for general use with the
@@ -41,23 +46,9 @@ Verilog Language.  General functions will be added as needed.
 
 Return true if the given symbol string is a Verilog reserved keyword.
 
-=head1 EXAMPLE
-
-  print Verilog::Language::is_keyword ("module");
-     1
-  print Verilog::Language::is_keyword ("signalname");
-     undef
-
 =item Verilog::Language::is_compdirect ($symbol_string)
 
 Return true if the given symbol string is a Verilog compiler directive.
-
-=head1 EXAMPLE
-
-  print Verilog::Language::is_compdirect ("`include");
-     1
-  print Verilog::Language::is_compdirect ("`MYDEFINE");
-     undef
 
 =item Verilog::Language::number_value ($number_string)
 
@@ -65,22 +56,10 @@ Return the numeric value of a Verilog value, or undef if incorrectly
 formed.  Since it is returned as a signed integer, it may fail for over 31
 bit integers.
 
-=head1 EXAMPLE
-
-  print Verilog::Language::number_value ("32'h13");
-     19
-  print Verilog::Language::number_value ("32'p2");
-     undef
-
 =item Verilog::Language::number_bits ($number_string)
 
 Return the number of bits in a value string, or undef if incorrectly
 formed, _or_ not specified.
-
-=head1 EXAMPLE
-
-  print Verilog::Language::number_bits ("32'h13");
-     32
 
 =item Verilog::Language::split_bus ($bus)
 
@@ -129,7 +108,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.232';
+$VERSION = '2.300';
 
 ######################################################################
 #### Internal Variables
@@ -156,6 +135,19 @@ foreach my $kwd (qw(
 		    generate genvar instance liblist localparam
 		    noshowcancelled pulsestyle_ondetect pulsestyle_onevent
 		    showcancelled signed use
+
+		    alias always_comb always_ff always_latch assert
+		    assert_strobe before bind bit break byte chandle class
+		    clocking const constraint context continue cover dist
+		    do endcass endclocking endinterface endprogram
+		    endproperty endsequence enum export extends extern
+		    final first_match forkjoin iff import inside int
+		    interface intersect join_any join_none local logic
+		    longint modport new null packed priority program
+		    property protexted pure rand randc ref sequence
+		    shortint shortreal solve static string struct super
+		    this throughout timeprecision timeunit type typedef
+		    union unique var virtual void wait_order with within
 		    )) {
     $Keyword{$kwd} = 1;
 }

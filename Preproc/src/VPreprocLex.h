@@ -1,4 +1,4 @@
-// $Revision: #13 $$Date: 2004/01/27 $$Author: wsnyder $  -*- C++ -*-
+// $Revision: #16 $$Date: 2004/03/31 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal header for lex interfacing
 //
@@ -29,6 +29,7 @@
 #include "VFileLine.h"
 
 // Token codes
+// If changing, see VPreproc.cpp's VPreprocImp::tokenName()
 #define VP_EOF		0
 
 #define VP_INCLUDE	256
@@ -47,7 +48,8 @@
 #define VP_TEXT		304
 #define VP_WHITE	305
 #define VP_DEFREF	306
-#define VP_ERROR	307
+#define VP_DEFARG	307
+#define VP_ERROR	308
 
 
 //======================================================================
@@ -95,8 +97,6 @@ class VPreprocLex {
   public:	// Used only by VPreprocLex.cpp and VPreproc.cpp
     VFileLine*	m_curFilelinep;	// Current processing point
 
-    ~VPreprocLex() { fclose(m_fp); yy_delete_buffer(m_yyState); }
-
     // Parse state
     FILE*	m_fp;		// File state is for
     YY_BUFFER_STATE  m_yyState;	// flex input state
@@ -107,14 +107,28 @@ class VPreprocLex {
     bool	m_pedantic;	// Obey standard; don't Substitute `__FILE__ and `__LINE__
 
     // State from lexer
+    int		m_parenLevel;	// Parenthesis counting inside def args
     string	m_defValue;	// Definition value being built.
+
+    // CONSTRUCTORS
+    VPreprocLex(FILE* fp) {
+	m_fp = fp;
+	m_yyState = yy_create_buffer (fp, YY_BUF_SIZE);
+	m_keepComments = 0;
+	m_pedantic = false;
+	m_parenLevel = 0;
+    }
+    ~VPreprocLex() { fclose(m_fp); yy_delete_buffer(m_yyState); }
 
     // Called by VPreprocLex.l from lexer
     void appendDefValue(const char* text, int len);
     void lineDirective(const char* text);
     void linenoInc() { m_curFilelinep = m_curFilelinep->create(m_curFilelinep->lineno()+1); }
     // Called by VPreproc.cpp to inform lexer
+    void setStateDefArg();
     void setStateDefValue();
+    void setStateIncFilename();
+    void unputString(const char* textp);
 };
 
 #endif // Guard
