@@ -1,4 +1,4 @@
-#ident "$Revision: #5 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
+#ident "$Revision: #1 $$Date: 2002/12/16 $$Author: lab $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Error handling
 //
@@ -27,6 +27,8 @@
 #ifndef _VFILELINE_H_
 #define _VFILELINE_H_ 1
 #include <string>
+#include <iostream>
+using namespace std;
 
 //============================================================================
 

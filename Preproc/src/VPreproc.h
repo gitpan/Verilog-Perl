@@ -1,4 +1,4 @@
-#ident "$Revision: #11 $$Date: 2002/10/11 $$Author: mloprest $" //-*- C++ -*-
+#ident "$Revision: #1 $$Date: 2002/12/16 $$Author: lab $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Preprocess verilog code
 //
@@ -29,7 +29,13 @@
 
 #include <string>
 #include <map>
+#include <iostream>
+using namespace std;
 #include "VFileLine.h"
+
+#ifdef open
+# undef open	// Perl 64 bit on solaris has a nasty hack that redefines open
+#endif
 
 class VPreprocOpaque {};
 class VDefine;

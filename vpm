@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #35 $$Date: 2002/10/21 $$Author: wsnyder $
+# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
 ######################################################################
 #
 # This program is Copyright 2002 by Wilson Snyder.
@@ -30,7 +30,7 @@ use File::Copy;
 
 use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
 	     %Vpm_Chiponly_Rename);
-$VERSION = '2.214';
+$VERSION = '2.215';
 
 ######################################################################
 # configuration
@@ -134,7 +134,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #35 $$Date: 2002/10/21 $$Author: wsnyder $ ';
+    print 'Version: $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);

@@ -1,4 +1,4 @@
-#ident "$Revision: #8 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
+#ident "$Revision: #1 $$Date: 2002/12/16 $$Author: lab $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Error handling implementation
 //
@@ -68,9 +68,10 @@ void VFileLine::fatal(const string msg) {
 }
 void VFileLine::error(const string msg) {
     VFileLine::s_numErrors++;
-    cerr<<"%Error: "<<this<<msg;
     if (msg[msg.length()-1] != '\n') {
-	cerr<<endl;	// Append newline, as user ommitted it.
+	fprintf (stderr, "%%Error: %s", msg.c_str());
+    } else {
+	fprintf (stderr, "%%Error: %s\n", msg.c_str());	// Append newline, as user ommitted it.
     }
 }
 

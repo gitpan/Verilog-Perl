@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #14 $$Date: 2002/10/21 $$Author: wsnyder $
+# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,7 +30,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.214';
+$VERSION = '2.215';
 
 ######################################################################
 #### Error Handling
@@ -49,7 +49,6 @@ sub new {
 		options => undef,	# Usually pointer to Verilog::Getopt
 		implicit_wires_ok => 1,
 		link_read => 1,
-		sp_allow_output_tracing => 0,
 		@_};
     bless $self, $class;
     return $self;

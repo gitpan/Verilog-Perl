@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Revision: #11 $$Date: 2002/08/07 $$Author: wsnyder $
+#* $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
@@ -36,6 +36,10 @@ extern "C" {
 # include "perl.h"
 # include "XSUB.h"
 }
+
+#ifdef open
+# undef open	// Perl 64 bit on solaris has a nasty hack that redefines open
+#endif
 
 #//**********************************************************************
 #// Preprocessor derrived classes, so we can override the callbacks to call perl.

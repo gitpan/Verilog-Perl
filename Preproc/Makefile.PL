@@ -1,7 +1,8 @@
-# $Revision: #5 $$Date: 2002/09/05 $$Author: wsnyder $
+# $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
+use Config;
 
 sub MY::postamble {
 '
@@ -23,9 +24,19 @@ clean::
 ';
 }
 
+#print Config::myconfig();
+my @ld_set;
+if ($Config{osname} !~ /cygwin/i && $Config{archname} !~ /cygwin/i) {
+    # Cygwin: Don't change LD, it breaks
+    # Sun: Requires g++ LD
+    # Linux: Either way
+    push @ld_set, (LD => 'g++',);
+}
+
 WriteMakefile(
               NAME => "Verilog::Preproc",
-	      CC => 'g++',	# Don't change LD, it messes up cygwin
+	      CC => 'g++',
+	      @ld_set,
 	      LIBS => '-lstdc++',
 	      VERSION_FROM  => 'Preproc.pm',
 	      XSOPT => '-C++',

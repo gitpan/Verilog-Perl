@@ -1,4 +1,4 @@
-// $Revision: #3 $$Date: 2002/07/16 $$Author: wsnyder $
+// $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
 // DESCRIPTION: Perl ExtUtils: Option file for testing Verilog::Getopt
 
 -Dread_opt_file=1

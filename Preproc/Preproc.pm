@@ -1,4 +1,4 @@
-#$Revision: #16 $$Date: 2002/10/21 $$Author: wsnyder $
+#$Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
 ######################################################################
 #
 # This program is Copyright 2001 by Wilson Snyder.
@@ -28,7 +28,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '2.214';
+$VERSION = '2.215';
 
 ######################################################################
 #### Configuration Section

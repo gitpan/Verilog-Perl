@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #9 $$Date: 2002/09/05 $$Author: wsnyder $
+# $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use IO::File;
