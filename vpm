@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm,v 1.90 2000/12/12 14:36:56 wsnyder Exp $
+# $Id: vpm,v 1.91 2001/02/13 15:11:07 wsnyder Exp $
 ######################################################################
 #                                                                           
 # Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@wsnyder.org>
@@ -108,7 +108,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm,v 1.90 2000/12/12 14:36:56 wsnyder Exp $ ';
+    print 'Version: $Id: vpm,v 1.91 2001/02/13 15:11:07 wsnyder Exp $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -1045,13 +1045,14 @@ independently.
 
 =item $info (I<level>, "message", [I<vars>...] )
 
-Report a informational message in standard form.
+Report a informational message in standard form.  End test if warning
+limit exceeded.
 
-=item $error (I<level>, "message", [I<vars>...] )
+=item $error (0, "message", [I<vars>...] )
 
-Report a error message in standard form.
+Report a error message in standard form.  End test if error limit exceeded.
 
-=item $warn (I<level>, "message", [I<vars>...] )
+=item $warn (0, "message", [I<vars>...] )
 
 Report a warning message in standard form.
 

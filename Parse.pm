@@ -1,5 +1,5 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Id: Parse.pm,v 1.7 2001/02/13 15:11:15 wsnyder Exp $
+# $Id: Parse.pm,v 1.8 2001/02/16 19:33:34 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -130,7 +130,7 @@ that aren\'t covered.
 =head1 DISTRIBUTION
 
 The latest version is available from
-C<http://www.ultranet.com/~wsnyder/verilog-perl>.
+C<http://veripool.com/verilog-perl>.
 
 =head1 AUTHORS
 

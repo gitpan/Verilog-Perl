@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.11 2001/02/13 17:41:05 wsnyder Exp $
+# $Id: Parser.pm,v 1.13 2001/03/15 20:31:30 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -179,7 +179,7 @@ boundary.  It should be changed to allow arbitrary chunks.
 =head1 DISTRIBUTION
 
 The latest version is available from
-C<http://www.ultranet.com/~wsnyder/verilog-perl>.
+C<http://veripool.com/verilog-perl>.
 
 =head1 AUTHORS
 
@@ -206,7 +206,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.9';
+$VERSION = '1.10';
 
 #######################################################################
 
@@ -321,13 +321,13 @@ sub parse {
 
     while ($text ne "") {
 	print "Lnc $text" if ($Debug);
-	if ($text =~ s/^\n//) {
+	if ($text =~ s/^(\s*\n)//) {
 	    $self->{line}++;
 	    if ($self->{incomment}
 		|| $self->{inquote}) {
-		$self->{token_string} .= "\n";
+		$self->{token_string} .= $1;
 	    } else {
-		$self->{unreadback} .= "\n";
+		$self->{unreadback} .= $1;
 	    }
 	}
 	elsif ($self->{incomment}) {

@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.8 2001/02/13 15:11:15 wsnyder Exp $
+# $Id: SigParser.pm,v 1.9 2001/02/16 19:33:35 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -91,7 +91,7 @@ that aren\'t covered.
 =head1 DISTRIBUTION
 
 The latest version is available from
-C<http://www.ultranet.com/~wsnyder/verilog-perl>.
+C<http://veripool.com/verilog-perl>.
 
 =head1 AUTHORS
 

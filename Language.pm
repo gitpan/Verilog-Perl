@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm,v 1.12 2001/02/13 17:41:05 wsnyder Exp $
+# $Id: Language.pm,v 1.14 2001/03/15 20:31:29 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -99,7 +99,7 @@ will get intuitive results.
 =head1 DISTRIBUTION
 
 The latest version is available from
-C<http://www.ultranet.com/~wsnyder/verilog-perl>.
+C<http://veripool.com/verilog-perl>.
 
 =head1 AUTHORS
 
@@ -118,7 +118,7 @@ use vars qw($VERSION);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.9';
+$VERSION = '1.10';
 
 ######################################################################
 #### Internal Variables
