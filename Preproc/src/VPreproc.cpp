@@ -1,4 +1,4 @@
-// $Revision: #21 $$Date: 2003/08/12 $$Author: wsnyder $  -*- C++ -*-
+// $Revision: #22 $$Date: 2003/08/19 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal implementation of default preprocessor
 //
@@ -28,6 +28,7 @@
 #include <fstream>
 #include <stack>
 #include <map>
+#include <assert.h>
 
 #include "VPreproc.h"
 #include "VPreprocLex.h"

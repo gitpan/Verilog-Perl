@@ -1,4 +1,4 @@
-# $Revision: #5 $$Date: 2003/08/12 $$Author: wsnyder $
+# $Revision: #6 $$Date: 2003/08/19 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
@@ -29,7 +29,7 @@ VPreprocLex.cpp: VPreprocLex.l
 	$(LEX) $(LEXFLAGS) -o$@ $<
 
 clean::
-	-rm -rf test *.d *.o VPreprocLex.cpp *.output example
+	-rm -rf test *.d *.o VPreprocLex.cpp *.output example example.exe
 ';
     return $out;
 }

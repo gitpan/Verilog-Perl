@@ -4,6 +4,10 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
+* Changes in Verilog::Language 2.226 8/19/2003
+
+****	GCC 3.3 fixes
+
 * Changes in Verilog::Language 2.225 8/12/2003
 
 ***	Have Getopt::parameter return unknown arguments from
@@ -198,7 +202,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #54 $$Date: 2003/08/12 $$Author: wsnyder $
+$Revision: #55 $$Date: 2003/08/19 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 
