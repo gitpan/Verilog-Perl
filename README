@@ -80,7 +80,8 @@ Installation
      trouble with "open" being redefined.  If this happens, try editing
      the Makefile to change _FILE_OFFSET_BITS to 32 instead of 64.
 
-  4. Type `make test' to check the package.
+  4. Type `make test' to check the package.  If you don't have
+     Synopsys' VCS, the test will print a warning, which you can ignore.
 
   5. Type `make install' to install the programs and any data files and
      documentation.

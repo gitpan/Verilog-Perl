@@ -1,4 +1,4 @@
-# $Revision: #28 $$Date: 2004/01/27 $$Author: wsnyder $
+# $Revision: #30 $$Date: 2004/03/10 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2004 by Wilson Snyder.  This program is free software;
@@ -22,13 +22,19 @@ clean::
 dist: maintainer-copy distcheck README
 
 ## Maintainer use:
+preexist:
+	test ! -r \$(HOME)/src/kits/\$(DISTVNAME).tar.gz
+
 tag:
 	p4 label -d     \$(DISTNAME)_\$(VERSION_SYM) || true
 	p4 label        \$(DISTNAME)_\$(VERSION_SYM)
 	p4 labelsync -l \$(DISTNAME)_\$(VERSION_SYM) ...
-#	cvs tag -F \$(DISTNAME)_\$(VERSION_SYM) .
+#	cvs tag -F      \$(DISTNAME)_\$(VERSION_SYM) .
 
-maintainer-dist: dist tag
+maintainer-diff:
+	p4 diff     ...@\$(DISTNAME)_\$(VERSION_SYM) 
+
+maintainer-dist: preexist dist tag
 	cp \$(DISTVNAME).tar.gz \$(HOME)/src/kits
 	mv \$(DISTVNAME).tar.gz \$(HOME)/backpack
 

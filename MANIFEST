@@ -61,3 +61,4 @@ verilog/v_hier_top.v
 verilog/v_hier_top2.v
 vpm
 vrename
+META.yml                                 Module meta-data (added by MakeMaker)

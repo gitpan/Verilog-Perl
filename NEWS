@@ -4,6 +4,10 @@ The contributors that suggested a given feature is shown in [].
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.232 3/10/2004
+
+***	Fix newline insertion in vpm $info messages.
+
 * Changes in Verilog::Language 2.231 1/27/2004
 
 ****	Documentation fixes.
@@ -205,7 +209,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: #66 $$Date: 2004/01/27 $$Author: wsnyder $
+$Revision: #67 $$Date: 2004/03/10 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

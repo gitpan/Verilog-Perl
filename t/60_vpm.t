@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #13 $$Date: 2004/01/27 $$Author: wsnyder $
+# $Revision: #14 $$Date: 2004/03/08 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2004 by Wilson Snyder.  This program is free software;
@@ -31,7 +31,8 @@ ok($orig_lines==$new_lines);
 # Build the model
 unlink "simv";
 if (!$ENV{VCS_HOME} || !-r "$ENV{VCS_HOME}/bin/vcs") {
-    warn "*** You do not have VCS installed, not running rest of test!\n";
+    warn "*** You do not seem to have VCS installed, not running rest of test.\n";
+    warn "*** (If you do not own VCS, ignore this warning).\n";
     skip(1,1);
 } else {
     chdir 'test_dir';
