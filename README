@@ -1,0 +1,61 @@
+This is the Verilog Perl Package.
+
+Copyright
+=========
+
+   This package is Copyright 1998 by Wilson Snyder
+<wsnyder@ultranet.com>.
+
+   You may distribute under the terms of either the GNU General Public
+License or the Artistic License, as specified in the Perl README file,
+with the exception that it cannot be placed on a CD-ROM or similar
+media for commercial distribution without the prior approval of the
+author.
+
+   This code is provided with no warranty of any kind, and is used
+entirely at your own risk.
+
+Description
+===========
+
+   This package provides functions to support writing utilities that use
+the Verilog language.  See `man Verilog::Language' and `man vrename'
+after installation.
+
+   Also included is `vrename', a program for renaming signals, modules,
+and parameters across many verilog files at once.
+
+Obtaining Distribution
+======================
+
+   The latest version is available at `http://www.perl.org/CPAN/'
+
+   Download the latest package from that site, and decompress.  `gunzip
+Verilog-Perl_version.tar.gz ; tar xvf Verilog-Perl_version.tar'
+
+Supported Systems
+=================
+
+   This version of Verilog has been built and tested on:
+
+   * sparc-sun-solaris2.5.1
+
+   * sparc-sun-sunos4.1.4
+
+   It should run on any system with perl.
+
+Installation
+============
+
+  1. `cd' to the directory containing this INSTALL notice.
+
+  2. Type `perl Makefile.PL' to configure Verilog for your system.
+
+  3. Type `make' to compile Verilog.
+
+  4. Type `make install' to install the programs and any data files and
+     documentation.
+
+  5. Type `rehash' to make the new `vrename' command visible.
+
+

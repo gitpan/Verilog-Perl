@@ -1,0 +1,377 @@
+# Verilog::SigParser.pm -- Verilog signal parsing
+# $Id: SigParser.pm,v 1.2 1999/06/02 17:30:14 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@ultranet.com>
+######################################################################
+#
+# This package implements Verilog Signal Parsing;
+# 
+# This program is Copyright 1998 by Wilson Snyder.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# If you do not have a copy of the GNU General Public License write to
+# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
+# MA 02139, USA.
+######################################################################
+
+=head1 NAME
+
+Verilog::SigParser - Signal Parsing for Verilog language files
+
+=head1 SYNOPSIS
+
+  use Verilog::SigParser;
+
+  my $parser = new Verilog::SigParser;
+  $string = $parser->unreadback ();
+  $line   = $parser->line ();
+  $parser->parse ($text)
+  $parser->parse_file ($filename)
+
+=head1 DESCRIPTION
+
+The C<Verilog::SigParser> package builds upon the Verilog::Parse function
+to provide callbacks for when a signal is declared, a module instantiated,
+or a module defined.
+
+The external interface to Verilog::SigParser is described in the
+Verilog::Parser module.
+
+In order to make the parser do anything interesting, you must make a
+subclass where you override one or more of the following methods as
+appropriate:
+
+=over 4
+
+=item $self->module ( $keyword, $name )
+
+This method is called when a module is defined.
+
+=item $self->task ( $keyword, $name )
+
+This method is called when a module is defined.
+
+=item $self->function ( $keyword, $name )
+
+This method is called when a function is defined.
+
+=item $self->signal_decl ( $keyword, $signame, $vector, $mem )
+
+This method is called when a signal is declared.  The first argument,
+$keyword is ('input', 'output', etc), the second argument is the name of
+the signal.  The third argument is the vector bits or undef.  The fourth
+argument is the memory bits or undef.
+
+=item $self->instant ( $module, $cell )
+
+This method is called when a instantantiation is defined.  The first
+parameter is the name of the module being instantiated, and the second
+parameter is the name of the cell.
+
+=head1 SEE ALSO
+
+C<Verilog::Parser>, 
+C<Verilog::Language>, 
+
+=head1 BUGS
+
+This is being distributed as a baseline for future contributions.  Don\'t
+expect a lot, the Parser is still nieve, and there are many awkward cases
+that aren\'t covered.
+
+=head1 DISTRIBUTION
+
+The latest version is available from
+C<http://www.ultranet.com/~wsnyder/verilog-perl>.
+
+=head1 AUTHORS
+
+Wilson Snyder <wsnyder@ultranet.com>
+
+=cut
+
+######################################################################
+
+package Verilog::SigParser;
+require 5.000;
+require Exporter;
+
+use strict;
+use vars qw($VERSION @ISA $Debug);
+use English;
+use Carp;
+use Verilog::Parser;
+
+@ISA = qw(Verilog::Parser);
+
+######################################################################
+#### Configuration Section
+
+# Other configurable settings.
+$Debug = 0;		# for debugging
+
+$VERSION = sprintf("%d.%03d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+
+#######################################################################
+
+# parse, parse_file, etc are inherited from Verilog::Parser
+sub new {
+    my $class = shift;
+
+    my $self = $class->SUPER::new(@_);
+
+    $self->{last_operator} = "";
+    $self->{last_keyword} = "";
+    $self->{last_module}  = undef;
+    $self->{last_function} = undef;
+    $self->{last_task}    = undef;
+    @{$self->{last_numbers}} = ();
+    @{$self->{last_symbols}} = ();
+    $self->{is_inst_ok}   = 1;
+    $self->{is_pin_ok}    = 0;
+    $self->{is_signal_ok} = 1;
+    $self->{in_preproc_line} = -1;
+    $self->{pin_name}    = undef;
+
+    bless $self, $class; 
+    return $self;
+}
+
+#######################################################################
+# Null callbacks
+
+# The my's aren't needed since we do nothing, but are useful if the
+# user copies them from here to their program.
+sub module {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
+}
+
+sub task {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
+}
+
+sub function {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
+}
+
+sub signal_decl {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
+    my $vector = shift;
+    my $mem = shift;
+}
+
+sub instant {
+    my $self = shift;
+    my $module = shift;
+    my $cell = shift;
+}
+
+sub pin {
+    my $self = shift;
+    my $name = shift;
+    my $conn = shift;
+    my $number = shift;
+}
+
+sub ppdefine {
+    my $self = shift;
+    my $defvar = shift;
+    my $definition = shift;
+}
+
+######################################################################
+# Overrides of Verilog::Parser routines
+
+sub keyword {
+    # Verilog::Parse calls when keyword occurs
+    my $self = shift;	# Parser invoked
+    my $token = shift;	# What token was parsed
+
+    if (defined $self->{last_preproc} && $self->{preprocess}
+	&& $self->{in_preproc_line} != $self->line()
+	&& $self->{last_preproc} eq "`define") {
+	my $def = shift @{$self->{last_ppitem}};
+	$self->ppdefine ($def, (join "",@{$self->{last_ppitem}}));
+	$self->{last_preproc} = undef;
+	@{$self->{last_ppitem}} = ();
+    }
+
+    if ($token =~ /^\`/) {
+	$self->{last_preproc} = $token;
+	$self->{in_preproc_line} = $self->line;
+    }
+    if ($self->{in_preproc_line} != $self->line()) {
+	$self->{last_keyword} = $token;
+	@{$self->{last_symbols}} = ();
+	@{$self->{last_numbers}} = ();
+    }
+    if ($token eq "end") {
+	# Prepare for next command
+	$self->{last_keyword} = "";
+	@{$self->{last_symbols}} = ();
+	@{$self->{last_numbers}} = ();
+	$self->{is_inst_ok} = 1;
+	$self->{is_signal_ok} = 1;
+	$self->{is_pin_ok} = 0;
+	$self->{got_preproc} = 0;
+    }
+}
+
+sub symbol {
+    # Verilog::Parse calls when symbol occurs
+    my $self = shift;	# Parser invoked
+    my $token = shift;	# What token was parsed
+
+    if ($self->{in_preproc_line} != $self->line()) {
+	push @{$self->{last_symbols}}, $token;
+    } else {
+	push @{$self->{last_ppitem}}, $token;
+    }
+    if ($self->{is_pin_ok}) {
+	if ($self->{last_operator} eq ".") {
+	    $self->{pin_name} = $token;
+	    @{$self->{last_numbers}} = ();
+	    @{$self->{last_symbols}} = ();
+	}
+    }
+}
+
+sub number {
+    # Verilog::Parse calls when number occurs
+    my $self = shift;	# Parser invoked
+    my $token = shift;	# What token was parsed
+
+    if ($self->{in_preproc_line} != $self->line()) {
+	push @{$self->{last_numbers}}, $token;
+    } else {
+	push @{$self->{last_ppitem}}, $token;
+    }
+}
+
+sub operator {
+    # Verilog::Parse calls when operator occurs
+    my $self = shift;	# Parser invoked
+    my $token = shift;	# What token was parsed
+
+    my $lkw = $self->{last_keyword};
+
+    #print "Op $token\n" if $Debug;
+
+    if ($self->{in_preproc_line} != $self->line) {
+	if ($token eq "("
+	    && ($lkw eq "" || $lkw =~ /^end/ || $self->{got_preproc})
+	    && (defined $self->{last_symbols}[0])
+	    && (defined $self->{last_symbols}[1])
+	    && $self->{is_inst_ok}
+	    ) {
+	    my $mod = $self->{last_symbols}[0];
+	    my $inst = $self->{last_symbols}[1];
+	    print "Gotainst $mod $inst\n"    if ($Debug);
+	    $self->instant ($mod, $inst);
+	    $self->{is_inst_ok} = 0;
+	    $self->{is_pin_ok} = 1;
+	}
+	elsif ($token eq "," || $token eq ";") {
+	    if ($self->{is_pin_ok}
+		&& defined $self->{last_symbols}[0]) {
+		my $vec = "";
+		if ($#{$self->{last_numbers}} >= 1) {
+		    $vec = "[" . $self->{last_numbers}[0]
+			. ":" . $self->{last_numbers}[1] . "]";
+		}
+		$self->{is_pin_ok}++;
+		my $pin_name = $self->{pin_name};
+		$pin_name ||= "pin" . $self->{is_pin_ok};
+		$self->pin ($pin_name,
+			    $self->{last_symbols}[0] . $vec,
+			    $self->{is_pin_ok});
+		$self->{pin_name} = undef;
+	    }
+	    if ($token eq ";") {
+		if ($lkw eq "task") {
+		    my $mod = $self->{last_symbols}[0];
+		    $self->{last_task} = $mod;
+		    print "Gota$lkw $mod\n"    if ($Debug);
+		    $self->task ($lkw, $mod);
+		} elsif ($lkw eq "module") {
+		    my $mod = $self->{last_symbols}[0];
+		    $self->{last_module} = $mod;
+		    print "Gota$lkw $mod\n"    if ($Debug);
+		    $self->module ($lkw, $mod);
+		} elsif ($lkw eq "function") {
+		    my $mod = $self->{last_symbols}[0];
+		    $self->{last_function} = $mod;
+		    print "Gota$lkw $mod\n"    if ($Debug);
+		    $self->function ($lkw, $mod);
+		}
+		elsif ($lkw eq "endtask") {
+		    $self->{last_task} = undef;
+		} elsif ($lkw eq "endmodule") {
+		    $self->{last_module} = undef;
+		} elsif ($lkw eq "endfunction") {
+		    $self->{last_function} = undef;
+		}
+		elsif ((($lkw eq "input")
+			|| ($lkw eq "output")
+			|| ($lkw eq "inout")
+			|| ($lkw eq "wire")
+			|| ($lkw eq "reg")
+			)
+		       && $self->{is_signal_ok}) {
+		    my $sig;
+		    foreach $sig (@{$self->{last_symbols}}) {
+			my $vec = "";
+			my $mem = "";
+			if ($#{$self->{last_numbers}} >= 1) {
+			    $vec = "[" . $self->{last_numbers}[0]
+				. ":" . $self->{last_numbers}[1] . "]";
+			    if ($#{$self->{last_numbers}} >= 3) {
+				$mem = "[" . $self->{last_numbers}[2]
+				    . ":" . $self->{last_numbers}[3] . "]";
+			    }
+			}
+			#print "Gota$lkw $sig $vec $mem\n"    if ($Debug);
+			$self->signal_decl ($lkw, $sig, $vec, $mem);
+		    }
+		}
+		# Prepare for next command
+		$self->{last_keyword} = "";
+		@{$self->{last_symbols}} = ();
+		@{$self->{last_numbers}} = ();
+		$self->{is_inst_ok} = 1;
+		$self->{is_signal_ok} = 1;
+		$self->{is_pin_ok} = 0;
+		$self->{got_preproc} = 0;
+	    }
+	}
+	elsif ($token eq "=") {
+	    $self->{is_signal_ok} = 0;
+	    $self->{is_inst_ok} = 0;
+	}
+	else {
+	    $self->{is_inst_ok} = 0;
+	}
+    } else {
+	push @{$self->{last_ppitem}}, $token;
+    }
+    $self->{last_operator} = $token;
+}
+    
+######################################################################
+### Package return
+1;
