@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm,v 1.3 2001/11/16 14:57:54 wsnyder Exp $
+# $Id: File.pm,v 1.9 2002/03/11 15:31:53 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.010';
+$VERSION = '2.100';
 use strict;
 
 structs('new',
@@ -49,24 +49,10 @@ structs('new',
 
 package Verilog::Netlist::File::Parser;
 use Verilog::SigParser;
+use Verilog::Preproc;
 use strict;
 use vars qw (@ISA);
 @ISA = qw (Verilog::SigParser);
-
-sub resolve_filename {
-    my $self = shift;
-    my $filename = shift;
-    my $from = shift;
-    if ($self->{netlist}{options}) {
-	$filename = $self->{netlist}{options}->file_path($filename);
-    }
-    if (!-r $filename) {
-	$from->error("Cannot open $filename") if $from;
-	die "%Error: Cannot open $filename\n";
-    }
-    $self->{netlist}->dependency_in ($filename);
-    return $filename;
-}
 
 sub new {
     my $class = shift;
@@ -79,8 +65,13 @@ sub new {
 				     modref=>undef,	# Module being parsed now
 				     cellref=>undef,	# Cell being parsed now
 				     );
-    $parser->{filename} = $parser->resolve_filename($params{filename});
-    $parser->parse_file ($parser->{filename});
+    
+    my @opt;
+    push @opt, (options=>$params{netlist}{options}) if $params{netlist}{options};
+    my $preproc = Verilog::Preproc->new(@opt,
+					keep_comments=>0,);
+    $preproc->open($params{filename});
+    $parser->parse_preproc_file ($preproc);
     return $parser;
 }
 
@@ -118,13 +109,14 @@ sub signal_decl {
 
     my $modref = $self->{modref};
     if (!$modref) {
-	 return $self->error ("Signal declaration outside of module definition", $netname);
+	return $self->error ("Signal declaration outside of module definition", $netname);
     }
 
     if ($inout eq "reg"
 	|| $inout eq "wire"
 	) {
-	my $net = $modref->new_net
+	my $net = $modref->find_net ($netname);
+	$net or $net = $modref->new_net
 	    (name=>$netname,
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     simple_type=>1, type=>'wire', array=>$array,
@@ -174,6 +166,7 @@ sub pin {
 	return $self->error ("PIN outside of cell definition", $net);
     }
     $cellref->new_pin (name=>$pin,
+		       portname=>$pin,
 		       filename=>$self->filename, lineno=>$self->lineno,
 		       netname=>$net, );
 }
@@ -216,11 +209,7 @@ sub read {
     my $filename = $params{filename} or croak "%Error: ".__PACKAGE__."::read_file (filename=>) parameter required, stopped";
     my $netlist = $params{netlist} or croak ("Call Verilog::Netlist::read_file instead,");
 
-    my $filepath = $filename;
-    if ($netlist->{options}) {
-	$filepath = $netlist->{options}->file_path($filename);
-    }
-
+    my $filepath = $netlist->resolve_filename($filename);
     print __PACKAGE__."::read_file $filepath\n" if $Verilog::Netlist::Debug;
 
     my $fileref = $netlist->new_file (name=>$filepath,
@@ -232,6 +221,9 @@ sub read {
 	  filename=>$filepath,	# for ->read
 	  );
     return $fileref;
+}
+
+sub _link {
 }
 
 sub dump {

@@ -1,0 +1,85 @@
+# $Id: Makefile_without_perl,v 1.1 2002/03/11 15:16:51 wsnyder Exp $ */
+#*****************************************************************************
+#
+# DESCRIPTION: Verilog::Preproc:  Example make for standalone C++ preprocessor
+#
+# Code available from: http://www.veripool.com/
+#
+#*****************************************************************************
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of either the GNU General Public License or the
+# Perl Artistic License, with the exception that it cannot be placed
+# on a CD-ROM or similar media for commercial distribution without the
+# prior approval of the author.
+#
+# Verilator is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Verilator; see the file COPYING.  If not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+#****************************************************************************/
+
+#### Start of system configuration section. ####
+
+srcdir = .
+VPATH = .
+
+CXX = g++
+LINK = g++
+
+#### End of system configuration section. ####
+
+LEX = flex
+#LEXFLAGS = -d
+#LDFLAG = -d -g
+LDFLAG = -g
+YFLAGS = -d -v
+
+LIBS = -ll -lm
+COPT = -ggdb
+
+CPPFLAGSNOWALL = -MMD -I. -I$(srcdir) $(COPT)
+CPPFLAGS = $(CPPFLAGSNOWALL) -Wall -Wno-implicit-int -Wno-char-subscripts -Werror
+
+HEADERS = symboltab.h $(wildcard V*.h v*.h)
+
+######################################################################
+#### Top level
+
+all: example
+
+#### Top executable
+
+OBJS = \
+	example.o \
+	VPreproc.o \
+	VFileLine.o \
+	VPreprocLex.o \
+
+example: $(OBJS)
+	${LINK} ${LDFLAGS} -o $@ $^ ${LIBS}
+
+#### Modules
+
+example.o:	example.cpp VPreproc.h
+
+VPreprocLex.cpp: VPreprocLex.l
+	${LEX} ${LEXFLAGS} -o$@ $<
+
+VPreprocLex.o:	VPreprocLex.cpp
+	${CXX} ${CPPFLAGSNOWALL} -c $<
+
+######################################################################
+######################################################################
+
+DEPS := $(wildcard *.d)
+ifneq ($(DEPS),)
+include $(DEPS)
+endif
+

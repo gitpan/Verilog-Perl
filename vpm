@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm,v 1.17 2001/11/16 14:57:51 wsnyder Exp $
+# $Id: vpm,v 1.23 2002/03/11 15:31:50 wsnyder Exp $
 ######################################################################
 #                                                                           
 # Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@wsnyder.org>
@@ -18,7 +18,7 @@ use File::Copy;
 
 use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
 	     %Vpm_Chiponly_Rename);
-$VERSION = '2.010';
+$VERSION = '2.100';
 
 ######################################################################
 # configuration
@@ -122,7 +122,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm,v 1.17 2001/11/16 14:57:51 wsnyder Exp $ ';
+    print 'Version: $Id: vpm,v 1.23 2002/03/11 15:31:50 wsnyder Exp $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -162,8 +162,6 @@ sub assert {
     shift;
     my $cond = shift;
     my @params = @_;
-    $params[0] =~ s/\"\s*$/ /;
-    $params[0] = $params[0]."%%E: In %m\\n\"";
     message_line ("%%E", $cond, 0,0, @params);
 }
 
@@ -212,15 +210,14 @@ sub assert_req_ack {
     
     # Output it
     message_header();
-    sendout("begin ");
     sendout("if (`__message_on) begin ");
-    sendout("casex({($busy),($req),($ack)}) ");
+    sendout("casez({($busy),($req),($ack)}) ");
     sendout(" 3'b000: ;");
     sendout(" 3'b010: $busy<=1'b1;");
     sendout(" 3'b011: "); error(0,"\"Unexpected $req coincident with $ack\\n\"");
     sendout(" 3'b001: "); error(0,"\"Unexpected $ack with no request pending\\n\"");
     sendout(" 3'b100: ;");
-    sendout(" 3'b11x: "); error(0,"\"Unexpected $req with request already pending\\n\"");
+    sendout(" 3'b11?: "); error(0,"\"Unexpected $req with request already pending\\n\"");
     sendout(" 3'b101: $busy<=1'b0;");
     sendout("endcase ");
     
@@ -238,7 +235,6 @@ sub assert_req_ack {
 	}
 	sendout(" end");
     }
-    sendout(" end ");
     sendout(" end ");
 
     message_trailer();
@@ -321,22 +317,25 @@ sub get_lineinfo {
 sub message_line {
     my $char = shift;
     my $cond = shift;
+    my $taskFlag = shift;
     my @params = @_;
 
     $lineinfo = get_lineinfo();
-    message ($lineinfo, 1, $char, $cond, "", @params);
+    message ($lineinfo, 1, $char, $cond, "", $taskFlag, @params);
 }
 
 use vars qw($Msg_Header_Level);
 sub message_header {
-    sendout ("\n/*summit modcovoff -bpen*/\n") if $Vericov_Enabled;
-    sendout ("/*vpm*/") if (($Msg_Header_Level||0)==0);
-    $Msg_Header_Level++;
+    if (!$Msg_Header_Level) {
+	sendout ("\n/*summit modcovoff -bpen*/\n") if $Vericov_Enabled;
+	sendout ("/*vpm*/");
+    }
     sendout ("begin ");
+    sendout ("`coverage_block_off ") if ($Opt_Verilator && !$Msg_Header_Level);
+    $Msg_Header_Level++;
 }
-
 sub message_trailer {
-    sendout ('end');
+    sendout ('end ');
     sendout ('/*vpm*/') if ((--$Msg_Header_Level)==0);
     sendout ("\n/*summit modcovon -bpen*/\n") if $Vericov_Enabled;
 }
@@ -380,43 +379,49 @@ sub message {
     my $char = shift;
     my $cond = shift;
     my $otherargs = shift;
+    my $taskFlag = shift;
     my @params = @_;
     my $line = $.;
 
-    if ($params[1] =~ /^\s*\"/) {
+    if ($params[0] =~ /^\s*\"/) {
 	# No digit in first parameter
-	# Push new parameter 1 as a 0
-	my $p0 = $params[0];
-	unshift @params, $p0;
-	$params[1] = '0';
+	# Push new parameter [0] as a 0.
+	unshift @params, '0';
+    }
+    unless ($char =~ /^-I/i) {
+	$params[1] =~ s/\"\s*$/ /;
+	$params[1] = $params[1]."${char}: In %m\\n\"";
     }
 
-    (($params[1] =~ /^\s*[0-9]/) && ($params[2] =~ /^\s*\"/))
+    (($params[0] =~ /^\s*[0-9]/) && ($params[1] =~ /^\s*\"/))
 	or die "%Error $Last_Filename:$line: Format of \$message boggled.\n";
 
     message_header();
 
     # These long lines without breaks are intentional; I want to preserve line numbers
+    my $is_warn = (($char eq "%%E") || ($char eq "%%W"));
+
     if ($cond ne "1") {
 	# Conditional code, for $assert
 	# Note this will only work in RTL code!  Chiponly build issues otherwise.
 	my $chk = "if (!($cond) && (`__message_on)) ";
 	sendout ($chk);
-    } elsif ($params[1] =~ /^\s*0\s*$/) {
+    } elsif ($params[0] =~ /^\s*0\s*$/) {
 	# Always enabled
-	if (($char eq "%%E") || ($char eq "%%W")) {
+	if ($is_warn) {
 	    my $chk = "if (`__message_on) ";
 	    sendout ($chk);
 	}
     } else {
 	# Complex test
 	$Insure_Symbols{$Last_Module}{__message} = ['integer',5];	# Make this symbol exist if doesn't
-	my $chk = 'if (__message >= (' . $params[1] . ')';
+	my $chk = 'if (__message >= (' . $params[0] . ')';
+	$chk .= " && (`__message_on) " if $is_warn;
 	$chk .= ') ';
 	sendout ($chk);
     }
 
-    message_write($lineinfo,$show_id,$char,$otherargs,@params);
+    message_write($lineinfo,$show_id,$char,$otherargs,$taskFlag,@params);
 
     message_trailer();
 }
@@ -432,7 +437,7 @@ sub coverage {
     ($#params >= 1)
 	or die "%Error $Last_Filename:$line: Format of \$coverage boggled.\n";
 
-    sendout ("/*vpm*/begin ");
+    message_header();
     for my $par (1 .. $#params) {
 	my $sig = $params[$par];
 	$sig =~ s/\s+//g;
@@ -481,7 +486,7 @@ sub coverage {
 	    push @coverages, $inthash;
 	}
     }
-    sendout (" end/*vpm*/");
+    message_trailer();
 }
 
 ######################################################################
@@ -740,7 +745,7 @@ sub vpm_recurse_dir {
 		 || ($Opt_Vericov != $Last_Vericov));
     if ($force && !$Told_wait_chg) {
 	print "\t    VPM (or overall flags) changed... Two minutes...\n";
-	print "\t    Mtime = $Prog_Mtime\n" if $Debug || ($ENV{USER} && $ENV{USER} eq "wsnyder");
+	print "\t    Mtime = $Prog_Mtime\n" if $Debug;
 	$Told_wait_chg = 1;
     }
     #print "FF $Opt_Date, $Prog_Mtime, $dest_mtime, $Opt_Vericov, $Last_Vericov\n";
@@ -891,7 +896,7 @@ sub keyword {
     @Last_Symbols = ();
     @Last_Number_Ops = ();
 
-    if ($Opt_Vericov && (($token eq "case") || ($token eq "casex"))) {
+    if ($Opt_Vericov && (($token eq "case") || ($token eq "casex") || ($token eq "casez"))) {
 	$Sendout .= $since;
 	sendout ("\n/*summit implicit off*/\n") if $Vericov_Enabled;
 	$Sendout .= $token;

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Net.pm,v 1.4 2001/11/16 14:57:54 wsnyder Exp $
+# $Id: Net.pm,v 1.8 2002/03/11 15:31:53 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -28,7 +28,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.010';
+$VERSION = '2.100';
 use strict;
 
 ######################################################################
@@ -91,7 +91,7 @@ sub lint {
 	}
     }
     if (0&&$self->_used_in() && !$self->_used_out()) {
-	$self->warn("Signal is not generated (or needs signal declaration): ",$self->name(), "\n");
+	$self->warn("Signal has no drivers: ",$self->name(), "\n");
     }
     if (0&&$self->_used_out() && !$self->_used_in()
 	&& $self->name() !~ /unused/) {
@@ -120,9 +120,14 @@ sub dump_drivers {
     }
     foreach my $cell ($self->module->cells_sorted) {
 	foreach my $pin ($cell->pins_sorted) {
-	    if ($pin->port && $pin->net == $self) {
+	    if ($pin->port && $pin->net && $pin->net == $self) {
 		print " "x$indent,"  Pin:  ",$cell->name,".",$pin->name
 		    ,"  ",$pin->port->direction,"\n";
+	    }
+	    elsif ($pin->net && $self->name eq $pin->net->name) {
+		warn "%Warning: Internal net name duplicate: ".$cell->name."  ".$self->name."\n"
+		    .$self->comment."  ".$pin->net->comment."\n"
+		    ."$self  ".$pin->net->name."\n";
 	    }
 	}
     }

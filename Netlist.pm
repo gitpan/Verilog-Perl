@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm,v 1.4 2001/11/16 14:57:51 wsnyder Exp $
+# $Id: Netlist.pm,v 1.7 2002/03/11 15:31:50 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -32,7 +32,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.010';
+$VERSION = '2.100';
 
 ######################################################################
 #### Error Handling
@@ -68,6 +68,9 @@ sub link {
 	foreach my $modref ($self->modules) {
 	    next if $modref->is_libcell();
 	    $modref->link();
+	}
+	foreach my $fileref ($self->files) {
+	    $fileref->_link();
 	}
     }
 }
@@ -116,7 +119,9 @@ sub remove_defines {
     my $sym = shift;
     my $val = "x";
     while (defined $val) {
-	$val = $self->defvalue_nowarn($sym);  #Undef if not found
+	last if $sym eq $val;
+	(my $xsym = $sym) =~ s/^\`//;
+	$val = $self->defvalue_nowarn($xsym);  #Undef if not found
 	$sym = $val if defined $val;
     }
     return $sym;
@@ -151,6 +156,22 @@ sub modules_sorted {
 ######################################################################
 #### Files access
 
+sub resolve_filename {
+    my $self = shift;
+    my $filename = shift;
+    my $from = shift;
+    if ($self->{options}) {
+	$filename = $self->remove_defines($filename);
+	$filename = $self->{options}->file_path($filename);
+    }
+    if (!-r $filename) {
+	$from->error("Cannot open $filename") if $from;
+	die "%Error: Cannot open $filename\n";
+    }
+    $self->dependency_in ($filename);
+    return $filename;
+}
+
 sub new_file {
     my $self = shift;
     # @_ params
@@ -177,6 +198,7 @@ sub files {
     # Return all files
     return (sort {$a->name() cmp $b->name()} (values %{$self->{_files}}));
 }
+sub files_sorted { return files(@_); }
 
 sub read_file {
     my $self = shift;

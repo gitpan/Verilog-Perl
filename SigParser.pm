@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.16 2001/11/16 14:57:51 wsnyder Exp $
+# $Id: SigParser.pm,v 1.18 2002/03/11 15:31:50 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -32,8 +32,7 @@ Verilog::SigParser - Signal Parsing for Verilog language files
   my $parser = new Verilog::SigParser;
   $string = $parser->unreadback ();
   $line   = $parser->line ();
-  $parser->parse ($text);
-  $parser->parse_file ($filename);
+  $parser->parse_preproc_file ($pp);
 
 =head1 DESCRIPTION
 
@@ -42,7 +41,8 @@ to provide callbacks for when a signal is declared, a module instantiated,
 or a module defined.
 
 The external interface to Verilog::SigParser is described in the
-Verilog::Parser module.
+Verilog::Parser module.  You will probably want to use the preprocessing
+option of Verilog::Parser with this package.
 
 In order to make the parser do anything interesting, you must make a
 subclass where you override one or more of the following methods as
@@ -119,7 +119,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.010';
+$VERSION = '2.100';
 
 #######################################################################
 

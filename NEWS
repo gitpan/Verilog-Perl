@@ -6,6 +6,18 @@ The contributors that suggested a given feature is shown in [].
 	
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.100 3/11/2002 
+
+**	Installation now requires GCC/G++ and Flex.
+
+**	Added Verilog::Preproc, a Verilog 2001 Preprocessor.
+	Verilog::Netlist now uses this preprocessor by default.
+
+****	Fixed bug with vrename --crypt not working.  [Greg Davis]
+
+****	Fixed bug with vrename and \ quoted signals.  [Greg Davis]
+
+
 * Changes in Verilog::Language 2.010 11/16/2001
 
 ***	Added netlist interconnectivity checks.
@@ -97,7 +109,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 
 ----------------------------------------------------------------------
-$Id: NEWS,v 1.22 2001/11/16 14:57:51 wsnyder Exp $
+$Id: NEWS,v 1.27 2002/03/11 16:02:22 wsnyder Exp $
 ----------------------------------------------------------------------
 Copyright information:
 

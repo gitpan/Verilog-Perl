@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.25 2001/11/16 14:57:51 wsnyder Exp $
+# $Id: Parser.pm,v 1.29 2002/03/11 15:31:50 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -58,6 +58,11 @@ The return value is a reference to the parser object.
 This method can be called to parse text from a file.  The argument can
 be a filename or an already opened file handle. The return value from
 parse_file() is a reference to the parser object.
+
+=item $parser->parse_preproc_file ($preproc);
+
+This method can be called to parse preprocessed text from a predeclared
+Verilog::Preproc object.
 
 =item $parser->unreadback ()
 
@@ -163,9 +168,11 @@ $parser->report();
 
 =head1 SEE ALSO
 
+C<Verilog::Preproc>, 
 C<Verilog::ParserSig>, 
 C<Verilog::Language>, 
-C<vrename>
+C<vrename>,
+C<vpm>
 
 =head1 BUGS
 
@@ -206,7 +213,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.010';
+$VERSION = '2.100';
 
 #######################################################################
 
@@ -222,13 +229,8 @@ sub new {
 		filename => "UNKNOWN",
 		incomment => 0,
 		inquote => 0,
-		preprocess => 0,
+		@_,
 	    };
-    while (@_) {
-	my $param = shift; my $value = shift;
-	$self->{$param} = $value;
-    }
-
     bless $self, $class;
     return $self;
 }
@@ -276,7 +278,6 @@ sub reset {
     $self->{filename} = "UNKNOWN";
     $self->{incomment} = 0;
     $self->{inquote} = 0;
-    $self->{preprocess} = 0;
 }
 
 #######################################################################
@@ -448,6 +449,26 @@ sub parse_file {
 	$self->parse ($line);
     }
     $fh->close();
+    return $self;
+}
+
+sub parse_preproc_file {
+    # Read a preprocess file and parse
+    @_ == 2 or croak 'usage: $parser->parse_file(Verilog::Preproc_object_ref)';
+    my $self = shift;
+    my $pp = shift;
+
+    ref($pp) or croak "%Error: not passed a Verilog::Preproc object";
+    $self->reset();
+    my $line;
+    while (defined($line = $pp->getline())) {
+	if ($line =~ /^\s*\`line\s+(\d+)\s+\"([^\"]+)\"/) {
+	    $self->lineno($1);
+	    $self->filename($2);
+	} else {
+	    $self->parse ($line);
+	}
+    }
     return $self;
 }
 

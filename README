@@ -56,11 +56,9 @@ Supported Systems
 
    * sparc-sun-solaris2.5.1
 
-   * sparc-sun-sunos4.1.4
-
    * i386-linux
 
-   It should run on any system with perl.
+   It should run on any system with Perl, G++ and Flex.
 
 Installation
 ============

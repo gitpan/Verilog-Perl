@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Pin.pm,v 1.3 2001/11/16 14:57:54 wsnyder Exp $
+# $Id: Pin.pm,v 1.5 2002/03/11 15:31:53 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -33,7 +33,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.010';
+$VERSION = '2.100';
 use strict;
 
 structs('new',
@@ -44,6 +44,7 @@ structs('new',
 	   userdata	=> '%',		# User information
 	   #
 	   netname	=> '$', #'	# Net connection
+	   portname 	=> '$', #'	# Port connection name
 	   cell     	=> '$', #'	# Cell reference
 	   # below only after link()
 	   net		=> '$', #'	# Net connection reference
@@ -74,8 +75,8 @@ sub _link {
 	$change = 1;
     }
     if (!$self->port
-	&& $self->name && $self->submod) {
-	$self->port($self->submod->find_port($self->name));
+	&& $self->portname && $self->submod) {
+	$self->port($self->submod->find_port($self->portname));
 	$change = 1;
     }
     if ($change && $self->net && $self->port) {
@@ -88,7 +89,10 @@ sub _link {
 sub lint {
     my $self = shift;
     if (!$self->net && !$self->netlist->{implicit_wires_ok}) {
-        $self->error ("Pin's net declaration not found: ",$self->netname(),,"\n");
+        $self->error ("Pin's net declaration not found: ",$self->netname,"\n");
+    }
+    if (!$self->port && $self->submod) {
+        $self->error ($self,"Port not found in module ",$self->submod->name,": ",$self->portname,"\n");
     }
     if ($self->port && $self->net) {
 	my $nettype = $self->net->type;
@@ -108,9 +112,6 @@ sub lint {
 			 ,$self->name,"\n");
 	    #$self->cell->module->netlist->dump;
 	}
-    }
-    if (!$self->port && $self->submod) {
-        $self->error ($self,"Port not found in module ",$self->submod->name,": ",$self->name(),,"\n");
     }
 }
 
@@ -169,7 +170,13 @@ Reference to the Verilog::Netlist::Module the pin is in.
 
 =item $self->name
 
-The name of the pin.
+The name of the pin.  May have extra characters to make vectors connect,
+generally portname is a more readable version.  There may be multiple pins
+with the same portname, only one pin has a given name.
+
+=item $self->portname
+
+The name of the port connected to.
 
 =item $self->port
 

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Cell.pm,v 1.2 2001/11/16 14:57:54 wsnyder Exp $
+# $Id: Cell.pm,v 1.8 2002/03/11 15:31:53 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -28,7 +28,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.010';
+$VERSION = '2.100';
 use strict;
 
 structs('new',
@@ -52,20 +52,14 @@ sub netlist {
     return $self->module->netlist;
 }
 
-sub new_pin {
-    my $self = shift;
-    # @_ params
-    # Create a new pin under this cell
-    my $pinref = new Verilog::Netlist::Pin (cell=>$self, @_);
-    $self->pins ($pinref->name(), $pinref);
-    return $pinref;
-}
-
 sub _link_guts {
     my $self = shift;
     if ($self->submodname()) {
 	my $name = $self->submodname();
 	my $sm = $self->netlist->find_module ($self->submodname());
+	if (!$sm) {
+	    $sm = $self->netlist->find_module ($self->netlist->remove_defines($self->submodname()));
+	}
 	$self->submod($sm);
 	$sm->is_top(0) if $sm;
     }
@@ -80,7 +74,10 @@ sub _link {
 	&& $self->netlist->{link_read}) {
 	print "  Link_Read ",$self->submodname,"\n" if $Verilog::Netlist::Debug;
 	$self->netlist->read_file(filename=>$self->submodname);
-	$self->netlist->{_relink} = 1;
+	$self->_link_guts();
+	if ($self->submod()) {
+	    $self->netlist->{_relink} = 1;
+	}
     }
 }
 
@@ -89,8 +86,10 @@ sub lint {
     if (!$self->submod()) {
         $self->error ($self,"Module reference not found: ",$self->submodname(),,"\n");
     }
-    foreach my $pinref (values %{$self->pins}) {
-	$pinref->lint();
+    if (!$self->netlist->{skip_pin_interconnect}) {
+	foreach my $pinref (values %{$self->pins}) {
+	    $pinref->lint();
+	}
     }
 }
 
@@ -109,9 +108,27 @@ sub dump {
     }
 }
 
-sub pins_sorted {
+######################################################################
+#### Pins
+
+sub new_pin {
     my $self = shift;
-    return (sort {$a->name() cmp $b->name()} (values %{$self->pins}));
+    # @_ params
+    # Create a new pin under this cell
+    my $pinref = new Verilog::Netlist::Pin (cell=>$self, @_);
+    $self->portname($self->name) if !$self->name;	# Back Version 1.000 compatibility
+    $self->pins ($pinref->name(), $pinref);
+    return $pinref;
+}
+
+sub find_pin {
+    my $self = shift;
+    my $name = shift;
+    return $self->pins($name);
+}
+
+sub pins_sorted {
+    return (sort {$a->name() cmp $b->name()} (values %{$_[0]->pins}));
 }
 
 ######################################################################
@@ -184,6 +201,10 @@ Checks the cell for errors.  Normally called by Verilog::Netlist::lint.
 =item $self->new_pin
 
 Creates a new Verilog::Netlist::Pin connection for this cell.
+
+=item $self->pins_sorted
+
+Returns all Verilog::Netlist::Pin connections for this cell.
 
 =item $self->dump
 

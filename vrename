@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename,v 1.16 2001/11/16 14:57:51 wsnyder Exp $
+# $Id: vrename,v 1.18 2002/03/11 15:31:50 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -31,8 +31,8 @@ use Verilog::Parser;
 use strict;
 
 use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
-	     %Signal_Locs %Signal_Newname %Encrypt);
-$VERSION = '2.010';
+	     %Signal_Locs %Signal_Newname %Encrypt $Opt_Crypt);
+$VERSION = '2.100';
 
 ######################################################################
 
@@ -43,6 +43,8 @@ $VERSION = '2.010';
      "unused_ok"  => "",
      "__FILE__"  => "",
      "__LINE__"  => "",
+     "ns"	=> "",	# As in `timescale 10 ns
+     "ps"	=> "",	# As in `timescale 10 ps
      );
 
 # These defines contain a preprocessor directive
@@ -60,7 +62,7 @@ my $Debug = 0;
 my $opt_change = 0;
 my $opt_list = 0;
 my $Opt_Xref = 0;
-my $Opt_Crypt = 0;
+$Opt_Crypt = 0;   # Global scope, used in sub-package
 my $Opt_Write = 1;
 my $opt_read = 0;
 my $change_filename = "signals.vrename";
@@ -126,7 +128,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename,v 1.16 2001/11/16 14:57:51 wsnyder Exp $ ', "\n";
+    print 'Id: $Id: vrename,v 1.18 2002/03/11 15:31:50 wsnyder Exp $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -134,7 +136,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename,v 1.16 2001/11/16 14:57:51 wsnyder Exp $ ', "\n";
+    print '$Id: vrename,v 1.18 2002/03/11 15:31:50 wsnyder Exp $ ', "\n";
     exit (1);
 }
 
@@ -398,7 +400,8 @@ sub verilog_change_sig {
 	my $new = $Signal_Newname{$sig};
 	if ($new ne $sig) {
 	    my $magic = "@@@@@!~${hadrepl}~!@@@@@";
-	    if ($filestrg =~ s/([^a-zA-Z0-9_\$])$sig(?=[^a-zA-Z0-9_])/$1$magic/g) {
+	    my $sig_quoted = quotemeta $sig;
+	    if ($filestrg =~ s/([^a-zA-Z0-9_\$])$sig_quoted(?=[^a-zA-Z0-9_])/$1$magic/g) {
 		print "match s$sig n$new m$magic\n" if $Debug;
 		$hadrepl ++;
 		$signal_magic{$sig} = $magic;

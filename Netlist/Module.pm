@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Module.pm,v 1.2 2001/11/16 14:57:54 wsnyder Exp $
+# $Id: Module.pm,v 1.7 2002/03/11 15:31:53 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -32,7 +32,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.010';
+$VERSION = '2.100';
 use strict;
 
 structs('new',
@@ -51,11 +51,13 @@ structs('new',
 	   is_top	=> '$', #'	# Module is at top of hier (not a child)
 	   is_libcell	=> '$', #'	# Module is a library cell
 	   # SystemPerl:
+	   _autocovers  => '%', #'	# Hash of covers found in code
 	   _autosignal	=> '$', #'	# Module has /*AUTOSIGNAL*/ in it
-	   _autosubcells=> '$', #'	# Module has /*AUTOSUBCELLS*/ in it
+	   _autosubcells=> '$', #'	# Module has /*AUTOSUBCELL_DECL*/ in it
 	   _autotrace	=> '$', #'	# Module has /*AUTOTRACE*/ in it
 	   _autoinoutmod=> '$', #'	# Module has /*AUTOINOUT_MODULE*/ in it
 	   _ctor	=> '$', #'	# Module has SC_CTOR in it
+	   _code_symbols=> '$', #'	# Hash ref of symbols found in raw code
 	   lesswarn     => '$',	#'	# True if some warnings should be disabled
 	   ]);
 
@@ -152,11 +154,13 @@ sub link {
 
 sub lint {
     my $self = shift;
-    foreach my $portref (values %{$self->ports}) {
-	$portref->lint();
-    }
-    foreach my $netref (values %{$self->nets}) {
-	$netref->lint();
+    if (!$self->netlist->{skip_pin_interconnect}) {
+	foreach my $portref (values %{$self->ports}) {
+	    $portref->lint();
+	}
+	foreach my $netref (values %{$self->nets}) {
+	    $netref->lint();
+	}
     }
     foreach my $cellref (values %{$self->cells}) {
 	$cellref->lint();

@@ -1,0 +1,37 @@
+# $Id: Makefile.PL,v 1.3 2002/02/26 22:43:20 wsnyder Exp $
+# DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
+
+use ExtUtils::MakeMaker;
+
+sub MY::postamble {
+'
+LEX = flex
+CCFLAGS += -Wall -Wno-unused
+
+#CFLAGS += -DFLEX_DEBUG
+#LEXFLAGS += -d -L
+
+VPATH += src
+
+.PHONY: src/VFileLine.o src/VPreproc.o src/VPreprocLex.o
+
+src/VFileLine.o src/VPreproc.o src/VPreprocLex.o:
+	cd src && $(MAKE) $(PASSTHRU) example
+
+clean::
+	-rm -rf test *.o VPreprocLex.cpp *.output
+';
+}
+
+WriteMakefile(
+              NAME => "Verilog::Preproc",
+	      CC => 'g++',
+	      LD => 'g++',
+	      VERSION_FROM  => 'Preproc.pm',
+	      XSOPT => '-C++',
+	      # Included in .xs, as had problems
+	      #MYEXTLIB => 'src/PreprocSrc.o',
+	      MYEXTLIB => 'src/VFileLine.o src/VPreproc.o src/VPreprocLex.o',
+	      #MYEXTLIB => 'VFileLine.o VPreproc.o VPreprocLex.o',
+	      INC => (" -I. -Isrc"),
+	      );

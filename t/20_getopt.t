@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl -w
+# $Id: 20_getopt.t,v 1.5 2002/03/11 14:07:22 wsnyder Exp $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use strict;
@@ -36,7 +37,8 @@ ok ($opt->defvalue('read_opt_file'));
 
 my $fp = $opt->file_path('20_getopt.t');
 print "fp $fp\n";
-ok ($fp eq (Cwd::abs_path("t")."/20_getopt.t"));
+ok (($fp eq (Cwd::abs_path("t")."/20_getopt.t"))
+    || ($fp eq "t/20_getopt.t"));
 
 my @out = $opt->get_parameters();
 print "OUT: ",(join(" ",@out)),"\n";

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Subclass.pm,v 1.3 2001/11/16 14:57:54 wsnyder Exp $
+# $Id: Subclass.pm,v 1.5 2002/03/11 15:31:53 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -24,7 +24,7 @@
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '2.010';
+$VERSION = '2.100';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;
@@ -95,7 +95,7 @@ sub structs {
     Class::Struct::struct (@_);
     my $baseclass = $_[0];
     (my $overclass = $baseclass) =~ s/::Struct$//;
-    if ($] < 5.6) {
+    if ($] < 5.006) {
 	# Now override what class::struct created
 	eval "
             package $overclass;
@@ -110,10 +110,13 @@ sub structs {
 		return \$self;
 	    }";
     } else {
+	#print \"NEW \",join(' ',\@_),\"\\n\";
 	eval "
             package $overclass;
             sub ${func} {
-		return new $baseclass;
+		my \$class = shift;
+		my \$self = new $baseclass (\@_);
+		bless \$self, \$class;
 	    }";
     }
 }

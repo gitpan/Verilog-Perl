@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Port.pm,v 1.3 2001/11/16 14:57:54 wsnyder Exp $
+# $Id: Port.pm,v 1.6 2002/03/11 15:31:53 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -28,7 +28,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.010';
+$VERSION = '2.100';
 use strict;
 
 structs('new',
@@ -51,16 +51,17 @@ structs('new',
 
 sub _link {
     my $self = shift;
-    my $net = $self->module->find_net ($self->name);
-    if ($net && $net->port && $net->port != $self) {
-	$self->error ("Port redeclares existing port: ",$self->name,"\n");
-    } else {
-	$net = $self->module->new_net
+    if (!$self->net) {
+	my $net = $self->module->find_net ($self->name);
+	$net or $net = $self->module->new_net
 	    (name=>$self->name,
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     type=>$self->type, array=>$self->array,
 	     comment=>undef,
 	     );
+	if ($net && $net->port && $net->port != $self) {
+	    $self->error ("Port redeclares existing port: ",$self->name,"\n");
+	}
 	$self->net($net);
 	$self->net->port($self);
 	# A input to the module is actually a "source" or thus "out" of the net.

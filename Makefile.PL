@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.19 2001/10/26 17:43:23 wsnyder Exp $
+# $Id: Makefile.PL,v 1.21 2002/03/11 15:27:28 wsnyder Exp $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
@@ -12,7 +12,7 @@ README: readme.texi
 	makeinfo \$< --output \$@ --no-headers --no-validate
 
 clean::
-	-rm -rf simv .vpm
+	-rm -rf simv .vpm test_dir
 
 dist: maintainer-copy distcheck README
 
@@ -34,6 +34,10 @@ maintainer-clean: distclean
 
 ";
 }
+
+local $! = undef;
+`flex --version`; ($?==0) or die "\n%Error: 'flex' must be installed to build\n";
+`g++ --version`; ($?==0) or die "\n%Error: 'gcc/g++' must be installed to build\n";
 
 WriteMakefile(
 	      DISTNAME  => 'Verilog-Perl',

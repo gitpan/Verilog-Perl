@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm,v 1.13 2001/11/16 14:57:51 wsnyder Exp $
+# $Id: Getopt.pm,v 1.21 2002/03/11 15:31:50 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -36,7 +36,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.010';
+$VERSION = '2.100';
 
 #######################################################################
 #######################################################################
@@ -169,6 +169,7 @@ sub incdir {
 	my $token = shift;
 	print "incdir $token\n" if $Debug;
 	push @{$self->{incdir}}, $self->file_abs($token);
+	$self->file_path_cache_flush();
     }
     return (wantarray ? @{$self->{incdir}} : $self->{incdir});
 }
@@ -178,6 +179,7 @@ sub libext {
 	my $token = shift;
 	print "libext $token\n" if $Debug;
 	push @{$self->{libext}}, $token;
+	$self->file_path_cache_flush();
     }
     return (wantarray ? @{$self->{libext}} : $self->{libext});
 }
@@ -196,8 +198,27 @@ sub module_dir {
 	my $token = shift;
 	print "module_dir $token\n" if $Debug;
 	push @{$self->{module_dir}}, $self->file_abs($token);
+	$self->file_path_cache_flush();
     }
     return (wantarray ? @{$self->{module_dir}} : $self->{module_dir});
+}
+sub depend_files {
+    my $self = shift;
+    if (@_) {
+	if (ref $_[0]) {
+	    $self->{depend_files} = {};
+	    foreach my $fn (@{$_[0]}) {
+		$self->{depend_files}{$fn} = 1;
+	    }
+	} else {
+	    foreach my $fn (@_) {
+		print "depend_files $fn\n" if $Debug;
+		$self->{depend_files}{$fn} = 1;
+	    }
+	}
+    }
+    my @list = (sort (keys %{$self->{depend_files}}));
+    return (wantarray ? @list : \@list);
 }
 
 sub get_parameters {
@@ -243,6 +264,7 @@ sub file_abs {
     #
     # We don't absolutify files that don't have any path,
     # as file_path() will probably be used to resolve them.
+    return $filename;
     return $filename if ("" eq dirname($filename));
     return $filename if File::Spec->file_name_is_absolute($filename);
     # Cwd::abspath() requires files to exist.  Too annoying...
@@ -250,25 +272,43 @@ sub file_abs {
     return $filename;
 }
 
+sub file_path_cache_flush {
+    my $self = shift;
+    # Clear out a file_path cache, needed if the incdir/module_dirs change
+    $self->{_file_path_cache} = {};
+}
+
 sub file_path {
     my $self = shift;
     my $filename = shift;
     # return path to given filename using library directories & files, or undef
+    # locations are cached, because -r can be a very slow operation
 
     defined $filename or carp "%Error: Undefined filename,";
-    return $filename if -r $filename;
+    return $self->{_file_path_cache}{$filename} if defined $self->{_file_path_cache}{$filename};
+    if (-r $filename) {
+	$self->{_file_path_cache}{$filename} = $filename;
+	$self->depend_files($filename);
+	return $filename;
+    }
     # Check each search path
     # We use both the incdir and moduledir.  This isn't strictly correct,
     # but it's fairly silly to have to specify both all of the time.
     my %checked = ();
     foreach my $dir (@{$self->incdir()}, @{$self->module_dir()}) {
 	next if $checked{$dir}; $checked{$dir}=1;  # -r can be quite slow
-	return "$dir/$filename" if -r "$dir/$filename";
 	# Check each postfix added to the file
-	foreach my $postfix (@{$self->{libext}}) {
-	    return "$dir/$filename$postfix" if -r "$dir/$filename$postfix";
+	foreach my $postfix ("", @{$self->{libext}}) {
+	    my $found = "$dir/$filename$postfix";
+	    next if $checked{$found}; $checked{$found}=1;  # -r can be quite slow
+	    if (-r $found) {
+		$self->{_file_path_cache}{$filename} = $found;
+		$self->depend_files($found);
+		return $found;
+	    }
 	}
     }
+    
     return $filename;	# Let whoever needs it discover it doesn't exist
 }
 
@@ -394,6 +434,12 @@ also be called outside parsing to predefine values.
 =item $self->defvalue ( $token )
 
 This method returns the value of a given define, or undef.
+
+=item $self->depend_files ()
+
+Returns reference to list of filenames referenced with file_path, useful
+for creating dependancy lists.  With argument, adds that file.  With list
+reference argument, sets the list to the argument.
 
 =item $self->incdir ()
 
