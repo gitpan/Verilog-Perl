@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #51 $$Date: 2004/11/10 $$Author: ws150726 $
+# $Revision: #52 $$Date: 2004/11/18 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -132,7 +132,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.302';
+$VERSION = '2.303';
 
 #######################################################################
 

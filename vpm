@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #66 $$Date: 2004/11/10 $$Author: ws150726 $
+# $Revision: #68 $$Date: 2004/11/18 $$Author: ws150726 $
 ######################################################################
 #
 # Copyright 2000-2004 by Wilson Snyder.  This program is free software;
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.302';
+$VERSION = '2.303';
 
 ######################################################################
 # configuration
@@ -81,6 +81,7 @@ my $output_dirname = ".vpm/";
 my $Opt_Quiet = 0;	# Don't blab about what files are being worked on
 my $Opt_AllFiles = 0;	# Preprocess all files
 my $Opt_Date = 0;	# Check dates
+my $Opt_NoPli = 0;	# Delete all pli calls
 $Opt_Vericov = 0;	# Add vericov on/off comments (messes up line # counts)
 $Opt_Chiponly = 0;	# Only chip model; apply Vpm_Chiponly_Rename's
 my $Opt_Stop = 1;	# Put $stop in error messages
@@ -114,6 +115,7 @@ if (! GetOptions (
 		  "chiponly!"	=> \$Opt_Chiponly,	# For makeesim only
 		  "-o=s"	=> \$output_dirname,
 		  "exclude=s"	=> sub {shift; push @Opt_Exclude, shift;},
+		  "nopli!"	=> \$Opt_NoPli,
 		  "<>"		=> \&parameter,
 		  )) {
     usage();
@@ -144,7 +146,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #66 $$Date: 2004/11/10 $$Author: ws150726 $ ';
+    print 'Version: $Revision: #68 $$Date: 2004/11/18 $$Author: ws150726 $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -604,9 +606,8 @@ sub vpm_process {
     my $fh = IO::File->new("<$filename") or die "%Error: $! $filename.";
     if (!$Got_Change) {
 	while (<$fh>) {
-	    if (/$Vpm_Conversions_Regexp/o) {
-		goto diff;
-	    }
+	    goto diff if (/$Vpm_Conversions_Regexp/o);
+	    goto diff if ($Opt_NoPli && /\$/);
 	}
 	print "$filename: No dollars, not processing\n" if ($Debug);
 	return;
@@ -951,7 +952,8 @@ sub symbol {
 	$Params[$Param_Num] .= $since . $token;
     } else {
 	if ($Vpm_Conversions {$token}
-	    || ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token} && !$Vpm_Chiponly_Rename{$token})) {
+		 || ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token} && !$Vpm_Chiponly_Rename{$token})
+		 || ($Opt_NoPli && $token =~ /^\$/ && $Parens==0)) {
 	    $Sendout .= $since;
 	    print "Callback SYMBOL $token\n"    if ($Debug);
 	    $In_Message = 1;
@@ -970,12 +972,14 @@ sub symbol {
     if ($Last_Keyword eq "task") {
 	$Last_Task = $token;
 	$Last_Keyword = "";
+	$Parens = 0;
     }
     if ($Last_Keyword eq "module") {
 	$Last_Module = $token;
 	$Last_Keyword = "";
 	$Need_Vpm_Symbols = 1;
 	$ReqAck_Num = 1;
+	$Parens = 0;
     }
     push @Last_Symbols, $token;
 }
@@ -1009,7 +1013,14 @@ sub operator {
 	elsif (($token eq ';' && ($Parens==0))) {
 	    # Final statement close
 	    if ($In_Message) {
-		if (defined $Vpm_Conversions {$Params[0]}) {
+		if ($Opt_NoPli) {
+		    # ""  doesn't work, as need semi for "if (1) $x()"
+		    # ";" doesn't work, as need empty for "begin $x() end"
+		    ::sendout ("begin end");
+		    for (my $p=0; $p<=$#Params; $p++) {
+			while ($Params[$p]=~/\n/g) { ::sendout("\n"); }
+		    }
+		} elsif (defined $Vpm_Conversions {$Params[0]}) {
 		    #print " CALLPRE ",join(':',@Params),"\n" if $Debug;
 		    my $nl = "";
 		    for (my $p=0; $p<=$#Params; $p++) {
@@ -1029,19 +1040,16 @@ sub operator {
 	}
 	elsif (($token eq ')' || $token eq '}') && ($Parens==1)) {
 	    # Final paren
-	    $Parens--;
 	    $Params[$Param_Num] .= $since;
 	}
 	elsif ($token eq ')' || $token eq '}') {
 	    # Other paren
-	    $Parens--;
 	    $Params[$Param_Num] .= $since . $token;
 	}
 	elsif ($token eq '(' || $token eq '{') {
 	    if ($Parens!=0) {
 		$Params[$Param_Num] .= $since . $token;
 	    }
-	    $Parens++;
 	}
 	else {
 	    $Params[$Param_Num] .= $since . $token;
@@ -1055,6 +1063,14 @@ sub operator {
     else {
 	$Sendout .= $since . $token;
     }
+
+    # Track parens
+    if ($token eq '(' || $token eq '{') {
+	$Parens++;
+    } elsif ($token eq ')' || $token eq '}') {
+	$Parens--;
+    }
+
     push @Last_Number_Ops, $token;
 }
 
@@ -1174,6 +1190,13 @@ Exclude processing any files which begin with the specified prefix.
 =item --help
 
 Displays this message and program version and exits.
+
+=item --nopli
+
+Delete all 'simple' PLI calls.  PLI function calls inside parenthesis will
+not be changed, and thus may still need to be manually ifdef'ed out.
+Useful for reducing the amount of `ifdef's required to feed non-PLI
+competent synthesis programs.
 
 =item --quiet
 

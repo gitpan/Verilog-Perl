@@ -4,6 +4,10 @@ The contributors that suggested a given feature is shown in [].
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.303 2004/11/18
+
+***	Add vpm --nopli for stripping $pli calls. [Mike Lopresti]
+
 * Changes in Verilog::Language 2.302 2004/11/10
 
 ****	Support Verilog 2001 named instantiation parameters. [Thomas Ziller]
@@ -246,7 +250,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: #80 $$Date: 2004/11/10 $$Author: ws150726 $
+$Revision: #82 $$Date: 2004/11/18 $$Author: ws150726 $
 ----------------------------------------------------------------------
 Copyright information:
 

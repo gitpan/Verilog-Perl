@@ -37,6 +37,18 @@ module example;
       //i=2'b00;  $assert_onehot(i[2:0], "onehot error expected\n");
    end
 
+   // Test assertions within case statements
+   initial begin
+      i=3'b100;
+      casez (i)
+	3'b100: ;
+	3'b000: $stop;
+	3'b010: $error("Why?\n");
+	default: $stop;
+      endcase
+      if ($time > 1000) $stop;
+   end
+
    // Example of request/grant handshake
    reg	      clk;
    reg	      bus_req;		// Request a transaction, single cycle pulse
