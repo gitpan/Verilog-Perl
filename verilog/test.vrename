@@ -1,4 +1,4 @@
-# $Id: test.vrename,v 1.2 2001/02/09 15:43:48 wsnyder Exp $
+# $Revision: #3 $$Date: 2002/07/16 $$Author: wsnyder $
 # DESCRIPTION: vrename: For test.pl testing of vrename
 ######################################################################
 sigren	"a"	"or_term_1"

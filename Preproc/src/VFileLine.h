@@ -1,4 +1,4 @@
-#ident "$Id: VFileLine.h,v 1.3 2002/03/11 16:32:56 wsnyder Exp $" //-*- C++ -*-
+#ident "$Revision: #5 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Error handling
 //
@@ -10,9 +10,7 @@
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of either the GNU General Public License or the
-// Perl Artistic License, with the exception that it cannot be placed
-// on a CD-ROM or similar media for commercial distribution without the
-// prior approval of the author.
+// Perl Artistic License.
 //
 // Verilator is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of

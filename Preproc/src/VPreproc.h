@@ -1,4 +1,4 @@
-#ident "$Id: VPreproc.h,v 1.7 2002/02/28 15:38:24 wsnyder Exp $" //-*- C++ -*-
+#ident "$Revision: #10 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Preprocess verilog code
 //
@@ -10,9 +10,7 @@
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of either the GNU General Public License or the
-// Perl Artistic License, with the exception that it cannot be placed
-// on a CD-ROM or similar media for commercial distribution without the
-// prior approval of the author.
+// Perl Artistic License.
 //
 // Verilator is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -44,7 +42,7 @@ public:
 
     // CONSTANTS
     static const unsigned DEFINE_RECURSION_LEVEL_MAX = 50;	// How many `def substitutions before an error
-    static const unsigned INCLUDE_DEPTH_MAX = 50;	// How many `includes deep before an error
+    static const unsigned INCLUDE_DEPTH_MAX = 200;	// How many `includes deep before an error
 
     // ACCESSORS
     // Insert given file into this point in input stream

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Id: 60_vpm.t,v 1.5 2002/03/20 14:35:56 wsnyder Exp $
+# $Revision: #6 $$Date: 2002/07/16 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use strict;

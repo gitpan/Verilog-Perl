@@ -1,4 +1,4 @@
-// $Id: v_hier_top.v,v 1.3 2002/02/27 18:13:22 wsnyder Exp $
+// $Revision: #4 $$Date: 2002/07/16 $$Author: wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 `define hsub v_hier_sub

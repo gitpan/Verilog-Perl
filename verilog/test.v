@@ -1,4 +1,4 @@
-// $Id: test.v,v 1.6 2002/03/20 14:18:01 wsnyder Exp $
+// $Revision: #7 $$Date: 2002/07/16 $$Author: wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 // ENCRYPT_ME

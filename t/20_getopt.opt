@@ -1,4 +1,4 @@
-// $Id: 20_getopt.opt,v 1.2 2001/05/17 18:07:23 wsnyder Exp $
+// $Revision: #3 $$Date: 2002/07/16 $$Author: wsnyder $
 // DESCRIPTION: Perl ExtUtils: Option file for testing Verilog::Getopt
 
 -Dread_opt_file=1

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Id: 50_vrename.t,v 1.4 2002/03/20 14:18:01 wsnyder Exp $
+# $Revision: #5 $$Date: 2002/07/16 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use strict;
