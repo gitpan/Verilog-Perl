@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename,v 1.5 2000/01/21 15:56:09 wsnyder Exp $
+# $Id: vrename,v 1.7 2000/04/12 12:17:33 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ################ Introduction ################
 #
@@ -122,7 +122,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename,v 1.5 2000/01/21 15:56:09 wsnyder Exp $ ', "\n";
+    print 'Id: $Id: vrename,v 1.7 2000/04/12 12:17:33 wsnyder Exp $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -130,7 +130,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename,v 1.5 2000/01/21 15:56:09 wsnyder Exp $ ', "\n";
+    print '$Id: vrename,v 1.7 2000/04/12 12:17:33 wsnyder Exp $ ', "\n";
     exit (1);
 }
 
@@ -475,7 +475,7 @@ sub symbol {
 	push @{$main::Signal_Locs{$sig}}, $Last_Filename;
     }
     $Modules_Sigs{$sig} = 1;
-    if ($main::Do_Crypt && ($Last_Keyword eq "module"
+    if ($main::Opt_Crypt && ($Last_Keyword eq "module"
 			    || $Last_Keyword eq "function"
 			    || $Last_Keyword eq "task")) {
 	$main::Dont_Decrypt{$sig} = 1;
@@ -502,7 +502,7 @@ sub parse_file {
 	Verilog::Parser::parse ($self, $line);
     }
 
-    if ($main::Do_Crypt) {
+    if ($main::Opt_Crypt) {
 	seek ($fh, 0, 0);
 	local $INPUT_RECORD_SEPARATOR = undef;
 	my $filestrg = <$fh>;
@@ -555,14 +555,14 @@ Displays program version and exits.
 
 =item --change
 
-Take the signals file signals.dat in the current directory
+Take the signals file signals.vrename in the current directory
 and change the signals in the design as specified by the
 signals file.  Either --list or --change must be specified.
 
 =item --list
 
 Create a list of signals in the design and write to
-signals.dat.  Either --list or --change must be specified.
+signals.vrename.  Either --list or --change must be specified.
 
 =item --xref
 

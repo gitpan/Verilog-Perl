@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm,v 1.5 2000/01/21 15:56:07 wsnyder Exp $
+# $Id: Language.pm,v 1.6 2000/05/22 19:50:24 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
@@ -107,7 +107,7 @@ use English;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.4';
+$VERSION = '1.5';
 
 ######################################################################
 #### Internal Variables

@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.4 2000/01/21 15:56:08 wsnyder Exp $
+# $Id: SigParser.pm,v 1.5 2000/05/22 17:46:51 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
@@ -66,8 +66,8 @@ This method is called when a function is defined.
 
 This method is called when a signal is declared.  The first argument,
 $keyword is ('input', 'output', etc), the second argument is the name of
-the signal.  The third argument is the vector bits or undef.  The fourth
-argument is the memory bits or undef.
+the signal.  The third argument is the vector bits or "".  The fourth
+argument is the memory bits or "".
 
 =item $self->instant ( $module, $cell )
 
@@ -119,7 +119,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.4';
+$VERSION = '1.5';
 
 #######################################################################
 
@@ -134,12 +134,13 @@ sub new {
     $self->{last_module}  = undef;
     $self->{last_function} = undef;
     $self->{last_task}    = undef;
-    @{$self->{last_numbers}} = ();
     @{$self->{last_symbols}} = ();
+    $self->{last_vectors} = "";
     $self->{is_inst_ok}   = 1;
     $self->{is_pin_ok}    = 0;
     $self->{is_signal_ok} = 1;
     $self->{in_preproc_line} = -1;
+    $self->{in_vector} = 0;
     $self->{pin_name}    = undef;
 
     bless $self, $class; 
@@ -196,6 +197,12 @@ sub ppdefine {
     my $definition = shift;
 }
 
+sub ppinclude {
+    my $self = shift;
+    my $defvar = shift;
+    my $definition = shift;
+}
+
 ######################################################################
 # Overrides of Verilog::Parser routines
 
@@ -220,13 +227,13 @@ sub keyword {
     if ($self->{in_preproc_line} != $self->line()) {
 	$self->{last_keyword} = $token;
 	@{$self->{last_symbols}} = ();
-	@{$self->{last_numbers}} = ();
+	$self->{last_vectors} = "";
     }
     if ($token eq "end") {
 	# Prepare for next command
 	$self->{last_keyword} = "";
 	@{$self->{last_symbols}} = ();
-	@{$self->{last_numbers}} = ();
+	$self->{last_vectors} = "";
 	$self->{is_inst_ok} = 1;
 	$self->{is_signal_ok} = 1;
 	$self->{is_pin_ok} = 0;
@@ -240,15 +247,19 @@ sub symbol {
     my $token = shift;	# What token was parsed
 
     if ($self->{in_preproc_line} != $self->line()) {
-	push @{$self->{last_symbols}}, $token;
+	if ($self->{in_vector} == 1) {
+	    $self->{last_vectors} = $self->{last_vectors} . $token;
+	} else {
+	    push @{$self->{last_symbols}}, $token;
+	}
     } else {
 	push @{$self->{last_ppitem}}, $token;
     }
     if ($self->{is_pin_ok}) {
 	if ($self->{last_operator} eq ".") {
 	    $self->{pin_name} = $token;
-	    @{$self->{last_numbers}} = ();
 	    @{$self->{last_symbols}} = ();
+	    $self->{last_vectors} = "";
 	}
     }
 }
@@ -259,7 +270,7 @@ sub number {
     my $token = shift;	# What token was parsed
 
     if ($self->{in_preproc_line} != $self->line()) {
-	push @{$self->{last_numbers}}, $token;
+	$self->{last_vectors} = $self->{last_vectors} . $token;
     } else {
 	push @{$self->{last_ppitem}}, $token;
     }
@@ -275,7 +286,14 @@ sub operator {
     #print "Op $token\n" if $Debug;
 
     if ($self->{in_preproc_line} != $self->line) {
-	if ($token eq "("
+	if ($token eq "]") {
+	    $self->{in_vector} = 0;
+	    $self->{last_vectors} = $self->{last_vectors} . $token;
+	}
+	elsif ($self->{in_vector} == 1) {
+	    $self->{last_vectors} = $self->{last_vectors} . $token;
+	}
+	elsif ($token eq "("
 	    && ($lkw eq "" || $lkw =~ /^end/ || $self->{got_preproc})
 	    && (defined $self->{last_symbols}[0])
 	    && (defined $self->{last_symbols}[1])
@@ -292,10 +310,7 @@ sub operator {
 	    if ($self->{is_pin_ok}
 		&& defined $self->{last_symbols}[0]) {
 		my $vec = "";
-		if ($#{$self->{last_numbers}} >= 1) {
-		    $vec = "[" . $self->{last_numbers}[0]
-			. ":" . $self->{last_numbers}[1] . "]";
-		}
+		$vec = $self->{last_vectors} if ($self->{last_vectors} ne "");
 		$self->{is_pin_ok}++;
 		my $pin_name = $self->{pin_name};
 		$pin_name ||= "pin" . $self->{is_pin_ok};
@@ -339,12 +354,12 @@ sub operator {
 		    foreach $sig (@{$self->{last_symbols}}) {
 			my $vec = "";
 			my $mem = "";
-			if ($#{$self->{last_numbers}} >= 1) {
-			    $vec = "[" . $self->{last_numbers}[0]
-				. ":" . $self->{last_numbers}[1] . "]";
-			    if ($#{$self->{last_numbers}} >= 3) {
-				$mem = "[" . $self->{last_numbers}[2]
-				    . ":" . $self->{last_numbers}[3] . "]";
+			if ($self->{last_vectors} ne "") {
+			    if ($self->{last_vectors} =~ /^(\S+) (\S+)$/) {
+				$vec = $1;
+				$mem = $2;
+			    } else {
+				$vec = $self->{last_vectors};
 			    }
 			}
 			#print "Gota$lkw $sig $vec $mem\n"    if ($Debug);
@@ -354,7 +369,7 @@ sub operator {
 		# Prepare for next command
 		$self->{last_keyword} = "";
 		@{$self->{last_symbols}} = ();
-		@{$self->{last_numbers}} = ();
+		$self->{last_vectors} = "";
 		$self->{is_inst_ok} = 1;
 		$self->{is_signal_ok} = 1;
 		$self->{is_pin_ok} = 0;
@@ -364,6 +379,14 @@ sub operator {
 	elsif ($token eq "=") {
 	    $self->{is_signal_ok} = 0;
 	    $self->{is_inst_ok} = 0;
+	}
+	elsif ($token eq "[") {
+	    $self->{in_vector} = 1;
+	    if ($self->{last_vectors} eq "") {
+		$self->{last_vectors} = $token;
+	    } else {
+		$self->{last_vectors} = $self->{last_vectors} . ' ' . $token;
+	    }
 	}
 	else {
 	    $self->{is_inst_ok} = 0;

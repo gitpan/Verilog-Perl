@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.4 2000/01/21 15:56:08 wsnyder Exp $
+# $Id: Parser.pm,v 1.5 2000/05/18 14:34:33 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
@@ -306,6 +306,7 @@ sub parse {
     my $text = shift;
 
     my $line;
+    $self->{line} ++ if ($text eq "\n");	# Foreach will find nothing
     foreach $line (split /\n/, $text) {
 	# Keep parsing whatever is on this line
 	$self->{line} ++;
