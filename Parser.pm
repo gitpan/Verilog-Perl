@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.20 2001/09/17 20:30:58 wsnyder Exp $
+# $Id: Parser.pm,v 1.23 2001/10/29 18:26:46 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -67,7 +67,7 @@ callback.  (For example comments, if there is no comment callback.)  This
 is useful for recording the entire contents of the input, for
 preprocessors, pretty-printers, and such.
 
-=item $parser->line ($set)
+=item $parser->lineno ($set)
 
 Return (if $set is undefined) or set current line number.
 
@@ -206,7 +206,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.14';
+$VERSION = '2.000';
 
 #######################################################################
 
@@ -248,6 +248,7 @@ sub unreadback {
     }
 }
 
+sub lineno { return line(@_); }
 sub line {
     # Return or set line number
     my $self = shift;	# Parser
@@ -264,6 +265,18 @@ sub filename {
 	$self->{filename} = shift;
     }
     return $self->{filename};
+}
+
+sub reset {
+    # Reset internal parse states
+    my $self = shift;	# Parser
+
+    $self->{unreadback} = "";
+    $self->{line} = 1;
+    $self->{filename} = "UNKNOWN";
+    $self->{incomment} = 0;
+    $self->{inquote} = 0;
+    $self->{preprocess} = 0;
 }
 
 #######################################################################
@@ -427,6 +440,7 @@ sub parse_file {
 
     my $fh = new FileHandle;
     $fh->open($filename) or croak "%Error: $! $filename";
+    $self->reset();
     $self->filename($filename);
     $self->line(1);
     my $line;

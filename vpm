@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm,v 1.6 2001/09/17 20:30:58 wsnyder Exp $
+# $Id: vpm,v 1.16 2001/10/26 17:34:18 wsnyder Exp $
 ######################################################################
 #                                                                           
 # Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@wsnyder.org>
@@ -18,7 +18,7 @@ use File::Copy;
 
 use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
 	     %Vpm_Chiponly_Rename);
-$VERSION = '1.14';
+$VERSION = '2.000';
 
 ######################################################################
 # configuration
@@ -38,8 +38,9 @@ $VERSION = '1.14';
 %Vpm_Conversions  
     = (#Token 			Function for processing it
        '$assert' =>		\&assert,
-       '$assert_amone' =>	sub {do_checkhot(0,@_); },   # atmost one hot
-       '$assert_onehot' =>	sub {do_checkhot(1,@_); },
+       '$assert_amone' =>	sub {assert_hot(0,@_); },   # atmost one hot
+       '$assert_onehot' =>	sub {assert_hot(1,@_); },
+       '$assert_req_ack' =>	\&assert_req_ack,
        '$assert_info' =>	\&assert_info,
        '$check_ilevel' =>	\&check_ilevel,
        '$coverage' =>		\&coverage,
@@ -67,6 +68,7 @@ my $Opt_AllFiles = 0;	# Preprocess all files
 my $Opt_Date = 0;	# Check dates
 $Opt_Vericov = 0;	# Add vericov on/off comments (messes up line # counts)
 $Opt_Chiponly = 0;	# Only chip model; apply Vpm_Chiponly_Rename's
+my $Opt_Stop = 1;	# Put $stop in error messages
 my $Opt_Verilator = 0;	# Verilator
 my $Last_Vericov = 0;	# Last run's Opt_Vericov
 my $Last_Chiponly = 0;	# Last run's Opt_Chiponly
@@ -91,6 +93,7 @@ if (! GetOptions (
 		  "date!"	=> \$Opt_Date,
 		  "vericov!"	=> \$Opt_Vericov,
 		  "verilator!"	=> \$Opt_Verilator,
+		  "stop!"	=> \$Opt_Stop,
 		  "chiponly!"	=> \$Opt_Chiponly,	# For makeesim only
 		  "-o=s"	=> \$output_filename,
 		  "<>"		=> \&parameter,
@@ -119,7 +122,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm,v 1.6 2001/09/17 20:30:58 wsnyder Exp $ ';
+    print 'Version: $Id: vpm,v 1.16 2001/10/26 17:34:18 wsnyder Exp $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -171,15 +174,86 @@ sub assert_info {
     message_line ("-i", $cond, 0,0, @params);
 }
 
+sub check_signame {
+    my $sig = shift;
+    return undef if !$sig;
+    return $1 if ($sig =~ /^\s*([a-zA-Z_\$][a-z0-9A-Z_\$]*)\s*$/);
+    return undef;
+}
+
+sub assert_req_ack {
+    shift;
+    my $line = $.;
+    my @params = @_;
+
+    # Check parameters
+    my $req = check_signame(shift @params);
+    my $ack = check_signame(shift @params);
+    ($req && $ack) or die "%Error $Last_Filename:$line: Format of \$assert_req_ack boggled.\n";
+    @params = map {
+	my $ipar = $_;
+	$_ = check_signame($_);
+	($_) or die "%Error $Last_Filename:$line: Parameter $ipar isn't a signal\n";
+    } @params;
+
+    # Form new variables
+    $ReqAck_Num or die "%Error $Last_Filename:$line: \$assert_req_ack can't find module statement\n";
+    my $busy = "_assertreqack${ReqAck_Num}_busy_r";
+    $Insure_Symbols{$Last_Module}{$busy} = ['reg', 0];	# Make this symbol exist if doesn't
+
+    # We make a parity across all data signals, as we don't have the width
+    # of the original signal, and I'm too lazy to add code to find it out.
+    my @dholds = ();
+    for (my $n=0; $n<=$#params; $n++) {
+	my $dhold = "_assertreqack${ReqAck_Num}_data${n}_r";
+	push @dholds, $dhold;
+	$Insure_Symbols{$Last_Module}{$dhold} = ['reg', 0];
+    }
+    
+    # Output it
+    message_header();
+    sendout("begin ");
+    sendout("if (`__message_on) begin ");
+    sendout("casex({($busy),($req),($ack)}) ");
+    sendout(" 3'b000: ;");
+    sendout(" 3'b010: $busy<=1'b1;");
+    sendout(" 3'b011: "); error(0,"\"Unexpected $req coincident with $ack\\n\"");
+    sendout(" 3'b001: "); error(0,"\"Unexpected $ack with no request pending\\n\"");
+    sendout(" 3'b100: ;");
+    sendout(" 3'b11x: "); error(0,"\"Unexpected $req with request already pending\\n\"");
+    sendout(" 3'b101: $busy<=1'b0;");
+    sendout("endcase ");
+    
+    if ($#params>=0) {
+	sendout(" if (($req)||($busy)) begin");
+	sendout(" if (($busy)) begin");
+	for (my $n=0; $n<=$#params; $n++) {
+	    sendout(" if ($dholds[$n] != ^($params[$n])) ");
+	    error(0,"\"Unexpected transition of $params[$n] during transaction\\n\"");
+	}
+	sendout(" end");
+	# Save state of signals
+	for (my $n=0; $n<=$#params; $n++) {
+	    sendout(" $dholds[$n] <= ^($params[$n]);");
+	}
+	sendout(" end");
+    }
+    sendout(" end ");
+    sendout(" end ");
+
+    message_trailer();
+    $ReqAck_Num++;
+}
+
 sub check_ilevel {
     shift;
     my $level = shift;
-    my $chk = "/*vpm*/if ((`__message_on!=0) && ";
+    my $chk = "/*vpm*/if ((`__message_on) && ";
     $chk = $chk . '(__message >= (' . $level . ')))';
     sendout ($chk);
 }
 
-sub do_checkhot {
+sub assert_hot {
     my $check_nohot = shift;
     shift;
     my @params = @_;
@@ -224,12 +298,12 @@ sub do_checkhot {
     sendout("case $vec");
     sendout(" ${plist}: ;");
     if ($check_nohot==1){
-	sendout(" ${pnone}: if (`__message_on!=0) ");
+	sendout(" ${pnone}: if (`__message_on) ");
 	message_write($lineinfo,1,"%%E","",0,0,"NONE ACTIVE --> $text".'"',$vec);
     } else {
 	sendout(" ${pnone}: ; ");
     }
-    sendout("default: if (`__message_on!=0) ");
+    sendout("default: if (`__message_on) ");
     message_write($lineinfo,1,"%%E","",0,0,"MULTIPLE ACTIVE --> $text".'"',$vec);
     sendout("endcase ");
     
@@ -253,13 +327,17 @@ sub message_line {
     message ($lineinfo, 1, $char, $cond, "", @params);
 }
 
+use vars qw($Msg_Header_Level);
 sub message_header {
     sendout ("\n/*summit modcovoff -bpen*/\n") if $Vericov_Enabled;
-    sendout ("/*vpm*/begin ");
+    sendout ("/*vpm*/") if (($Msg_Header_Level||0)==0);
+    $Msg_Header_Level++;
+    sendout ("begin ");
 }
 
 sub message_trailer {
-    sendout ('end/*vpm*/');
+    sendout ('end');
+    sendout ('/*vpm*/') if ((--$Msg_Header_Level)==0);
     sendout ("\n/*summit modcovon -bpen*/\n") if $Vericov_Enabled;
 }
 
@@ -272,12 +350,12 @@ sub message_write {
     my @params = @_;	# Task (dropped), Level (dropped), printf string, args
 
     my $task;
-    if (!$Opt_Verilator) {
-	$task = (($char ne "-I") && ($char ne "-i")
-		 && ((   ($char eq "%%E") && "`pli.errors = `pli.errors+1;")
-		     || (($char eq "%%W") && "`pli.warnings = `pli.warnings+1;")
-		     || die "Unknown message character class '$char'\n"));
-    }
+    if (($char eq "-I") || ($char eq "-i")) {}
+    elsif ($char eq "%%E") {
+	$task = ($Opt_Stop ? '$stop;' : "`pli.errors = `pli.errors+1;");
+    } elsif ($char eq "%%W") {
+	$task = ($Opt_Stop ? '$stop;' : "`pli.warnings = `pli.warnings+1;");
+    } else { die "Unknown message character class '$char'\n"; }
 
     my $ids = "";
     my $idm = "";
@@ -322,13 +400,17 @@ sub message {
     if ($cond ne "1") {
 	# Conditional code, for $assert
 	# Note this will only work in RTL code!  Chiponly build issues otherwise.
-	my $chk = "if (!($cond) && `__message_on!=0) ";
+	my $chk = "if (!($cond) && (`__message_on)) ";
 	sendout ($chk);
     } elsif ($params[1] =~ /^\s*0\s*$/) {
 	# Always enabled
+	if (($char eq "%%E") || ($char eq "%%W")) {
+	    my $chk = "if (`__message_on) ";
+	    sendout ($chk);
+	}
     } else {
 	# Complex test
-	$Insure_Symbols{$Last_Module}{__message} = 5;	# Make this symbol exist if doesn't
+	$Insure_Symbols{$Last_Module}{__message} = ['integer',5];	# Make this symbol exist if doesn't
 	my $chk = 'if (__message >= (' . $params[1] . ')';
 	$chk .= ') ';
 	sendout ($chk);
@@ -395,7 +477,7 @@ sub coverage {
 			   "signal" => $check_signal};
 	    sendout ("vcoverage." . $cover_signal . "[" . $check_signal . "] = "
 		     . "vcoverage." . $cover_signal . "[" . $check_signal . "] + 1;\n");
-	    $Insure_Symbols{$Last_Module}{__message} = 5;	# Make this symbol exist if doesn't
+	    $Insure_Symbols{$Last_Module}{__message} = ['integer', 5];	# Make this symbol exist if doesn't
 	    push @coverages, $inthash;
 	}
     }
@@ -496,15 +578,20 @@ sub vpm_process {
 
     # Hack the output text to add in the messages variable
     foreach my $mod (keys %Insure_Symbols) {
-	my $sym;
-	foreach $sym (keys %{$Insure_Symbols{$mod}}) {
-	    if (1 #|| ! $module_symbols{$sym} 	# For now always put it in
-		) {
-		my $value = $Insure_Symbols{$mod}{$sym};
-		my $insert = "/*vpm*/integer $sym; initial $sym = $value;/*vpm*/";
-		$Sendout =~ s/\/\*vpm symbols $mod\*\//\/\*vpm symbols\*\/$insert/
-		    or die "vpm %Error: $filename: Couldn't find $sym insertion point in $mod\n";
+	my $insert="";
+	foreach my $sym (keys %{$Insure_Symbols{$mod}}) {
+	    #if ! $module_symbols{$sym} 	# For now always put it in
+	    my $type = $Insure_Symbols{$mod}{$sym}[0];
+	    my $value = $Insure_Symbols{$mod}{$sym}[1];
+	    if ($Opt_Verilator) {
+		$insert .= "$type $sym; ";
+	    } else {
+		$insert .= "$type $sym; initial $sym = $value;";
 	    }
+	}
+	if ($insert) {
+	    $Sendout =~ s%/\*vpm symbols $mod\*/%/*vpm*/$insert/*vpm*/%
+		or die "vpm %Error: $filename: Couldn't find symbol insertion point in $mod\n";
 	}
     }
 
@@ -513,6 +600,10 @@ sub vpm_process {
     if ($Got_Change) {
 	my $date = localtime;
 	$fh->open(">$outname") or die "%Error: Can't write $outname.";
+	if ($Opt_Verilator) {
+	    print $fh "`line 1 \"$filename\"\n";
+	}
+	# No newline so line counts not affected
 	print $fh "/* Generated by vpm on $date; File:\"$filename\" */";
 	print $fh $Sendout;
 	$fh->close;
@@ -733,6 +824,7 @@ BEGIN {
 	 $Last_Filename
 	 $Opt_Chiponly
 	 $Opt_Vericov
+	 $ReqAck_Num
 	 $Vericov_Enabled
 	 %Vpm_Conversions
 	 %Vpm_Chiponly_Rename
@@ -850,6 +942,7 @@ sub symbol {
 	$Last_Module = $token;
 	$Last_Keyword = "";
 	$Need_Vpm_Symbols = 1;
+	$ReqAck_Num = 1;
     }
     push @Last_Symbols, $token;
 }
@@ -1021,6 +1114,12 @@ Displays this message and program version and exits.
 
 Suppress messages about what files are being preprocessed.
 
+=item --nostop
+
+By default, $error and $warn insert a $stop statement.  With --nostop, this
+is replaced by incrementing a variable, which may then be used to
+conditionally halt simulation.
+
 =item --vericov
 
 Special vericov enable/disables added.
@@ -1057,6 +1156,12 @@ Report a $info if the given case is FALSE.  (Like assert() in C.)
 =item $assert_onehot (I<sig>, [I<sig>...], "message", [I<vars>...] )
 
 Report a $error if other then one signal is asserted.
+
+=item $assert_req_ack (I<req_sig>, I<ack_sig>, [I<data_sig>,...] )
+
+Check for a single cycle request pulse, followed by a single cycle
+acknowledgement pulse.  Do not allow any of the data signals to change
+between the request and acknowledgement.
 
 =item $check_ilevel (I<level> )
 

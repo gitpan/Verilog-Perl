@@ -4,6 +4,14 @@ Language.pm
 MANIFEST
 Makefile.PL
 NEWS
+Netlist.pm
+Netlist/Cell.pm
+Netlist/File.pm
+Netlist/Module.pm
+Netlist/Net.pm
+Netlist/Pin.pm
+Netlist/Port.pm
+Netlist/Subclass.pm
 Parse.pm
 Parser.pm
 README
@@ -13,6 +21,7 @@ t/10_keywords.t
 t/12_splitbus.t
 t/20_getopt.opt
 t/20_getopt.t
+t/40_netlist.t
 t/50_vrename.t
 t/60_vpm.t
 t/test_utils.pl
@@ -20,5 +29,9 @@ verilog/example.v
 verilog/pli.v
 verilog/test.v
 verilog/test.vrename
+verilog/v_hier_sub.v
+verilog/v_hier_subsub.v
+verilog/v_hier_top.v
+verilog/v_hier_top2.v
 vpm
 vrename

@@ -6,6 +6,24 @@ The contributors that suggested a given feature is shown in [].
 	
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.000 ********
+
+**	Added the Verilog::Netlist package.
+	This allows for simple scripts to extract pins, module
+	hiearchy, etc from interconnected Verilog files.
+
+***	Added Parser reset() method for clearing parse states
+	for new files.  [Joe Panec]
+
+* Changes in Verilog::Language 1.15 10/25/2001
+
+**	Added $assert_req_ack for checking simple handshakes.
+
+**	Added --nostop, and made --stop be the default.
+	This adds a $stop to $warn and $error, which is easier
+	for new users to understand as no pli.v is required.
+
+
 * Changes in Verilog::Language 1.14 9/17/2001
 
 ***	Fixed bug when endmodule/endtask/endfunction have
@@ -74,7 +92,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 
 ----------------------------------------------------------------------
-$Id: NEWS,v 1.16 2001/09/17 20:30:58 wsnyder Exp $
+$Id: NEWS,v 1.21 2001/10/29 18:26:46 wsnyder Exp $
 ----------------------------------------------------------------------
 Copyright information:
 

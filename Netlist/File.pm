@@ -1,0 +1,305 @@
+# Verilog - Verilog Perl Interface
+# $Id: File.pm,v 1.1 2001/10/26 17:34:18 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@wsnyder.org>
+######################################################################
+#
+# This program is Copyright 2000 by Wilson Snyder.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of either the GNU General Public License or the
+# Perl Artistic License, with the exception that it cannot be placed
+# on a CD-ROM or similar media for commercial distribution without the
+# prior approval of the author.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# If you do not have a copy of the GNU General Public License write to
+# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
+# MA 02139, USA.
+######################################################################
+
+package Verilog::Netlist::File;
+use Class::Struct;
+use Carp;
+
+use Verilog::Netlist;
+use Verilog::Netlist::Subclass;
+@ISA = qw(Verilog::Netlist::File::Struct
+	Verilog::Netlist::Subclass);
+$VERSION = '2.000';
+use strict;
+
+structs('new',
+	'Verilog::Netlist::File::Struct'
+	=>[name		=> '$', #'	# Filename this came from
+	   basename	=> '$', #'	# Basename of the file
+	   netlist	=> '$', #'	# Netlist is a member of
+	   userdata	=> '%',		# User information
+	   is_libcell	=> '$',	#'	# True if is a library cell
+	   # For special procedures
+	   _modules	=> '%',		# For autosubcell_include
+	   ]);
+	
+######################################################################
+######################################################################
+#### Read class
+
+package Verilog::Netlist::File::Parser;
+use Verilog::SigParser;
+use strict;
+use vars qw (@ISA);
+@ISA = qw (Verilog::SigParser);
+
+sub resolve_filename {
+    my $self = shift;
+    my $filename = shift;
+    my $from = shift;
+    if ($self->{netlist}{options}) {
+	$filename = $self->{netlist}{options}->file_path($filename);
+    }
+    if (!-r $filename) {
+	$from->error("Cannot open $filename") if $from;
+	die "%Error: Cannot open $filename\n";
+    }
+    $self->{netlist}->dependency_in ($filename);
+    return $filename;
+}
+
+sub new {
+    my $class = shift;
+    my %params = (@_);	# filename=>
+
+    # A new file; make new information
+    $params{fileref} or die "No fileref parameter?";
+    $params{netlist} = $params{fileref}->netlist;
+    my $parser = $class->SUPER::new (%params,
+				     modref=>undef,	# Module being parsed now
+				     cellref=>undef,	# Cell being parsed now
+				     );
+    $parser->{filename} = $parser->resolve_filename($params{filename});
+    $parser->parse_file ($parser->{filename});
+    return $parser;
+}
+
+sub module {
+    my $self = shift;
+    my $keyword = shift;
+    my $module = shift;
+
+    my $fileref = $self->{fileref};
+    my $netlist = $self->{netlist};
+    print "Module $module\n" if $Verilog::Netlist::Debug;
+
+    $self->{modref} = $netlist->new_module
+	 (name=>$module,
+	  is_libcell=>$fileref->is_libcell(),
+	  filename=>$self->filename, lineno=>$self->lineno);
+    $fileref->_modules($module, $self->{modref});
+}
+
+sub signal_decl {
+    my $self = shift;
+    my $inout = shift;
+    my $netname = shift;
+    my $vector = shift;
+    my $array = shift;
+    print " Sig $netname $inout\n" if $Verilog::Netlist::Debug;
+
+    my $msb;
+    my $lsb;
+    if ($vector && $vector =~ /\[(.*):(.*)\]/) {
+	$msb = $1; $lsb = $2;
+    } elsif ($vector && $vector =~ /\[(.*)\]/) {
+	$msb = $lsb = $1;
+    }
+
+    my $modref = $self->{modref};
+    if (!$modref) {
+	 return $self->error ("Signal declaration outside of module definition", $netname);
+    }
+
+    if ($inout eq "reg"
+	|| $inout eq "wire"
+	) {
+	my $net = $modref->new_net
+	    (name=>$netname,
+	     filename=>$self->filename, lineno=>$self->lineno,
+	     simple_type=>1, type=>'wire', array=>$array,
+	     comment=>undef, msb=>$msb, lsb=>$lsb,
+	     # we don't detect variable usage, so presume ok if declared
+	     _used_input=>1, _used_output=>1,	
+	     );
+	$self->{netref} = $net;
+    }
+    elsif ($inout =~ /(inout|in|out)(put|)$/) {
+	my $dir = $1;
+	my $net = $modref->new_port
+	    (name=>$netname,
+	     filename=>$self->filename, lineno=>$self->lineno,
+	     direction=>$dir, type=>'wire',
+	     array=>$array, comment=>undef,);
+	$self->{netref} = $net;
+    }
+    else {
+	return $self->error ("Strange signal type: $inout", $inout);
+    }
+}
+
+sub instant {
+    my $self = shift;
+    my $submodname = shift;
+    my $instname = shift;
+
+    print " Cell $instname\n" if $Verilog::Netlist::Debug;
+    my $modref = $self->{modref};
+    if (!$modref) {
+	 return $self->error ("CELL outside of module definition", $instname);
+    }
+    $self->{cellref} = $modref->new_cell
+	 (name=>$instname, 
+	  filename=>$self->filename, lineno=>$self->lineno,
+	  submodname=>$submodname);
+}
+
+sub pin {
+    my $self = shift;
+    my $pin = shift;
+    my $net = shift;
+    my $number = shift;
+
+    print "   Pin $pin  $net\n" if $Verilog::Netlist::Debug;
+    my $cellref = $self->{cellref};
+    if (!$cellref) {
+	return $self->error ("PIN outside of cell definition", $net);
+    }
+    $cellref->new_pin (name=>$pin,
+		       filename=>$self->filename, lineno=>$self->lineno,
+		       netname=>$net, );
+}
+
+sub ppdefine {
+    my $self = shift;
+    my $defvar = shift;
+    my $definition = shift;
+    if ($self->{netlist}{options}) {
+	$self->{netlist}{options}->defvalue($defvar,$definition);
+    }
+}
+
+sub ppinclude {
+    my $self = shift;
+    my $defvar = shift;
+    my $definition = shift;
+    $self->error("No `includes yet.\n");
+}
+
+sub error {
+    my $self = shift;
+    my $text = shift;
+
+    my $fileref = $self->{fileref};
+    # Call Verilog::Netlist::Subclass's error reporting, it will track # errors
+    my $fileline = $self->filename.":".$self->lineno;
+    $fileref->error ($self, "$text\n");
+}
+
+package Verilog::Netlist::File;
+
+######################################################################
+######################################################################
+#### Functions
+
+sub read {
+    my %params = (@_);	# filename=>
+
+    my $filename = $params{filename} or croak "%Error: ".__PACKAGE__."::read_file (filename=>) parameter required, stopped";
+    my $netlist = $params{netlist} or croak ("Call Verilog::Netlist::read_file instead,");
+
+    my $filepath = $filename;
+    if ($netlist->{options}) {
+	$filepath = $netlist->{options}->file_path($filename);
+    }
+
+    print __PACKAGE__."::read_file $filepath\n" if $Verilog::Netlist::Debug;
+
+    my $fileref = $netlist->new_file (name=>$filepath,
+				      is_libcell=>$params{is_libcell}||0,
+				      );
+
+    my $parser = Verilog::Netlist::File::Parser->new
+	( fileref=>$fileref,
+	  filename=>$filepath,	# for ->read
+	  );
+    return $fileref;
+}
+
+sub dump {
+    my $self = shift;
+    my $indent = shift||0;
+    print " "x$indent,"File:",$self->name(),"\n";
+}
+
+######################################################################
+#### Package return
+1;
+__END__
+
+=pod
+
+=head1 NAME
+
+Verilog::Netlist::File - File containing Verilog code
+
+=head1 SYNOPSIS
+
+  use Verilog::Netlist;
+
+  my $nl = new Verilog::Netlist;
+  my $fileref = $nl->read_file (filename=>'filename');
+
+=head1 DESCRIPTION
+
+Verilog::Netlist::File allows Verilog files to be read and written.
+
+=head1 ACCESSORS
+
+=over 4
+
+=item $self->basename
+
+The filename of the file with any path and . suffix stripped off.
+
+=item $self->name
+
+The filename of the file.
+
+=back
+
+=head1 MEMBER FUNCTIONS
+
+=over 4
+
+=item $self->read
+
+Generally called as $netlist->read_file.  Pass a hash of parameters.  Reads
+the filename=> parameter, parsing all instantiations, ports, and signals,
+and creating Verilog::Netlist::Module structures.
+
+=item $self->dump
+
+Prints debugging information for this file.
+
+=back
+
+=head1 SEE ALSO
+
+L<Verilog::Netlist>
+
+=head1 AUTHORS
+
+Wilson Snyder <wsnyder@wsnyder.org>
+
+=cut

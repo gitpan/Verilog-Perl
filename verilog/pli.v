@@ -4,7 +4,8 @@
 
 module pli;
    // A module called PLI is required, to contain the error counts
-   // You could easily edit the VPM script to not look for these
+   // This is required with the vpm --nostop option, which this example uses
+   // By default (--stop), this file isn't needed at all
 
    integer errors; initial errors = 0;
    integer warnings; initial warnings = 0;

@@ -8,6 +8,8 @@ $PERL = "$^X -Iblib/arch -Iblib/lib";
 mkdir 'test_dir',0777;
 
 if (!$ENV{HARNESS_ACTIVE}) {
+    use lib '.';
+    use lib '..';
     use lib "blib/lib";
     use lib "blib/arch";
 }

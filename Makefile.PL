@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.18 2001/07/20 13:32:53 wsnyder Exp $
+# $Id: Makefile.PL,v 1.19 2001/10/26 17:43:23 wsnyder Exp $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
@@ -41,6 +41,7 @@ WriteMakefile(
 	      AUTHOR	=> 'Wilson Snyder <wsnyder@wsnyder.org>',
 	      ABSTRACT  => 'Verilog language utilities and parsing',
 	      VERSION_FROM  => 'Language.pm',
+	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
 	      EXE_FILES => [qw( vrename vpm )],
 	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpm simv ),},
 	      'dist'    => {COMPRESS => 'gzip -9f',

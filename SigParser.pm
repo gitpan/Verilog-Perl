@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.12 2001/09/17 20:30:58 wsnyder Exp $
+# $Id: SigParser.pm,v 1.15 2001/10/29 18:26:46 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -32,8 +32,8 @@ Verilog::SigParser - Signal Parsing for Verilog language files
   my $parser = new Verilog::SigParser;
   $string = $parser->unreadback ();
   $line   = $parser->line ();
-  $parser->parse ($text)
-  $parser->parse_file ($filename)
+  $parser->parse ($text);
+  $parser->parse_file ($filename);
 
 =head1 DESCRIPTION
 
@@ -119,7 +119,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.14';
+$VERSION = '2.000';
 
 #######################################################################
 
@@ -208,6 +208,30 @@ sub ppinclude {
 
 ######################################################################
 # Overrides of Verilog::Parser routines
+
+sub reset {
+    # Verilog::Parser calls when a new file is parsed
+    my $self = shift;	# Parser invoked
+    $self->SUPER::reset();
+
+    $self->{last_operator} = "";
+    $self->{last_keyword} = "";
+    $self->{last_module} = undef;
+    $self->{last_function} = undef;
+    $self->{last_task} = undef;
+    $self->{last_vectors} = "";
+    $self->{last_param} = "";
+    $self->{is_inst_ok} = 1;
+    $self->{is_pin_ok} = 0;
+    $self->{is_signal_ok} = 1;
+    $self->{in_preproc_line} = -1;
+    $self->{in_vector} = 0;
+    $self->{in_param_assign} = 0;
+    $self->{possibly_in_param_assign} = 0;
+    $self->{pin_name} = undef;
+
+    @{$self->{last_symbols}} = ();
+}
 
 sub keyword {
     # Verilog::Parse calls when keyword occurs

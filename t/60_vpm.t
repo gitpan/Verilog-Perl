@@ -11,7 +11,7 @@ print "Checking vpm...\n";
 
 # Preprocess the files
 mkdir ".vpm", 0777;
-run_system ("${PERL} ./vpm --date verilog/");
+run_system ("${PERL} ./vpm --nostop --date verilog/");
 ok(1);
 ok(-r '.vpm/pli.v');
 
