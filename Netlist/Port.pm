@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: 1.35 $$Date: 2005-03-14 08:37:37 -0500 (Mon, 14 Mar 2005) $$Author: wsnyder $
+# $Revision: 1.35 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.314';
+$VERSION = '2.315';
 use strict;
 
 structs('new',
@@ -30,6 +30,7 @@ structs('new',
 	   filename 	=> '$', #'	# Filename this came from
 	   lineno	=> '$', #'	# Linenumber this came from
 	   userdata	=> '%',		# User information
+	   attributes	=> '%', #'	# Misc attributes for systemperl or other processors
 	   #
 	   direction	=> '$', #'	# Direction (in/out/inout)
 	   type	 	=> '$', #'	# C++ Type (bool/int)
@@ -46,12 +47,15 @@ sub _link {
     my $self = shift;
     if (!$self->net) {
 	my $net = $self->module->find_net ($self->name);
-	$net or $net = $self->module->new_net
-	    (name=>$self->name,
-	     filename=>$self->filename, lineno=>$self->lineno,
-	     type=>$self->type, array=>$self->array,
-	     comment=>undef,
-	     );
+	if (!$net) {
+	    $net = $self->module->new_net
+		(name=>$self->name,
+		 filename=>$self->filename, lineno=>$self->lineno,
+		 type=>$self->type, array=>$self->array,
+		 comment=>undef,
+		 );
+	    $net->attributes($self->attributes);  # Copy attributes across
+	}
 	if ($net && $net->port && $net->port != $self) {
 	    $self->error ("Port redeclares existing port: ",$self->name,"\n");
 	}

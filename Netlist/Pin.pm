@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: 1.35 $$Date: 2005-03-14 08:37:37 -0500 (Mon, 14 Mar 2005) $$Author: wsnyder $
+# $Revision: 1.35 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.314';
+$VERSION = '2.315';
 use strict;
 
 structs('new',
@@ -35,6 +35,7 @@ structs('new',
 	   filename 	=> '$', #'	# Filename this came from
 	   lineno	=> '$', #'	# Linenumber this came from
 	   userdata	=> '%',		# User information
+	   attributes	=> '%', #'	# Misc attributes for systemperl or other processors
 	   #
 	   netname	=> '$', #'	# Net connection
 	   portname 	=> '$', #'	# Port connection name
