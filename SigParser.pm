@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #23 $$Date: 2002/08/19 $$Author: wsnyder $
+# $Revision: #24 $$Date: 2002/08/30 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -120,7 +120,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.211';
+$VERSION = '2.212';
 
 #######################################################################
 
@@ -323,6 +323,9 @@ sub operator {
     #print "Op $token\n" if $Debug;
 
     if ($self->{in_preproc_line} != $self->line) {
+	if ($token eq "{") { $self->{bracket_level} ++; }
+	elsif ($token eq "}") { $self->{bracket_level}-- if $self->{bracket_level}; }
+
 	if ($token eq "]") {
 	    $self->{in_vector} = 0;
 	    $self->{last_vectors} = $self->{last_vectors} . $token;
@@ -351,7 +354,8 @@ sub operator {
 	}
 	elsif ($token eq "," || $token eq ";") {
 	    if ($self->{is_pin_ok}
-		&& defined $self->{last_symbols}[0]) {
+		&& defined $self->{last_symbols}[0]
+		&& !$self->{bracket_level}) {
 		my $vec = "";
 		$vec = $self->{last_vectors} if ($self->{last_vectors} ne "");
 		$self->{is_pin_ok}++;

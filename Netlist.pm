@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #11 $$Date: 2002/08/19 $$Author: wsnyder $
+# $Revision: #12 $$Date: 2002/08/30 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,7 +30,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.211';
+$VERSION = '2.212';
 
 ######################################################################
 #### Error Handling

@@ -4,6 +4,14 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
+* Changes in Verilog::Language 2.212 8/30/2002
+
+***	Fix pin concatenations to not create false pins. [Kenneth Jiang]
+	Concatenations are now just ignored; there is still no way to track
+	pin interconnects where different bus bits end up interconnected
+	differently.
+
+
 * Changes in Verilog::Language 2.211 8/19/2002
 
 ***	If Verilog::Getopt list accessors are passed a reference,
@@ -130,7 +138,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #35 $$Date: 2002/08/19 $$Author: wsnyder $
+$Revision: #36 $$Date: 2002/08/30 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 
