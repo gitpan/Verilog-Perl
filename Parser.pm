@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.13 2001/03/15 20:31:30 wsnyder Exp $
+# $Id: Parser.pm,v 1.14 2001/03/31 16:48:00 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -206,7 +206,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 #######################################################################
 
@@ -362,7 +362,7 @@ sub parse {
 	    if ($text =~ s/^(\s+)//) {
 		$self->{unreadback} .= $1;
 	    }
-	    if ($text =~ /^\\n/) {
+	    if ($text =~ /^\n/) {
 		#Fall though
 	    }
 	    elsif ($text =~ s/^\"//) {
