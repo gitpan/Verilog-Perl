@@ -4,6 +4,10 @@ The contributors that suggested a given feature is shown in [].
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.231 1/27/2004
+
+****	Documentation fixes.
+
 * Changes in Verilog::Language 2.230 10/02/2003
 
 **	Vpm has been changed to use Verilog standard flags.
@@ -11,7 +15,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 	+incdir+, -v or -f flags as would a regular simulator, and
 	preprocesses all files found.
 
-**	Added Netlist::verilog_text for writing netlists.
+**	Added Netlist::verilog_text for writing netlists. [Phillip Prentice]
 
 ***	Added Cell/Port/Pin::delete methods for editing netlists.
 
@@ -201,11 +205,11 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: #64 $$Date: 2003/10/02 $$Author: wsnyder $
+$Revision: #66 $$Date: 2004/01/27 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 
-   Copyright 2001-2003 by Wilson Snyder.  This program is free software;
+   Copyright 2001-2004 by Wilson Snyder.  This program is free software;
    you can redistribute it and/or modify it under the terms of either the GNU
    General Public License or the Perl Artistic License.
 

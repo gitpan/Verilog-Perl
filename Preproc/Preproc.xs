@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Revision: #13 $$Date: 2003/09/22 $$Author: wsnyder $
+#* $Revision: #15 $$Date: 2004/01/27 $$Author: wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
@@ -10,7 +10,7 @@
 #* 
 #*********************************************************************
 #* 
-#* Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+#* Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 #* you can redistribute it and/or modify it under the terms of either the GNU
 #* General Public License or the Perl Artistic License.
 #* 
@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 #//**********************************************************************
-#// Preprocessor derrived classes, so we can override the callbacks to call perl.
+#// Preprocessor derived classes, so we can override the callbacks to call perl.
 
 class VPreprocXs : public VPreproc {
 public:

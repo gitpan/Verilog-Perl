@@ -1,7 +1,7 @@
-// $Revision: #8 $$Date: 2003/09/22 $$Author: wsnyder $
+// $Revision: #9 $$Date: 2004/01/27 $$Author: wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
-// without warranty, 2000-2003 by Wilson Snyder.
+// without warranty, 2000-2004 by Wilson Snyder.
 
 `define hsub v_hier_sub
 

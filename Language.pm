@@ -1,9 +1,9 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: #46 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #48 $$Date: 2004/01/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -13,6 +13,8 @@
 # GNU General Public License for more details.
 # 
 ######################################################################
+
+=pod
 
 =head1 NAME
 
@@ -127,7 +129,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 ######################################################################
 #### Internal Variables

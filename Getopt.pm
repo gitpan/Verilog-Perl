@@ -1,9 +1,9 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #42 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #44 $$Date: 2004/01/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 #######################################################################
 #######################################################################
@@ -283,7 +283,7 @@ sub file_abs {
     my $filename = shift;
     # return absolute filename
     # If the user doesn't want this absolutification, they can just
-    # make their own derrived class and override this function.
+    # make their own derived class and override this function.
     #
     # We don't absolutify files that don't have any path,
     # as file_path() will probably be used to resolve them.
@@ -462,7 +462,7 @@ functions that are called:
 =item $self->define ( $token, $value )
 
 This method is called when a define is recognized.  The default behavior
-loads a hash that is used to fufill define references.  This fuction may
+loads a hash that is used to fulfill define references.  This function may
 also be called outside parsing to predefine values.
 
 =item $self->defvalue ( $token )
@@ -509,8 +509,8 @@ directory.
 
 =item $self->undef ( $token )
 
-Deletes a hash element that is used to fufill define references.  This
-fuction may also be called outside parsing to erase a predefined value.
+Deletes a hash element that is used to fulfill define references.  This
+function may also be called outside parsing to erase a predefined value.
 
 =back
 

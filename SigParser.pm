@@ -1,9 +1,9 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #40 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #42 $$Date: 2004/01/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -13,6 +13,8 @@
 # GNU General Public License for more details.
 # 
 ######################################################################
+
+=pod
 
 =head1 NAME
 
@@ -65,7 +67,7 @@ argument is the memory bits or "".
 
 =item $self->instant ( $module, $cell )
 
-This method is called when a instantantiation is defined.  The first
+This method is called when a instantiation is defined.  The first
 parameter is the name of the module being instantiated, and the second
 parameter is the name of the cell.
 
@@ -81,7 +83,7 @@ C<Verilog::Getopt>,
 =head1 BUGS
 
 This is being distributed as a baseline for future contributions.  Don\'t
-expect a lot, the Parser is still nieve, and there are many awkward cases
+expect a lot, the Parser is still naive, and there are many awkward cases
 that aren\'t covered.
 
 =head1 DISTRIBUTION
@@ -115,7 +117,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 #######################################################################
 

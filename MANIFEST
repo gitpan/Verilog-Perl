@@ -38,6 +38,11 @@ t/30_preproc.out
 t/30_preproc.t
 t/30_preproc2.out
 t/40_netlist.t
+t/42_dumpcheck.t
+t/42_dumpcheck_1.out
+t/42_dumpcheck_2.out
+t/42_dumpcheck_2e.out
+t/42_dumpcheck_2v.out
 t/50_vrename.t
 t/60_vpm.t
 t/test_utils.pl
@@ -45,6 +50,7 @@ verilog/example.v
 verilog/inc1.v
 verilog/inc2.v
 verilog/inc3.v
+verilog/pinorder.v
 verilog/pli.v
 verilog/test.v
 verilog/test.vrename

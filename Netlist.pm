@@ -1,9 +1,9 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #30 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #32 $$Date: 2004/01/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 ######################################################################
 #### Error Handling
@@ -229,7 +229,7 @@ sub read_libraries {
 }
 
 ######################################################################
-#### Dependancies
+#### Dependencies
 
 sub dependency_in {
     my $self = shift;
@@ -439,7 +439,7 @@ and creating Verilog::Netlist::Module structures.
 =item $netlist->read_libraries ()
 
 Read any libraries specified in the options=> argument passed with the
-netlist constuctor.  Automatically invoked when netlist linking results in
+netlist constructor.  Automatically invoked when netlist linking results in
 a module that wasn't found, and thus might be inside the libraries.
 
 =item $netlist->remove_defines (I<string>)

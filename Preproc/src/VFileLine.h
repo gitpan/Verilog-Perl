@@ -1,4 +1,4 @@
-// $Revision: #9 $$Date: 2003/09/22 $$Author: wsnyder $  -*- C++ -*-
+// $Revision: #11 $$Date: 2004/01/27 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Error handling
 //
@@ -8,7 +8,7 @@
 //
 //*************************************************************************
 //
-// Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // General Public License or the Perl Artistic License.
 //
@@ -42,7 +42,7 @@ public:
     // CONSTRUCTORS
     // Create a new fileline, for a new file and/or line number.
     // Member functions, so that if a user provides another class, a change in the
-    // filename/linenumber will create a new element using the derrived class.
+    // filename/linenumber will create a new element using the derived class.
     virtual VFileLine* create(const string filename, int lineno);
     virtual VFileLine* create(int lineno);	// Same filename; just calls create(fn,ln)
     static VFileLine* create_default();

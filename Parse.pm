@@ -1,9 +1,9 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Revision: #33 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #35 $$Date: 2004/01/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -13,6 +13,8 @@
 # GNU General Public License for more details.
 # 
 ######################################################################
+
+=pod
 
 =head1 NAME
 
@@ -83,7 +85,7 @@ preprocessors, pretty-printers, and such.
 =head1 EXAMPLE
 
 Here\'s a simple example which will print every symbol in a verilog
-file.  We also remember what line it occured on, just for the heck of it.
+file.  We also remember what line it occurred on, just for the heck of it.
 
 sub symbol_cb {
     # Callback from parser when a symbol occurs
@@ -117,7 +119,7 @@ C<FileHandle>,
 =head1 BUGS
 
 This is being distributed as a baseline for future contributions.  Don\'t
-expect a lot, the parser is still nieve, and there are many awkward cases
+expect a lot, the parser is still naive, and there are many awkward cases
 that aren\'t covered.
 
 =head1 DISTRIBUTION
@@ -151,7 +153,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Verilog::Parse::debug = 0;		# for debugging
 
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 #######################################################################
 

@@ -1,9 +1,9 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #55 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #57 $$Date: 2004/01/27 $$Author: wsnyder $
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 ######################################################################
 # configuration
@@ -144,7 +144,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #55 $$Date: 2003/10/02 $$Author: wsnyder $ ';
+    print 'Version: $Revision: #57 $$Date: 2004/01/27 $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -503,7 +503,7 @@ sub coverage {
 sub convert_concat_string {
     my $string = shift;
     # Convert {"string"} or {"str","in","g"} to just "string"
-    # Beware embeded quotes "\""
+    # Beware embedded quotes "\""
     return $string if ($string !~ /^\s*\{\s*(\".*)\s*\}\s*$/);
     my $in = $1;
     my $out = "";
@@ -1226,7 +1226,7 @@ error message will include a binary display of the signal values.
 =item $assert_req_ack (I<req_sig>, I<ack_sig>, [I<data_sig>,...] )
 
 Check for a single cycle request pulse, followed by a single cycle
-acknowledgement pulse.  Do not allow any of the data signals to change
+acknowledgment pulse.  Do not allow any of the data signals to change
 between the request and acknowledgement.
 
 =item $check_ilevel (I<level> )

@@ -1,9 +1,9 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Revision: #48 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #50 $$Date: 2004/01/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -13,6 +13,8 @@
 # GNU General Public License for more details.
 # 
 ######################################################################
+
+=pod
 
 =head1 NAME
 
@@ -103,7 +105,7 @@ The first argument, $token, is the keyword.
 =item $self->symbol ( $token )
 
 This method is called when any Verilog symbol is recognized.  A symbol is
-considered a non-keyword bareword.  The first argument, $token, is the
+considered a non-keyword bare-word.  The first argument, $token, is the
 symbol.
 
 =item $self->operator ( $token )
@@ -115,7 +117,7 @@ The first argument, $token, is the operator.
 
 This method is called when any number is recognized.  The first argument,
 $token, is the number.  The Verilog::Language::number_value function may be
-useful for converting a Verilog value to a perl integer.
+useful for converting a Verilog value to a Perl integer.
 
 =back
 
@@ -174,7 +176,7 @@ C<vpm>
 =head1 BUGS
 
 This is being distributed as a baseline for future contributions.  Don\'t
-expect a lot, the Parser is still nieve, and there are many awkward cases
+expect a lot, the Parser is still naive, and there are many awkward cases
 that aren\'t covered.
 
 The parser currently assumes the string it is passed ends on a newline
@@ -213,7 +215,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 #######################################################################
 

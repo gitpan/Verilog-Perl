@@ -1,7 +1,7 @@
-#$Revision: #26 $$Date: 2003/10/02 $$Author: wsnyder $
+#$Revision: #28 $$Date: 2004/01/27 $$Author: wsnyder $
 ######################################################################
 #
-# Copyright 2001-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2001-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -22,7 +22,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '2.230';
+$VERSION = '2.231';
 
 ######################################################################
 #### Configuration Section
@@ -118,7 +118,7 @@ sub include {
     $self->open($filename);
 }
 
-# Not documented, as a derrived Verilog::Getopt class can accomplish
+# Not documented, as a derived Verilog::Getopt class can accomplish
 # the same thing.
 
 sub undef {
@@ -247,7 +247,7 @@ tools other then your own.  Defaults to 1.
 
 With line_directives set to zero, suppress "`line" comments which indicate
 filename and line number changes.  Use the lineno() and filename() methods
-instead to retrive this information. Defaults true.
+instead to retrieve this information. Defaults true.
 
 =item options=>Verilog::Getopt object
 
@@ -265,7 +265,7 @@ are not specified in the language pedantic. Defaults false.
 =head1 CALLBACKS
 
 Default callbacks are implemented that are suitable for most applications.
-Derrived classes may override these callbacks as needed.
+Derived classes may override these callbacks as needed.
 
 =over 4
 

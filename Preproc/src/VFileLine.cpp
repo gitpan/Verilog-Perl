@@ -1,4 +1,4 @@
-// $Revision: #11 $$Date: 2003/09/22 $$Author: wsnyder $  -*- C++ -*-
+// $Revision: #12 $$Date: 2004/01/27 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Error handling implementation
 //
@@ -8,7 +8,7 @@
 //
 //*************************************************************************
 //
-// Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // General Public License or the Perl Artistic License.
 //

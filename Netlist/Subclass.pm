@@ -1,9 +1,9 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #22 $$Date: 2003/10/02 $$Author: wsnyder $
+# $Revision: #24 $$Date: 2004/01/27 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -17,7 +17,7 @@
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '2.230';
+$VERSION = '2.231';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;
@@ -177,7 +177,7 @@ temporary files.
 =item $self->userdata (I<key>)
 =item $self->userdata (I<key>, I<data>)
 
-Sets (with two arguments) or retrieves the specified key from an opaqe
+Sets (with two arguments) or retrieves the specified key from an opaque
 hash.  This may be used to store application data on the specified node.
 
 =item $self->warn (I<Text...>)
