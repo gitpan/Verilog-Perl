@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.11 2001/07/20 13:27:31 wsnyder Exp $
+# $Id: SigParser.pm,v 1.12 2001/09/17 20:30:58 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -119,7 +119,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 #######################################################################
 
@@ -242,6 +242,13 @@ sub keyword {
 	$self->{is_pin_ok} = 0;
 	$self->{got_preproc} = 0;
     }
+    elsif ($token eq "endtask") {
+	$self->{last_task} = undef;
+    } elsif ($token eq "endmodule") {
+	$self->{last_module} = undef;
+    } elsif ($token eq "endfunction") {
+	$self->{last_function} = undef;
+    }
 }
 
 sub symbol {
@@ -346,13 +353,6 @@ sub operator {
 		    $self->{last_function} = $mod;
 		    print "Gota$lkw $mod\n"    if ($Debug);
 		    $self->function ($lkw, $mod);
-		}
-		elsif ($lkw eq "endtask") {
-		    $self->{last_task} = undef;
-		} elsif ($lkw eq "endmodule") {
-		    $self->{last_module} = undef;
-		} elsif ($lkw eq "endfunction") {
-		    $self->{last_function} = undef;
 		}
 		elsif ((($lkw eq "input")
 			|| ($lkw eq "output")

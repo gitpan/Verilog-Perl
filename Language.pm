@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm,v 1.19 2001/07/20 13:27:31 wsnyder Exp $
+# $Id: Language.pm,v 1.23 2001/09/17 20:30:58 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -124,7 +124,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 ######################################################################
 #### Internal Variables
@@ -146,13 +146,22 @@ foreach my $kwd (qw(
 		    tranif1 tri tri0 tri1 triand trior trireg
 		    vectored wait wand weak0 weak1 while wire wor
 		    xnor xor
+
+		    automatic cell config design endconfig endgenerate
+		    generate genvar instance liblist localparam
+		    noshowcancelled pulsestyle_ondetect pulsestyle_onevent
+		    showcancelled signed use
 		    )) {
     $Keyword{$kwd} = 1;
 }
 foreach my $kwd ("`celldefine", "`default_nettype", "`define", "`else",
 		 "`endcelldefine", "`endif", "`ifdef", "`include",
 		 "`nounconnected_drive", "`resetall", "`timescale",
-		 "`unconnected_drive", "`undef") {
+		 "`unconnected_drive", "`undef",
+		 # Verilog 2001
+		 "`default_nettype", "`elsif", "`undef", "`ifndef",
+		 "`file", "`line",
+		 ) {
     $Keyword{$kwd} = 1;
     $Compdirect{$kwd} = 1;
 }

@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm,v 1.7 2001/07/20 13:27:31 wsnyder Exp $
+# $Id: Getopt.pm,v 1.9 2001/09/17 20:30:58 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -36,7 +36,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 #######################################################################
 #######################################################################
@@ -223,10 +223,10 @@ sub get_parameters {
 	}
     }
     foreach my $dir ($self->module_dir()) {
-	push @params, "-v", $dir;
+	push @params, "-y", $dir;
     }
     foreach my $dir ($self->library()) {
-	push @params, "-y", $dir;
+	push @params, "-v", $dir;
     }
     return (@params);
 }

@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.16 2001/07/20 13:27:31 wsnyder Exp $
+# $Id: Parser.pm,v 1.20 2001/09/17 20:30:58 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -206,7 +206,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 #######################################################################
 
@@ -319,6 +319,9 @@ sub parse {
     my $self = shift;
     my $text = shift;
 
+    # All state must be changed before the callback.  This allows the callback
+    # to call the parser recursively (such as for `include files).
+
     while ($text ne "") {
 	print "Lnc $text" if ($Debug);
 	if ($text =~ s/^(\s*\n)//) {
@@ -333,10 +336,10 @@ sub parse {
 	elsif ($self->{incomment}) {
 	    if ($text =~ s/^( [^\n]*? \*\/ )//x) {
 		$self->{token_string} .= $1;
+		$self->{incomment} = 0;
 		my $token = $self->{token_string};
 		print "GotaCOMMENT $token\n"    if ($Debug);
 		$self->comment ($token);
-		$self->{incomment} = 0;
 	    }
 	    elsif ($text =~ s/^([^\n]*)// ) {
 		$self->{token_string} .= $1;
@@ -347,10 +350,10 @@ sub parse {
 	    if ($text =~ s/^([^\n]*?\")//) {
 		$self->{token_string} .= $1;
 		if ($self->{token_string} !~ /\\\"$/) {	# \"
+		    $self->{inquote} = 0;
 		    my $token = $self->{token_string};
 		    print "GotaSTRING $token\n"    if ($Debug);
 		    $self->string ($token);
-		    $self->{inquote} = 0;
 		}
 	    } elsif ($text =~ s/^([^\n]*)//) {
 		$self->{token_string} .= $1;
@@ -391,7 +394,8 @@ sub parse {
 		print "GotaCOMMENT $token\n"    if ($Debug);
 		$self->comment ($token);
 	    }
-	    elsif (($text =~ s/^(&& | \|\| | == | != | <= | >= | << | >> )//x)
+	    elsif (($text =~ s/^(&& | \|\| | == | != | <= | >=
+				 | << | >> | \+: | \-: | \*\* )//x)
 		   || ($text =~ s/^( [][:;@\(\),.%!=<>?|&{}~^+---\/*\#] )//x)) {  #]
 		my $token = $1;
 		print "GotaOPERATOR $token\n"    if ($Debug);
@@ -424,6 +428,7 @@ sub parse_file {
     my $fh = new FileHandle;
     $fh->open($filename) or croak "%Error: $! $filename";
     $self->filename($filename);
+    $self->line(1);
     my $line;
     while ($line = $fh->getline() ) {
 	$self->parse ($line);
