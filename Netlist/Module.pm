@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #5 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,7 +30,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.215';
+$VERSION = '2.220';
 use strict;
 
 structs('new',
@@ -210,35 +210,56 @@ Verilog::Netlist creates a module for every file in the design.
 
 =head1 ACCESSORS
 
+See also Verilog::Netlist::Subclass for additional accessors and methods.
+
 =over 4
 
 =item $self->cells
 
 Returns list of references to Verilog::Netlist::Cell in the module.
 
-=item $self->filename
+=item $self->cells_sorted
 
-The filename the module was created in.
+Returns list of name sorted references to Verilog::Netlist::Cell in the module.
 
-=item $self->lineno
+=item $self->is_top
 
-The line number the module was created on.
+Returns true if the module has no cells referencing it (is at the top of the hierarchy.)
 
 =item $self->name
 
 The name of the module.
 
-=item $self->ports
+=item $self->netlist
 
-Returns list of references to Verilog::Netlist::Port in the module.
+Reference to the Verilog::Netlist the module is under.
 
 =item $self->nets
 
 Returns list of references to Verilog::Netlist::Net in the module.
 
+=item $self->nets_sorted
+
+Returns list of name sorted references to Verilog::Netlist::Net in the module.
+
+=item $self->nets_and_ports_sorted
+
+Returns list of name sorted references to Verilog::Netlist::Net and
+Verilog::Netlist::Port in the module.
+
+=item $self->ports
+
+Returns list of references to Verilog::Netlist::Port in the module.
+
+=item $self->ports_sorted
+
+Returns list of name sorted references to Verilog::Netlist::Port in the module.
+
 =back
 
 =head1 MEMBER FUNCTIONS
+
+See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
 
@@ -246,15 +267,15 @@ Returns list of references to Verilog::Netlist::Net in the module.
 
 Updates the AUTOs for the module.
 
-=item $self->find_cell($name)
+=item $self->find_cell(I<name>)
 
 Returns Verilog::Netlist::Cell matching given name.
 
-=item $self->find_port($name)
+=item $self->find_port(I<name>)
 
 Returns Verilog::Netlist::Port matching given name.
 
-=item $self->find_net($name)
+=item $self->find_net(I<name>)
 
 Returns Verilog::Netlist::Net matching given name.
 
@@ -265,6 +286,11 @@ Checks the module for errors.
 =item $self->link
 
 Creates interconnections between this module and other modules.
+
+=item $self->modulename_from_filename
+
+Uses a rough algorithm (drop the extension) to convert a filename to the
+module that is expected to be inside it.
 
 =item $self->new_cell
 
@@ -286,6 +312,7 @@ Prints debugging information for this module.
 
 =head1 SEE ALSO
 
+L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 
 =head1 AUTHORS

@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #5 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -92,6 +92,11 @@ Return a list of expanded arrays.  When passed a string like
 It correctly handles connectivity expansion also, so that "x[1:0] = y[3:0]"
 will get intuitive results.
 
+=item Verilog::Language::split_bus_nocomma ($bus)
+
+As with split_bus, but faster.  Only supports simple decimal colon
+separated array specifications, such as "foo[3:0]".
+
 =back
 
 =head1 DISTRIBUTION
@@ -122,7 +127,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.215';
+$VERSION = '2.220';
 
 ######################################################################
 #### Internal Variables
@@ -159,6 +164,8 @@ foreach my $kwd ("`celldefine", "`default_nettype", "`define", "`else",
 		 # Verilog 2001
 		 "`default_nettype", "`elsif", "`undef", "`ifndef",
 		 "`file", "`line",
+		 # Commercial Extensions
+		 "`protected", "`endprotected",
 		 ) {
     $Keyword{$kwd} = 1;
     $Compdirect{$kwd} = 1;

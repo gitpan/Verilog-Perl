@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $
 ######################################################################
 #
 # This program is Copyright 2002 by Wilson Snyder.
@@ -21,16 +21,18 @@
 
 require 5.005;
 use Getopt::Long;
-use Verilog::Parser;
 use IO::File;
 use Pod::Text;
 use FindBin qw($RealBin);
 use File::Copy;
 #use strict;  # A lot of work needed
 
+use lib "$RealBin/..";
+use Verilog::Parser;
+
 use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
 	     %Vpm_Chiponly_Rename);
-$VERSION = '2.215';
+$VERSION = '2.220';
 
 ######################################################################
 # configuration
@@ -134,7 +136,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $ ';
+    print 'Version: $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -1217,7 +1219,7 @@ Report a warning message in standard form.
 
 =head1 SEE ALSO
 
-C<Verilog::Parse>, C<Verilog::Pli>
+C<Verilog::Parser>, C<Verilog::Pli>
 
 =head1 DISTRIBUTION
 

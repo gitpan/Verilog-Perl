@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '2.215';
+$VERSION = '2.220';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;
@@ -35,6 +35,7 @@ $Warnings = $Errors = 0;
 #	 =>[name     	=> '$', #'	# Name of the element
 #	    filename 	=> '$', #'	# Filename this came from
 #	    lineno	=> '$', #'	# Linenumber this came from
+#	    userdata	=> '%',		# User information
 #	    ]);
 
 ######################################################################
@@ -138,7 +139,10 @@ Verilog::Netlist::Subclass - Common routines for all classes
 
   ...
 
-  $self->warn();
+  $self->info("We're here\n");
+  $self->warn("Things look bad\n");
+  $self->error("Things are even worse\n");
+  $self->exit_if_error();
 
 =head1 DESCRIPTION
 
@@ -150,10 +154,6 @@ consistent results.
 
 =over 4
 
-=item $self->warn (I<Text...>)
-
-Print a warning in a standard format.  
-
 =item $self->error (I<Text...>)
 
 Print an error in a standard format.  
@@ -162,10 +162,32 @@ Print an error in a standard format.
 
 Exits the program if any errors were detected.
 
+=item $self->filename()
+
+The filename number the entity was created in.
+
+=item $self->info (I<Text...>)
+
+Print a informational in a standard format.  
+
+=item $self->lineno()
+
+The line number the entity was created on.
+
 =item $self->unlink_if_error (I<filename>)
 
 Requests the given file be deleted if any errors are detected.  Used for
 temporary files.
+
+=item $self->userdata (I<key>)
+=item $self->userdata (I<key>, I<data>)
+
+Sets (with two arguments) or retrieves the specified key from an opaqe
+hash.  This may be used to store application data on the specified node.
+
+=item $self->warn (I<Text...>)
+
+Print a warning in a standard format.  
 
 =back
 

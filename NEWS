@@ -4,7 +4,19 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
-* Changes in Verilog::Language 2.215 12/27/2002
+* Changes in Verilog::Language 2.220 2/6/2002
+
+***	Support primitives as if they were modules.  [Bruce Nepple]
+
+***	The link_read_nonfatal=>1 netlist option will prevent missing
+	modules from being errors during link.  [Bruce Nepple]
+
+***	Add Verilog::Parser support for `protected. [Scott Bleiweiss]
+
+****	Update documentation & Netlist example.  [Bruce Nepple]
+
+
+* Changes in Verilog::Language 2.220 12/27/2002
 
 ****	Solaris perl 5.005_03 LD error fixed.  [Mark Moe]
 	Solaris note about FILE_OFFSET_BITS.  [Simon Curry]
@@ -12,7 +24,7 @@ The contributors that suggested a given feature is shown in [].
 ****	GCC 3.2 use std compile errors fixed. [Eugene Weber]
 
 
-* Changes in Verilog::Language 2.215 10/21/2002
+* Changes in Verilog::Language 2.214 10/21/2002
 
 ***	Pickup input msb & lsb's.  [Joel Earl]
 
@@ -158,7 +170,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+$Revision: #7 $$Date: 2003/02/06 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

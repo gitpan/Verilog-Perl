@@ -1,4 +1,4 @@
-// $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
+// $Revision: #2 $$Date: 2003/02/06 $$Author: wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 `define hsub v_hier_sub
@@ -14,4 +14,7 @@ module v_hier_top (/*AUTOARG*/
 		   // Inputs
 		   .clk			(clk),
 		   .avec		(avec[1:0]));
+
+   missing missing ();
+
 endmodule

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #7 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,7 +30,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.215';
+$VERSION = '2.220';
 
 ######################################################################
 #### Error Handling
@@ -162,8 +162,7 @@ sub resolve_filename {
 	$filename = $self->{options}->file_path($filename);
     }
     if (!-r $filename) {
-	$from->error("Cannot open $filename") if $from;
-	die "%Error: Cannot open $filename\n";
+	return undef;
     }
     $self->dependency_in ($filename);
     return $filename;
@@ -202,6 +201,7 @@ sub read_file {
     my $fileref = Verilog::Netlist::File::read
 	(netlist=>$self,
 	 @_);
+    return $fileref;
 }
 
 ######################################################################
@@ -269,7 +269,7 @@ Verilog::Netlist - Verilog Netlist
 
     foreach my $mod ($nl->modules_sorted) {
 	if ($mod->is_top) {
-	    show_hier ($mod, "  ", "");
+	    show_hier ($mod, "  ", "", "");
 	}
     }
 
@@ -277,10 +277,18 @@ Verilog::Netlist - Verilog Netlist
 	my $mod = shift;
 	my $indent = shift;
 	my $hier = shift;
-	$hier .= $mod->name;
-	printf ("%-38s %s\n", $indent."Module ".$mod->name,$hier);
+	my $cellname = shift;
+	if (!$cellname) {$hier = $mod->name;} #top modules get the design name
+	else {$hier .= ".$cellname";} #append the cellname
+	printf ("%-45s %s\n", $indent."Module ".$mod->name,$hier);
+	foreach my $sig ($mod->ports_sorted) {
+	    printf ($indent."	  %sput %s\n", $sig->direction, $sig->name);
+	}
 	foreach my $cell ($mod->cells_sorted) {
-	    show_hier ($cell->submod, $indent."  ", $hier.".");
+	    show_hier ($cell->submod, $indent."	 ", $hier.".") if $cell->submod;
+	    foreach my $pin ($cell->pins_sorted) {
+		printf ($indent."     .%s(%s)\n", $pin->name, $pin->netname);
+	    }
 	}
     }
 
@@ -309,11 +317,9 @@ Verilog::Netlist::Pin (s) that interconnect that cell.
 
 =head1 FUNCTIONS
 
+See also Verilog::Netlist::Subclass for additional accessors and methods.
+
 =over 4
-
-=item $netlist->error
-
-Prints an error in a standard way, and increments $Errors.
 
 =item $netlist->lint
 
@@ -324,7 +330,8 @@ Error checks the entire netlist structure.
 Resolves references between the different modules.  If link_read=>1 is
 passed when netlist->new is called (it is by default), undefined modules
 will be searched for using the Verilog::Getopt package, passed by a
-reference in the creation of the netlist.
+reference in the creation of the netlist.  To suppress errors in any
+missing references, set link_read_nonfatal=>1 also.
 
 =item $netlist->new
 
@@ -336,10 +343,6 @@ to be used for locating files.
 
 Prints debugging information for the entire netlist structure.
 
-=item $netlist->warn
-
-Prints a warning in a standard way, and increments $Warnings.
-
 =back
 
 =head1 MODULE FUNCTIONS
@@ -350,9 +353,13 @@ Prints a warning in a standard way, and increments $Warnings.
 
 Returns Verilog::Netlist::Module matching given name.
 
+=item $netlist->modules
+
+Returns list of Verilog::Netlist::Module.
+
 =item $netlist->modules_sorted
 
-Returns list of all Verilog::Netlist::Module.
+Returns name sorted list of Verilog::Netlist::Module.
 
 =item $netlist->new_module
 
@@ -364,6 +371,30 @@ Creates a new Verilog::Netlist::Module.
 
 =over 4
 
+=item $netlist->dependency_write(I<filename>)
+
+Writes a dependency file for make, listing all input and output files.
+
+=item $netlist->defvalue_nowarn (I<define>)
+
+Return the value of the specified define or undef.
+
+=item $netlist->dependency_in(I<filename>)
+
+Adds an additional input dependency for dependency_write.
+
+=item $netlist->dependency_out(I<filename>)
+
+Adds an additional output dependency for dependency_write.
+
+=item $netlist->files
+
+Returns list of Verilog::Netlist::File.
+
+=item $netlist->files_sorted
+
+Returns a name sorted list of Verilog::Netlist::File.
+
 =item $netlist->find_file($name)
 
 Returns Verilog::Netlist::File matching given name.
@@ -373,19 +404,27 @@ Returns Verilog::Netlist::File matching given name.
 Reads the given Verilog file, and returns a Verilog::Netlist::File
 reference.
 
-=item $netlist->files
-
-Returns list of all files.
-
 Generally called as $netlist->read_file.  Pass a hash of parameters.  Reads
 the filename=> parameter, parsing all instantiations, ports, and signals,
 and creating Verilog::Netlist::Module structures.
 
-=item $netlist->dependency_write($name)
+=item $netlist->remove_defines (I<string>)
 
-Writes a dependency file for make, listing all input and output files.
+Expand any `defines in the string and return the results.  Undefined
+defines will remain in the returned string.
+
+=item $netlist->resolve_filename (I<string>)
+
+Convert a module name to a filename.  Return undef if not found.
 
 =back
+
+=head1 BUGS
+
+Cell instantiations without any arguments are not supported, a empty set of
+parenthesis are required.  (Use "cell cell();", not "cell cell;".)
+
+Order based pin interconnect is not supported, use name based connections.
 
 =head1 SEE ALSO
 

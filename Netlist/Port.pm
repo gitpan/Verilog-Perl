@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.215';
+$VERSION = '2.220';
 use strict;
 
 structs('new',
@@ -103,6 +103,8 @@ world in the current module.
 
 =head1 ACCESSORS
 
+See also Verilog::Netlist::Subclass for additional accessors and methods.
+
 =over 4
 
 =item $self->array
@@ -115,15 +117,7 @@ Any comment the user placed on the same line as the port.
 
 =item $self->direction
 
-The direction of the port.
-
-=item $self->filename
-
-The filename the port was created in.
-
-=item $self->lineno
-
-The line number the port was created on.
+The direction of the port: "in", "out", or "inout".
 
 =item $self->module
 
@@ -133,6 +127,11 @@ Reference to the Verilog::Netlist::Module the port is in.
 
 The name of the port.
 
+=item $self->net
+
+Reference to the Verilog::Netlist::Net the port connects to.  Only valid
+after the netlist is linked.
+
 =item $self->type
 
 The C++ type of the port.
@@ -140,6 +139,8 @@ The C++ type of the port.
 =back
 
 =head1 MEMBER FUNCTIONS
+
+See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
 
@@ -151,6 +152,7 @@ Prints debugging information for this port.
 
 =head1 SEE ALSO
 
+L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 
 =head1 AUTHORS

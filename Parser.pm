@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #5 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -96,9 +96,9 @@ comment delimiters.
 
 =item $self->string ( $token )
 
-This method is called when any text in double quotes are recognized.
-The first argument, $token, is the contents of the string including the
-quotes.
+This method is called when any text in double quotes are recognized, or on
+the text of protected regions.  The first argument, $token, is the contents
+of the string including the quotes.
 
 =item $self->keyword ( $token )
 
@@ -185,6 +185,9 @@ that aren\'t covered.
 The parser currently assumes the string it is passed ends on a newline
 boundary.  It should be changed to allow arbitrary chunks.
 
+Cell instantiations without any arguments are not supported, a empty set
+of parenthesis are required.  (Use "cell cell();", not "cell cell;".)
+
 =head1 DISTRIBUTION
 
 The latest version is available from
@@ -215,7 +218,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.215';
+$VERSION = '2.220';
 
 #######################################################################
 
@@ -231,6 +234,7 @@ sub new {
 		filename => "UNKNOWN",
 		incomment => 0,
 		inquote => 0,
+		inprotected => 0,
 		@_,
 	    };
     bless $self, $class;
@@ -371,6 +375,13 @@ sub parse {
 		    print "GotaSTRING $token\n"    if ($Debug);
 		    $self->string ($token);
 		}
+	    } elsif ($text =~ /^\`endprotected/ && $self->{inprotected}) {
+		$self->{inprotected} = 0;
+		$self->{inquote} = 0;
+		my $token = $self->{token_string};
+		print "GotaPROTSTRING $token\n"    if ($Debug);
+		$self->string ($token);
+		redo; # Want `endprotected to become a token
 	    } elsif ($text =~ s/^([^\n]*)//) {
 		$self->{token_string} .= $1;
 	    }
@@ -395,11 +406,16 @@ sub parse {
 		    if (Verilog::Language::is_keyword($token)) {
 			print "GotaKEYWORD $token\n"    if ($Debug);
 			$self->keyword ($token);
-			} else {
-			    print "GotaSYMBOL $token\n"    if ($Debug);
-			    $self->symbol ($token);
+			if ($token eq "`protected") {
+			    $self->{token_string} = "";
+			    $self->{inprotected} = 1;
+			    $self->{inquote} = 1;
 			}
+		    } else {
+			print "GotaSYMBOL $token\n"    if ($Debug);
+			$self->symbol ($token);
 		    }
+		}
 	    }
 	    elsif ($text =~ s/^\/\*//) {
 		$self->{token_string} = "\/\*";

@@ -38,6 +38,15 @@ calls), but have the simulator do something special with them.
    where the filename and line number of the message have been added
 along with the timestamp.
 
+Complete Parsing
+================
+
+   The lower level parsing routines do not keep behavioral statements,
+or bit connectivity within busses.  If you're looking for a front end
+that keeps all information, you may want to consider using the C++
+front end that is part of Verilator.  See
+`http://www.veripool.com/verilator.html'.
+
 Obtaining Distribution
 ======================
 
@@ -66,16 +75,16 @@ Installation
 
   2. Type `perl Makefile.PL' to configure Verilog for your system.
 
-  3. Type `make' to compile Verilog.
+  3. Type `make' to compile Verilog.  Some Solaris users have had
+     trouble with "open" being redefined.  If this happens, try editing
+     the Makefile to change _FILE_OFFSET_BITS to 32 instead of 64.
 
   4. Type `make test' to check the package.
 
   5. Type `make install' to install the programs and any data files and
      documentation.
 
-  6. Type `rehash' to make the new `vrename' command visible.
-
-  7. Look at `test.pl' to see how to use `vpm' in your build
+  6. Look at `test.pl' to see how to use `vpm' in your build
      methodology.
 
 

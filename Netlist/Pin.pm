@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -31,7 +31,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.215';
+$VERSION = '2.220';
 use strict;
 
 structs('new',
@@ -152,15 +152,13 @@ module.
 
 =head1 ACCESSORS
 
+See also Verilog::Netlist::Subclass for additional accessors and methods.
+
 =over 4
 
-=item $self->filename
+=item $self->cell
 
-The filename the pin was created in.
-
-=item $self->lineno
-
-The line number the pin was created on.
+Reference to the Verilog::Netlist::Cell the pin is under.
 
 =item $self->module
 
@@ -172,6 +170,18 @@ The name of the pin.  May have extra characters to make vectors connect,
 generally portname is a more readable version.  There may be multiple pins
 with the same portname, only one pin has a given name.
 
+=item $self->net
+
+Reference to the Verilog::Netlist::Net the pin connects to.  Only valid after a link.
+
+=item $self->netlist
+
+Reference to the Verilog::Netlist the pin is in.
+
+=item $self->netname
+
+The net name the pin connects to.
+
 =item $self->portname
 
 The name of the port connected to.
@@ -180,17 +190,11 @@ The name of the port connected to.
 
 Reference to the Verilog::Netlist::Port the pin connects to.  Only valid after a link.
 
-=item $self->net
-
-Reference to the Verilog::Netlist::Net the pin connects to.  Only valid after a link.
-
-=item $self->netname
-
-The net name the pin connects to.
-
 =back
 
 =head1 MEMBER FUNCTIONS
+
+See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
 
@@ -206,6 +210,7 @@ Prints debugging information for this pin.
 
 =head1 SEE ALSO
 
+L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 
 =head1 AUTHORS

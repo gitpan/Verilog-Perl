@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -34,7 +34,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.215';
+$VERSION = '2.220';
 
 #######################################################################
 #######################################################################
@@ -401,7 +401,7 @@ parsing of VCS-like parameters is disabled.
 Returns a new path to the filename, using the library directories and
 search paths to resolve the file.
 
-=item $self->get_parameter ( )
+=item $self->get_parameters ( )
 
 Returns a list of parameters that when passed through $self->parameter()
 should result in the same state.  Often this is used to form command lines
@@ -447,6 +447,10 @@ also be called outside parsing to predefine values.
 
 =item $self->defvalue ( $token )
 
+This method returns the value of a given define, or prints a warning.
+
+=item $self->defvalue_nowarn ( $token )
+
 This method returns the value of a given define, or undef.
 
 =item $self->depend_files ()
@@ -454,6 +458,11 @@ This method returns the value of a given define, or undef.
 Returns reference to list of filenames referenced with file_path, useful
 for creating dependancy lists.  With argument, adds that file.  With list
 reference argument, sets the list to the argument.
+
+=item $self->file_abs ( $filename )
+
+Using the incdir and libext lists, convert the specified module or filename
+("foo") to a absolute filename ("include/dir/foo.v").
 
 =item $self->incdir ()
 

@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -120,7 +120,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.215';
+$VERSION = '2.220';
 
 #######################################################################
 
@@ -269,7 +269,8 @@ sub keyword {
     }
     elsif ($token eq "endtask") {
 	$self->{last_task} = undef;
-    } elsif ($token eq "endmodule") {
+    } elsif ($token eq "endmodule"
+	     || $token eq "endprimitive") {
 	$self->{last_module} = undef;
     } elsif ($token eq "endfunction") {
 	$self->{last_function} = undef;
@@ -347,6 +348,8 @@ sub operator {
 	    ) {
 	    my $mod = $self->{last_symbols}[0];
 	    my $inst = $self->{last_symbols}[1];
+	    @{$self->{last_symbols}} = ();
+	    $self->{last_vectors} = "";
 	    print "Gotainst $mod $inst\n"    if ($Debug);
 	    $self->instant ($mod, $inst);
 	    $self->{is_inst_ok} = 0;
@@ -358,13 +361,15 @@ sub operator {
 		&& !$self->{bracket_level}) {
 		my $vec = "";
 		$vec = $self->{last_vectors} if ($self->{last_vectors} ne "");
-		$self->{is_pin_ok}++;
 		my $pin_name = $self->{pin_name};
 		$pin_name ||= "pin" . $self->{is_pin_ok};
+		$self->{is_pin_ok}++;
 		$self->pin ($pin_name,
 			    $self->{last_symbols}[0] . $vec,
 			    $self->{is_pin_ok});
 		$self->{pin_name} = undef;
+		$self->{last_vectors} = "";
+		@{$self->{last_symbols}} = ();
 	    }
 	    if ($token eq ";") {
 		if ($lkw eq "task") {
@@ -372,7 +377,8 @@ sub operator {
 		    $self->{last_task} = $mod;
 		    print "Gota$lkw $mod\n"    if ($Debug);
 		    $self->task ($lkw, $mod);
-		} elsif ($lkw eq "module") {
+		} elsif ($lkw eq "module"
+			 || $lkw eq "primitive") {
 		    my $mod = $self->{last_symbols}[0];
 		    $self->{last_module} = $mod;
 		    print "Gota$lkw $mod\n"    if ($Debug);

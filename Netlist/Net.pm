@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #4 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.215';
+$VERSION = '2.220';
 use strict;
 
 ######################################################################
@@ -161,27 +161,30 @@ current module.
 
 =head1 ACCESSORS
 
+See also Verilog::Netlist::Subclass for additional accessors and methods.
+
 =over 4
 
 =item $self->array
 
-Any array declaration for the net.
+Any array (vector) declaration for the net.  This is for multidimensional
+signals, for the width of a signal, use msb/lsb/width.
 
 =item $self->comment
 
 Any comment the user placed on the same line as the net.
 
-=item $self->filename
-
-The filename the net was created in.
-
-=item $self->lineno
-
-The line number the net was created on.
-
 =item $self->module
 
 Reference to the Verilog::Netlist::Module the net is in.
+
+=item $self->lsb
+
+The least significant bit number of the net.
+
+=item $self->msb
+
+The most significant bit number of the net.
 
 =item $self->name
 
@@ -191,9 +194,15 @@ The name of the net.
 
 The C++ type of the net.
 
+=item $self->width
+
+The width of the net in bits.
+
 =back
 
 =head1 MEMBER FUNCTIONS
+
+See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
 
@@ -205,10 +214,15 @@ Checks the net for errors.  Normally called by Verilog::Netlist::lint.
 
 Prints debugging information for this net.
 
+=item $self->dump_drivers
+
+Prints debugging information for this net, and all pins driving the net.
+
 =back
 
 =head1 SEE ALSO
 
+L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 
 =head1 AUTHORS

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #5 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -27,7 +27,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.215';
+$VERSION = '2.220';
 use strict;
 
 structs('new',
@@ -215,6 +215,11 @@ sub read {
     my $netlist = $params{netlist} or croak ("Call Verilog::Netlist::read_file instead,");
 
     my $filepath = $netlist->resolve_filename($filename);
+    if (!$filepath) {
+	if ($params{error_self}) { $params{error_self}->error("Cannot find $filename\n"); }
+	elsif (!defined $params{error_self}) { die "%Error: Cannot find $filename\n"; }  # 0=suppress error
+	return undef;
+    }
     print __PACKAGE__."::read_file $filepath\n" if $Verilog::Netlist::Debug;
 
     my $fileref = $netlist->new_file (name=>$filepath,
@@ -261,6 +266,8 @@ Verilog::Netlist::File allows Verilog files to be read and written.
 
 =head1 ACCESSORS
 
+See also Verilog::Netlist::Subclass for additional accessors and methods.
+
 =over 4
 
 =item $self->basename
@@ -274,6 +281,8 @@ The filename of the file.
 =back
 
 =head1 MEMBER FUNCTIONS
+
+See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
 
@@ -291,6 +300,7 @@ Prints debugging information for this file.
 
 =head1 SEE ALSO
 
+L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 
 =head1 AUTHORS

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #5 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.215';
+$VERSION = '2.220';
 use strict;
 
 structs('new',
@@ -71,7 +71,8 @@ sub _link {
     if (!$self->submod()
 	&& $self->netlist->{link_read}) {
 	print "  Link_Read ",$self->submodname,"\n" if $Verilog::Netlist::Debug;
-	$self->netlist->read_file(filename=>$self->submodname);
+	$self->netlist->read_file(filename=>$self->submodname,
+				  error_self=>($self->netlist->{link_read_nonfatal} ? 0:$self));
 	$self->_link_guts();
 	if ($self->submod()) {
 	    $self->netlist->{_relink} = 1;
@@ -81,7 +82,7 @@ sub _link {
 
 sub lint {
     my $self = shift;
-    if (!$self->submod()) {
+    if (!$self->submod() && !$self->netlist->{link_read_nonfatal}) {
         $self->error ($self,"Module reference not found: ",$self->submodname(),,"\n");
     }
     if (!$self->netlist->{skip_pin_interconnect}) {
@@ -155,15 +156,9 @@ module.
 
 =head1 ACCESSORS
 
+See also Verilog::Netlist::Subclass for additional accessors and methods.
+
 =over 4
-
-=item $self->filename
-
-The filename the cell was created in.
-
-=item $self->lineno
-
-The line number the cell was created on.
 
 =item $self->module
 
@@ -173,9 +168,17 @@ Pointer to the module the cell is in.
 
 The instantiation name of the cell.
 
+=item $self->netlist
+
+Reference to the Verilog::Netlist the cell is under.
+
 =item $self->pins
 
-List of pins connections for the cell.
+List of Verilog::Netlist::Pin connections for the cell.
+
+=item $self->pins_sorted
+
+List of name sorted Verilog::Netlist::Pin connections for the cell.
 
 =item $self->submod
 
@@ -189,6 +192,8 @@ The module name the cell instantiates (under the cell).
 =back
 
 =head1 MEMBER FUNCTIONS
+
+See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
 
@@ -212,6 +217,7 @@ Prints debugging information for this cell.
 
 =head1 SEE ALSO
 
+L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 
 =head1 AUTHORS

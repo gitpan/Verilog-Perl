@@ -1,5 +1,5 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Revision: #2 $$Date: 2002/12/27 $$Author: wsnyder $
+# $Revision: #3 $$Date: 2003/02/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -156,7 +156,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Verilog::Parse::debug = 0;		# for debugging
 
-$VERSION = '2.215';
+$VERSION = '2.220';
 
 #######################################################################
 
