@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #23 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #25 $$Date: 2003/08/12 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,7 +30,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.224';
+$VERSION = '2.225';
 
 ######################################################################
 #### Error Handling
@@ -63,7 +63,6 @@ sub link {
     while ($self->{_relink}) {
 	$self->{_relink} = 0;
 	foreach my $modref ($self->modules) {
-	    next if $modref->is_libcell();
 	    $modref->link();
 	}
 	foreach my $fileref ($self->files) {

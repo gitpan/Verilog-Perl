@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #43 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #49 $$Date: 2003/08/12 $$Author: wsnyder $
 ######################################################################
 #
 # This program is Copyright 2002 by Wilson Snyder.
@@ -32,7 +32,7 @@ use Verilog::Parser;
 
 use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
 	     %Vpm_Chiponly_Rename);
-$VERSION = '2.224';
+$VERSION = '2.225';
 
 ######################################################################
 # configuration
@@ -136,7 +136,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #43 $$Date: 2003/05/19 $$Author: wsnyder $ ';
+    print 'Version: $Revision: #49 $$Date: 2003/08/12 $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -285,39 +285,18 @@ sub assert_hot {
 	};
     }
 
-    $plist = "";
-    for (my $i=0;$i<$len;$i++){
-	$ptemp = $len."'b";
-	for (my $j=0;$j<$len;$j++){
-	    if ($j==$i) { $ptemp .= "1"; }
-	    else{ $ptemp .= "0"; }
-	}
-	if ($plist){ $plist .= ", ".$ptemp; }
-	else { $plist = $ptemp; }
-    }
-    if (!$Opt_Verilator) {
-	$plist .= ", ".$len."'b";
-	for (my $i=0; $i<$len; $i++) {$plist = $plist."X"; }
-    }
-    $pnone = $len."'b";
-    for (my $i=0; $i<$len; $i++) {$pnone = $pnone."0"; }
-
     my $lineinfo = get_lineinfo();
-
     message_header();
 
+    # We use === so that x's will properly cause error messages
     my $vec = "({".join(",",@cl)."})";
-    sendout("case $vec");
-    sendout(" ${plist}: ;");
-    if ($check_nohot==1){
-	sendout(" ${pnone}: if (`__message_on) ");
-	message_write($lineinfo,1,"%%E","",0,0,"NONE ACTIVE %b --> $text".'"',$vec);
-    } else {
-	sendout(" ${pnone}: ; ");
-    }
-    sendout("default: if (`__message_on) ");
+    sendout("if (($vec & ($vec - ${len}'b1)) !== ${len}'b0 && `__message_on) ");
     message_write($lineinfo,1,"%%E","",0,0,"MULTIPLE ACTIVE %b --> $text".'"',$vec);
-    sendout("endcase ");
+
+    if ($check_nohot==1){
+	sendout("if ($vec === ${len}'b0 && `__message_on) ");
+	message_write($lineinfo,1,"%%E","",0,0,"NONE ACTIVE %b --> $text".'"',$vec);
+    }
     
     message_trailer();
 }
@@ -409,8 +388,10 @@ sub message {
 	$params[1] = $params[1]."${char}: In %m\\n\"";
     }
 
-    (($params[0] =~ /^\s*[0-9]/) && ($params[1] =~ /^\s*\"/))
-	or die "%Error $Last_Filename:$line: Format of \$message boggled.\n";
+    ($params[0] =~ /^\s*[0-9]/)
+	or die "%Error $Last_Filename:$line: Non-numeric \$message first argument: $params[0]\n";
+    ($params[1] =~ /^\s*\"/)
+	or die "%Error $Last_Filename:$line: Non-string \$message second argument: $params[1]\n";
 
     message_header();
 
@@ -604,11 +585,7 @@ sub vpm_process {
 	    #if ! $module_symbols{$sym} 	# For now always put it in
 	    my $type = $Insure_Symbols{$mod}{$sym}[0];
 	    my $value = $Insure_Symbols{$mod}{$sym}[1];
-	    if ($Opt_Verilator) {
-		$insert .= "$type $sym; ";
-	    } else {
-		$insert .= "$type $sym; initial $sym = $value;";
-	    }
+	    $insert .= "$type $sym; initial $sym = $value;";
 	}
 	if ($insert) {
 	    $Sendout =~ s%/\*vpm symbols $mod\*/%/*vpm*/$insert/*vpm*/%
@@ -1174,7 +1151,9 @@ Report a $error if the given case is FALSE.  (Like assert() in C.)
 
 =item $assert_amone (I<sig>, [I<sig>...], "message", [I<vars>...] )
 
-Report a $error if more then one signal is asserted.  (None asserted is ok.)
+Report a $error if more then one signal is asserted, or any are X.  (None
+asserted is ok.)  The error message will include a binary display of the
+signal values.
 
 =item $assert_info (I<case>, "message", [I<vars>...] )
 
@@ -1182,7 +1161,8 @@ Report a $info if the given case is FALSE.  (Like assert() in C.)
 
 =item $assert_onehot (I<sig>, [I<sig>...], "message", [I<vars>...] )
 
-Report a $error if other then one signal is asserted.
+Report a $error if other then one signal is asserted, or any are X.  The
+error message will include a binary display of the signal values.
 
 =item $assert_req_ack (I<req_sig>, I<ack_sig>, [I<data_sig>,...] )
 

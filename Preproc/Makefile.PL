@@ -1,13 +1,22 @@
-# $Revision: #6 $$Date: 2002/10/25 $$Author: wsnyder $
+# $Revision: #7 $$Date: 2003/08/12 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
 use Config;
 
 sub MY::postamble {
-'
+    my $out;
+    #print Config::myconfig();
+    if ($Config{osname} !~ /cygwin/i && $Config{archname} !~ /cygwin/i) {
+	# Cygwin: Don't change LD, it breaks
+	# Sun: Requires g++ LD
+	# Linux: Either way
+	$out .= "LD = g++\n";
+    }
+    $out .= "CCFLAGS += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
+    $out .= '
+CC = g++
 LEX = flex
-CCFLAGS += -Wall -Wno-unused
 
 #CFLAGS += -DFLEX_DEBUG
 #LEXFLAGS += -d -L
@@ -22,21 +31,11 @@ src/VFileLine.o src/VPreproc.o src/VPreprocLex.o:
 clean::
 	-rm -rf test *.o VPreprocLex.cpp *.output
 ';
-}
-
-#print Config::myconfig();
-my @ld_set;
-if ($Config{osname} !~ /cygwin/i && $Config{archname} !~ /cygwin/i) {
-    # Cygwin: Don't change LD, it breaks
-    # Sun: Requires g++ LD
-    # Linux: Either way
-    push @ld_set, (LD => 'g++',);
+    return $out;
 }
 
 WriteMakefile(
               NAME => "Verilog::Preproc",
-	      CC => 'g++',
-	      @ld_set,
 	      LIBS => '-lstdc++',
 	      VERSION_FROM  => 'Preproc.pm',
 	      XSOPT => '-C++',

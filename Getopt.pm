@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #36 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #38 $$Date: 2003/08/12 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -34,7 +34,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.224';
+$VERSION = '2.225';
 
 #######################################################################
 #######################################################################
@@ -53,6 +53,7 @@ sub new {
 		gcc_style => 1,
 		vcs_style => 1,
 		fileline => 'Command_Line',
+		unparsed => [],
 		@_
 		};
     bless $self, $class;
@@ -75,7 +76,7 @@ sub parameter_file {
 	next if $line =~ /^\s*$/;
 	$self->fileline ("$filename:$.");
 	my @p = (split /\s+/,"$line ");
-	$self->parameter (@p);
+	$self->_parameter_parse(@p);
     }
     $fh->close();
     $self->fileline($hold_fileline);
@@ -85,8 +86,14 @@ sub parameter {
     my $self = shift;
     # Parse VCS like parameters, and perform standard setup based on it
     # Return list of leftover parameters
-    
-    my @new_params = ();
+    @{$self->{unparsed}} = ();
+    $self->_parameter_parse(@_);
+    return @{$self->{unparsed}};
+}
+
+sub _parameter_parse {
+    my $self = shift;
+    # Internal: Parse list of VCS like parameters, and perform standard setup based on it
     foreach my $param (@_) {
 	next if ($param =~ /^\s*$/);
 	print " parameter($param)\n" if $Debug;
@@ -146,11 +153,9 @@ sub parameter {
 	}
 
 	else { # Unknown
-	    push @new_params, $param;
+	    push @{$self->{unparsed}}, $param;
 	}
     }
-
-    return @new_params;
 }
 
 #######################################################################

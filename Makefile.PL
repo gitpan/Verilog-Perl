@@ -1,4 +1,4 @@
-# $Revision: #25 $$Date: 2003/04/03 $$Author: wsnyder $
+# $Revision: #26 $$Date: 2003/08/12 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 require 5.005;
@@ -29,9 +29,6 @@ maintainer-dist: dist tag
 	mv \$(DISTVNAME).tar.gz \$(HOME)/backpack
 
 maintainer-copy:
-#vpm maintainer-copy:
-#	perl -pe '${DOLLAR}skip = 1 if /--MAKER--/; print ${DOLLAR}_ if ! ${DOLLAR}skip; ${DOLLAR}skip = 0 if /--ENDMAKER--/; ${DOLLAR}_=qq{};' < ../../vpm > vpm
-#	chmod a+x vpm
 
 maintainer-clean: distclean
 	-rm README Makefile

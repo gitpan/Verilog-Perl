@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #23 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #25 $$Date: 2003/08/12 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -27,7 +27,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.224';
+$VERSION = '2.225';
 use strict;
 
 structs('new',
@@ -112,8 +112,11 @@ sub signal_decl {
 	return $self->error ("Signal declaration outside of module definition", $netname);
     }
 
-    if ($inout eq "reg"
-	|| $inout eq "wire"
+    if ($inout eq "reg" || $inout eq "trireg"
+	|| $inout eq "wire" || $inout eq "wand" || $inout eq "wor"
+	|| $inout eq "tri" || $inout eq "triand" || $inout eq "trior"
+	|| $inout eq "tri0" || $inout eq "tri1"
+	|| $inout eq "supply0" || $inout eq "supply1"
 	) {
 	my $net = $modref->find_net ($netname);
 	$net or $net = $modref->new_net

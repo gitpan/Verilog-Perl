@@ -1,4 +1,4 @@
-// $Revision: #20 $$Date: 2003/04/09 $$Author: wsnyder $  -*- C++ -*-
+// $Revision: #21 $$Date: 2003/08/12 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal implementation of default preprocessor
 //
@@ -152,6 +152,7 @@ void VPreproc::define(string define, string value) {
 }
 string VPreproc::defValue(string define) {
     error("Define not defined: "+define+"\n");
+    return define;
 }
 
 //**********************************************************************

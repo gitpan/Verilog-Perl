@@ -12,8 +12,20 @@ module example;
       $info (0, "Welcome to a VPMed file\n");
       i=0;
       $assert (1==1, "Why doesn't 1==1??\n");
+      //
+      i=3'b100;  $assert_amone(i[2:0], "amone ok\n");
+      i=3'b010;  $assert_amone(i[2:0], "amone ok\n");
+      i=3'b001;  $assert_amone(i[2:0], "amone ok\n");
+      i=3'b000;  $assert_amone(i[2:0], "amone ok\n");
+      //i=3'b011;  $assert_amone(i[2:0], "amone error expected\n");
+      //i=3'b110;  $assert_amone(i[2:0], "amone error expected\n");
+      //
+      i=2'b10;  $assert_onehot(i[1:0], "onehot ok\n");
+      i=2'b01;  $assert_onehot(i[1:0], "onehot ok\n");
+      //i=2'b11;  $assert_onehot(i[2:0], "onehot error expected\n");
+      //i=2'b00;  $assert_onehot(i[2:0], "onehot error expected\n");
    end
-   
+
    // Example of request/grant handshake
    reg	      clk;
    reg	      bus_req;		// Request a transaction, single cycle pulse

@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #33 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #35 $$Date: 2003/08/12 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -120,7 +120,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.224';
+$VERSION = '2.225';
 
 #######################################################################
 
@@ -343,11 +343,11 @@ sub operator {
 	    $self->{last_param} = $self->{last_param} . $token;
 	}
 	elsif ($token eq "("
-	    && ($lkw eq "" || $lkw =~ /^end/ || $self->{got_preproc})
-	    && (defined $self->{last_symbols}[0])
-	    && (defined $self->{last_symbols}[1])
-	    && $self->{is_inst_ok}
-	    ) {
+	       && ($lkw eq "" || $lkw =~ /^end/ || $self->{got_preproc})
+	       && (defined $self->{last_symbols}[0])
+	       && (defined $self->{last_symbols}[1])
+	       && $self->{is_inst_ok}
+	       ) {
 	    my $mod = $self->{last_symbols}[0];
 	    my $inst = $self->{last_symbols}[1];
 	    @{$self->{last_symbols}} = ();
@@ -405,8 +405,11 @@ sub operator {
 		elsif ((($lkw eq "input")
 			|| ($lkw eq "output")
 			|| ($lkw eq "inout")
-			|| ($lkw eq "wire")
-			|| ($lkw eq "reg")
+			|| ($lkw eq "reg" || $lkw eq "trireg")
+			|| ($lkw eq "wire" || $lkw eq "wand" || $lkw eq "wor"
+			    || $lkw eq "tri" || $lkw eq "triand" || $lkw eq "trior"
+			    || $lkw eq "tri0" || $lkw eq "tri1"
+			    || $lkw eq "supply0" || $lkw eq "supply1")
 			)
 		       && $self->{is_signal_ok}) {
 		    my $sig;
@@ -459,12 +462,13 @@ sub operator {
 	else {
 	    $self->{is_inst_ok} = 0;
 	}
-    } else {
+    }
+    else {
 	push @{$self->{last_ppitem}}, $token;
     }
     $self->{last_operator} = $token;
 }
-    
+
 ######################################################################
 ### Package return
 1;

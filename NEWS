@@ -4,6 +4,19 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
+* Changes in Verilog::Language 2.225 8/12/2003
+
+***	Have Getopt::parameter return unknown arguments from
+	inside -f files.  [David Duxstad]
+
+***	Change assert_amone/onehot to use faster equation
+	in place of case statement. [Greg Waters]
+
+****	Add tri/tri0/tri1 as wire declarative terms. [David Duxstad]
+
+****	Redhat 9 and GCC 3.2.2 fixes
+
+
 * Changes in Verilog::Language 2.224 5/20/2003
 
 **	Add order based pin/cell connections.  [by David Duxstad]
@@ -185,7 +198,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #50 $$Date: 2003/05/19 $$Author: wsnyder $
+$Revision: #54 $$Date: 2003/08/12 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

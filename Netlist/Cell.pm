@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #21 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #23 $$Date: 2003/08/12 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.224';
+$VERSION = '2.225';
 use strict;
 
 structs('new',
@@ -70,6 +70,7 @@ sub _link {
     my $self = shift;
     $self->_link_guts();
     if (!$self->submod()
+	&& !$self->module->is_libcell()
 	&& $self->netlist->{link_read}) {
 	print "  Link_Read ",$self->submodname,"\n" if $Verilog::Netlist::Debug;
 	$self->netlist->read_file(filename=>$self->submodname,

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #9 $$Date: 2002/09/05 $$Author: wsnyder $
+# $Revision: #10 $$Date: 2003/08/12 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use IO::File;
@@ -26,7 +26,7 @@ ok($orig_lines==$new_lines);
 
 # Build the model
 unlink "simv";
-if (!-r "$ENV{VCS_HOME}/bin/vcs") {
+if (!$ENV{VCS_HOME} || !-r "$ENV{VCS_HOME}/bin/vcs") {
     warn "*** You do not have VCS installed, not running rest of test!\n";
     skip(1,1);
 } else {

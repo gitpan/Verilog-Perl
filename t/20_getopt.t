@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #6 $$Date: 2002/07/16 $$Author: wsnyder $
+# $Revision: #7 $$Date: 2003/05/20 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use strict;
@@ -56,15 +56,13 @@ ok ($#out == 14);
 {
     my $opt2 = new Verilog::Getopt (gcc_style=>1, vcs_style=>0);
     my @left2 = $opt2->parameter(@param);
-    print join(" ",@left2),"\n";
+    print "LEFT: ",join(" ",@left2),"\n";
     ok ($#left2 == 8);
 }
 
 {
     my $opt2 = new Verilog::Getopt (gcc_style=>0, vcs_style=>1);
     my @left2 = $opt2->parameter(@param);
-    print join(" ",@left2),"\n";
-    ok ($#left2 == 2);
+    print "LEFT: ",join(" ",@left2),"\n";
+    ok ($#left2 == 3);
 }
-
-
