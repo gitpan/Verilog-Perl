@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: 1.40 $$Date: 2005-03-01 17:59:56 -0500 (Tue, 01 Mar 2005) $$Author: wsnyder $
+# $Revision: 1.40 $$Date: 2005-03-14 08:37:37 -0500 (Mon, 14 Mar 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.313';
+$VERSION = '2.314';
 use strict;
 
 structs('new',
@@ -51,6 +51,7 @@ structs('new',
 	   _autosubcells=> '$', #'	# Module has /*AUTOSUBCELL_DECL*/ in it
 	   _autotrace	=> '%', #'	# Module has /*AUTOTRACE*/ in it
 	   _autoinoutmod=> '$', #'	# Module has /*AUTOINOUT_MODULE*/ in it
+	   _pintemplates=> '@', #'	# Module SP_TEMPLATEs
 	   _ctor	=> '$', #'	# Module has SC_CTOR in it
 	   _code_symbols=> '$', #'	# Hash ref of symbols found in raw code
 	   lesswarn     => '$',	#'	# True if some warnings should be disabled

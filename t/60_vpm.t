@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Revision: 1.17 $$Date: 2005-02-16 08:24:01 -0500 (Wed, 16 Feb 2005) $$Author: wsnyder $
+# $Revision: 1.17 $$Date: 2005-03-02 16:23:02 -0500 (Wed, 02 Mar 2005) $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -46,7 +46,7 @@ if ($ENV{VCS_HOME} && -r "$ENV{VCS_HOME}/bin/vcs") {
     unlink ("./simv");
     ok(1);
 }
-elsif ($ENV{CDS_INCISIVE_HOME} && -d $ENV{CDS_INCISIVE_HOME}) {
+elsif ($ENV{NC_ROOT} && -d "$ENV{NC_ROOT}/tools") {
     run_system ("ncverilog"
 		." -q"
 		# vpm uses `pli to point to the hiearchy of the pli module
