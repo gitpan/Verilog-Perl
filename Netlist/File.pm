@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: 1.42 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.42 $$Date: 2005-01-27 11:10:41 -0500 (Thu, 27 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.310';
+$VERSION = '2.311';
 use strict;
 
 structs('new',
@@ -131,6 +131,7 @@ sub signal_decl {
     my $netname = shift;
     my $vector = shift;
     my $array = shift;
+    my $signed = shift;
     print " Sig $netname $inout\n" if $Verilog::Netlist::Debug;
 
     my $msb;
@@ -158,6 +159,7 @@ sub signal_decl {
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     simple_type=>1, type=>'wire', array=>$array,
 	     comment=>undef, msb=>$msb, lsb=>$lsb,
+	     signed=>$signed,
 	     );
     }
     elsif ($inout =~ /(inout|in|out)(put|)$/) {
@@ -169,6 +171,7 @@ sub signal_decl {
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     simple_type=>1, type=>'wire', array=>$array,
 	     comment=>undef, msb=>$msb, lsb=>$lsb,
+	     signed=>$signed,
 	     );
 	##
 	my $port = $modref->new_port

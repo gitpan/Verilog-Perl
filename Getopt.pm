@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: 1.57 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.57 $$Date: 2005-01-27 11:10:41 -0500 (Thu, 27 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.310';
+$VERSION = '2.311';
 
 #######################################################################
 #######################################################################
@@ -240,6 +240,7 @@ sub depend_files {
 
 sub get_parameters {
     my $self = shift;
+    # Defines
     my @params = ();
     foreach my $def (sort (keys %{$self->{defines}})) {
 	my $defvalue = $self->defvalue($def);
@@ -250,9 +251,14 @@ sub get_parameters {
 	    push @params, "+define+${def}${defvalue}";
 	}
     }
+    # Put all libexts on one line, else NC-Verilog will bitch
+    my $exts="";
     foreach my $ext ($self->libext()) {
-	push @params, "+libext+$ext";
+	$exts = "+libext" if !$exts;
+	$exts .= "+$ext";
     }
+    push @params, $exts if $exts;
+    # Includes...
     foreach my $dir ($self->incdir()) {
 	if ($self->{gcc_style}) {
 	    push @params, "-I${dir}";
@@ -312,7 +318,7 @@ sub file_path {
 
     defined $filename or carp "%Error: Undefined filename,";
     return $self->{_file_path_cache}{$filename} if defined $self->{_file_path_cache}{$filename};
-    if (-r $filename) {
+    if (-r $filename && !-d $filename) {
 	$self->{_file_path_cache}{$filename} = $filename;
 	$self->depend_files($filename);
 	return $filename;
@@ -327,7 +333,7 @@ sub file_path {
 	foreach my $postfix ("", @{$self->{libext}}) {
 	    my $found = "$dir/$filename$postfix";
 	    next if $checked{$found}; $checked{$found}=1;  # -r can be quite slow
-	    if (-r $found) {
+	    if (-r $found && !-d $filename) {
 		$self->{_file_path_cache}{$filename} = $found;
 		$self->depend_files($found);
 		return $found;

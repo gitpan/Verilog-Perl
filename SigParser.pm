@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: 1.55 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.55 $$Date: 2005-01-27 11:10:41 -0500 (Thu, 27 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -62,7 +62,7 @@ This method is called when a module is defined.
 
 This method is called when a function is defined.
 
-=item $self->signal_decl ( $keyword, $signame, $vector, $mem )
+=item $self->signal_decl ( $keyword, $signame, $vector, $mem, $signed )
 
 This method is called when a signal is declared.  The first argument,
 $keyword is ('input', 'output', etc), the second argument is the name of
@@ -136,7 +136,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.310';
+$VERSION = '2.311';
 
 #######################################################################
 
@@ -187,6 +187,7 @@ sub signal_decl {
     my $name = shift;
     my $vector = shift;
     my $mem = shift;
+    my $signed = shift;
 }
 
 sub instant {
@@ -244,6 +245,7 @@ sub reset {
     $self->{is_inst_ok} = 1;
     $self->{is_pin_ok} = 0;
     $self->{is_signal_ok} = 1;
+    $self->{is_signed} = undef;
     $self->{in_preproc_line} = -1;
     $self->{in_celldefine} = 0;
     $self->{in_vector} = 0;
@@ -275,6 +277,10 @@ sub keyword {
 	if ($token =~ /^\`(end)?celldefine$/) {
 	    $self->{in_celldefine} = !($1 || "");
 	}
+    }
+    if ($token eq 'signed') {
+	$self->{is_signed} = 1;
+	return;	  # Ignore rest of code, need to pickup input/output
     }
     if ($self->{in_preproc_line} != $self->line()) {
 	$self->{last_keyword} = $self->{attr_keyword} = $token;
@@ -430,7 +436,8 @@ sub operator {
 		$self->pin ($pin_name,
 			    $sym . $vec,
 			    $self->{is_pin_ok},
-			    $namedports);
+			    $namedports,
+			    $self->{signed});
 		$self->{is_pin_ok}++;  # moved to after pin call
 		$self->{pin_name} = undef;
 		$self->{last_vectors} = "";
@@ -479,14 +486,17 @@ sub operator {
 			    }
 			}
 			print "Gota$lkw $sig $vec $mem\n"    if ($Debug);
-			$self->signal_decl ($lkw, $sig, $vec, $mem);
+			$self->signal_decl ($lkw, $sig, $vec, $mem, $self->{is_signed});
 		    }
 		}
 		# Prepare for next command
+		if ($token eq ";" || ($token eq "," && $self->{in_ports})) {
+		    $self->{last_vectors} = "";
+		    $self->{is_signed} = undef;
+		}
 		if ($token eq ";") {
 		    $self->{last_keyword} = "";  # Keep {attr_keyword}
 		    @{$self->{last_symbols}} = ();
-		    $self->{last_vectors} = "";
 		    $self->{is_inst_ok} = 1;
 		    $self->{is_signal_ok} = 1;
 		    $self->{is_pin_ok} = 0;

@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Revision: 1.15 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+/* $Revision: 1.15 $$Date: 2005-01-25 10:08:19 -0500 (Tue, 25 Jan 2005) $$Author: wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 
@@ -203,6 +203,13 @@ void VPreprocLex::lineDirective(const char* textp) {
     if (textp != fn) {
 	string newfilename; newfilename.append(fn, (textp-fn));
 	m_curFilelinep = m_curFilelinep->create(newfilename, m_curFilelinep->lineno());
+    }
+}
+
+void VPreprocLex::unused() {
+    if (0) {
+	// Prevent unused warnings
+	yy_top_state();
     }
 }
 

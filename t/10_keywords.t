@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Revision: 1.9 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.9 $$Date: 2005-01-25 17:10:49 -0500 (Tue, 25 Jan 2005) $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -9,7 +9,7 @@
 use strict;
 use Test;
 
-BEGIN { plan tests => 17 }
+BEGIN { plan tests => 19 }
 BEGIN { require "t/test_utils.pl"; }
 
 use Verilog::Language;
@@ -25,8 +25,10 @@ ok (Verilog::Language::number_value("5'o13")==11);
 ok (Verilog::Language::number_value("5'B11")==3);
 ok (Verilog::Language::number_value("5 'B 11")==3);
 ok (Verilog::Language::number_value("'b10")==2);
+ok (Verilog::Language::number_value("2'sb10")==2);
 ok (Verilog::Language::number_bits("8'b10")==8);
 ok (Verilog::Language::number_bits("8 'b 10")==8);
+ok (Verilog::Language::number_signed("8 'sb 1")==1);
 ok (!defined Verilog::Language::number_bits("'b10"));
 
 ok (Verilog::Language::strip_comments("he/**/l/**/lo") eq "hello");

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: 1.39 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.39 $$Date: 2005-01-27 11:10:41 -0500 (Thu, 27 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.310';
+$VERSION = '2.311';
 use strict;
 
 ######################################################################
@@ -37,6 +37,7 @@ structs('new',
 	   comment	=> '$', #'	# Comment provided by user
 	   array	=> '$', #'	# Vector
 	   module	=> '$', #'	# Module entity belongs to
+	   signed	=> '$', #'	# True if signed
 	   # below only after links()
 	   port		=> '$', #'	# Reference to port connected to
 	   msb		=> '$', #'	# MSB of signal (if known)
@@ -99,12 +100,14 @@ sub lint {
 
 sub _decls {
     my $self = shift;
+    my $type = $self->type;
     if ($self->port) {
-	return "input" if $self->port->direction eq "in";
-	return "output" if $self->port->direction eq "out";
-	return "inout" if $self->port->direction eq "inout";
+	$type = "input" if $self->port->direction eq "in";
+	$type = "output" if $self->port->direction eq "out";
+	$type = "inout" if $self->port->direction eq "inout";
     }
-    return $self->type;
+    $type .= " signed" if $self->signed;
+    return $type;
 }
 
 sub verilog_text {

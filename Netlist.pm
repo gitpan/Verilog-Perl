@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: 1.43 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.43 $$Date: 2005-01-27 11:10:41 -0500 (Thu, 27 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.310';
+$VERSION = '2.311';
 
 ######################################################################
 #### Error Handling
@@ -171,7 +171,7 @@ sub resolve_filename {
 	$filename = $self->remove_defines($filename);
 	$filename = $self->{options}->file_path($filename);
     }
-    if (!-r $filename) {
+    if (!-r $filename || -d $filename) {
 	return undef;
     }
     $self->dependency_in ($filename);

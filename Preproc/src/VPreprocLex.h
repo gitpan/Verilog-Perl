@@ -1,4 +1,4 @@
-// $Revision: 1.17 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $  -*- C++ -*-
+// $Revision: 1.17 $$Date: 2005-01-25 10:08:19 -0500 (Tue, 25 Jan 2005) $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal header for lex interfacing
 //
@@ -129,6 +129,7 @@ class VPreprocLex {
     void setStateDefValue();
     void setStateIncFilename();
     void unputString(const char* textp);
+    void unused();
 };
 
 #endif // Guard
