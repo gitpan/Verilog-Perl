@@ -55,7 +55,7 @@ verilog/inc1.v:16:
 verilog/inc1.v:17: /*******COMMENT*****/
 verilog/inc1.v:18:  foo  bar 
 verilog/inc1.v:19:  foobar2 
-verilog/inc1.v:20:     deep  deep 
+verilog/inc1.v:20:   deep   deep  
 verilog/inc1.v:21:  first part    		second part 
 verilog/inc1.v:22: 
 verilog/inc1.v:23: 

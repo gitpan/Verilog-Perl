@@ -1,4 +1,4 @@
-#ident "$Id: VPreproc.cpp,v 1.15 2002/03/11 16:02:26 wsnyder Exp $" //-*- C++ -*-
+#ident "$Id: VPreproc.cpp,v 1.16 2002/04/08 17:14:48 cbujosa Exp $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal implementation of default preprocessor
 //
@@ -214,9 +214,7 @@ string VPreprocImp::defineSubst(string in) {
 		// Put it into "in", as we need to allow defines with other defines inside them.
 		// Pack spaces around the define value, as there must be token boundaries around it.
 		// It also makes it more obvious where defines got substituted.
-		in.append(" ");
-		in.append(m_preprocp->defValue(name));
-		in.append(" ");
+		in = " " + m_preprocp->defValue(name) + " " + in;
 		level++;
 		if (level > VPreproc::DEFINE_RECURSION_LEVEL_MAX) {
 		    error("Recursive `define substitution: "+name);

@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.18 2002/03/11 15:31:50 wsnyder Exp $
+# $Id: SigParser.pm,v 1.20 2002/05/03 13:55:00 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -38,7 +38,8 @@ Verilog::SigParser - Signal Parsing for Verilog language files
 
 The C<Verilog::SigParser> package builds upon the Verilog::Parse function
 to provide callbacks for when a signal is declared, a module instantiated,
-or a module defined.
+or a module defined.  For a higher level interface to this package, see
+C<Verilog::Netlist>.
 
 The external interface to Verilog::SigParser is described in the
 Verilog::Parser module.  You will probably want to use the preprocessing
@@ -81,6 +82,8 @@ parameter is the name of the cell.
 
 C<Verilog::Parser>, 
 C<Verilog::Language>, 
+C<Verilog::Netlist>, 
+C<Verilog::Getopt>, 
 
 =head1 BUGS
 
@@ -119,7 +122,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.100';
+$VERSION = '2.200';
 
 #######################################################################
 

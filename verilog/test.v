@@ -1,5 +1,7 @@
-// $Id: test.v,v 1.5 2001/02/13 15:11:16 wsnyder Exp $
+// $Id: test.v,v 1.6 2002/03/20 14:18:01 wsnyder Exp $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
+
+// ENCRYPT_ME
 
 module example (/*AUTOARG*/
    // Outputs
@@ -19,6 +21,8 @@ module example (/*AUTOARG*/
 
    output z;
 
-   wire z = a|b;
+   wire result = a|b;
+
+   wire z = result;
 
 endmodule

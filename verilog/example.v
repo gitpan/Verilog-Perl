@@ -40,7 +40,9 @@ module example;
       bus_ack  = 1'b0;
    end
    always @ (posedge clk) begin
-      $assert_req_ack (bus_req, bus_ack, bus_data);
+      $assert_req_ack (bus_req,
+		       bus_ack,
+		       bus_data);
    end
 
    // Overall control loop

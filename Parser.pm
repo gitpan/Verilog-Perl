@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.29 2002/03/11 15:31:50 wsnyder Exp $
+# $Id: Parser.pm,v 1.31 2002/05/03 13:55:00 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -38,7 +38,9 @@ Verilog::Parser - Parse Verilog language files
 =head1 DESCRIPTION
 
 The C<Verilog::Parser> package will tokenize a Verilog file when the parse()
-method is called and invoke various callback methods.  
+method is called and invoke various callback methods.   This is useful for
+extracting information and editing files while retaining all context.  For
+netlist like extractions, see C<Verilog::Netlist>.
 
 The external interface to Verilog::Parser is:
 
@@ -171,6 +173,8 @@ $parser->report();
 C<Verilog::Preproc>, 
 C<Verilog::ParserSig>, 
 C<Verilog::Language>, 
+C<Verilog::Netlist>, 
+C<Verilog::Getopt>, 
 C<vrename>,
 C<vpm>
 
@@ -213,7 +217,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.100';
+$VERSION = '2.200';
 
 #######################################################################
 

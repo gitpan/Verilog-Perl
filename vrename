@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename,v 1.18 2002/03/11 15:31:50 wsnyder Exp $
+# $Id: vrename,v 1.22 2002/05/03 13:55:00 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -23,6 +23,7 @@
 ######################################################################
 
 require 5.005;
+package main;
 use Getopt::Long;
 use IO::File;
 use Pod::Text;
@@ -31,21 +32,24 @@ use Verilog::Parser;
 use strict;
 
 use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
-	     %Signal_Locs %Signal_Newname %Encrypt $Opt_Crypt);
-$VERSION = '2.100';
+	     %Signal_Locs %Signal_Newname %Encrypt
+	     $Debug $Opt_Xref $Opt_Crypt $Opt_Write @Files);
+
+$VERSION = '2.200';
 
 ######################################################################
 
 # List of signals to never crypt
 # (Just put temporaries into signals.vrename)
-%Vrename_Dont_Crypt =
-    (
-     "unused_ok"  => "",
-     "__FILE__"  => "",
-     "__LINE__"  => "",
-     "ns"	=> "",	# As in `timescale 10 ns
-     "ps"	=> "",	# As in `timescale 10 ps
-     );
+foreach (
+	 'unused_ok',
+	 '__FILE__',	# Verilator, proposed for Verilog 2005
+	 '__LINE__',	# Verilator, proposed for Verilog 2005
+	 'ms','us','ns','ps','fs',	# Time precision arguments used in `timescale
+	 'a'..'z', 'A'..'Z',		# Single character names (cryptic enough!)
+	 ) {
+    $Vrename_Dont_Crypt{$_} = "";
+}
 
 # These defines contain a preprocessor directive
 # Thus when crypting we have to keep them at left edge
@@ -58,16 +62,16 @@ $VERSION = '2.100';
 # main
 
 # capitalized are globals
-my $Debug = 0;
+$Debug = 0;
 my $opt_change = 0;
 my $opt_list = 0;
-my $Opt_Xref = 0;
+$Opt_Xref = 0;
 $Opt_Crypt = 0;   # Global scope, used in sub-package
-my $Opt_Write = 1;
+$Opt_Write = 1;
 my $opt_read = 0;
 my $change_filename = "signals.vrename";
 my $output_dir = "";
-my @Files = ();
+@Files = ();
 
 if (! GetOptions (
 		  "help"	=> \&usage,
@@ -128,7 +132,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename,v 1.18 2002/03/11 15:31:50 wsnyder Exp $ ', "\n";
+    print 'Id: $Id: vrename,v 1.22 2002/05/03 13:55:00 wsnyder Exp $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -136,7 +140,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename,v 1.18 2002/03/11 15:31:50 wsnyder Exp $ ', "\n";
+    print '$Id: vrename,v 1.22 2002/05/03 13:55:00 wsnyder Exp $ ', "\n";
     exit (1);
 }
 
@@ -306,8 +310,10 @@ sub crypt_string {
     my $magice = "@@@@@!~SAVEVLE~!@@@@@";
     $filestrg =~ s/(\/[*\/]\s*)[Vv]erilint\s*([0-9]+)\s*off/$magicb Verilint $2 off $magice$1/g;
     $filestrg =~ s/(\/[*\/]\s*)([Ss]ynopsys\s*\S+)/$magicb $2 $magice$1/g;
-    $filestrg =~ s/\/\/.*\n//g;
-    $filestrg =~ s/\/\*[\000-\377]*?\*\///g;
+    $filestrg =~ s/\/\*[\000-\377]*?\*\///g;        # block comments
+    $filestrg =~ s/^\s*\/\/.*\n//g;                 # lines begining with '//'
+    $filestrg =~ s/\/\/[^\"\n]*\n//g;               # inline comments with no '"' chars, saves '"////stuf"'
+    $filestrg =~ s/\/\/[^\"\n]*\"[^\"\n]*\".*\n//g; # inline comments with 2 '"' chars, kills '// "stuff"'
     $filestrg =~ s/[ \t]+/ /g;
     $filestrg =~ s/^[ \t]+//g;
     $filestrg =~ s/[ \t]+$//g;
@@ -401,7 +407,7 @@ sub verilog_change_sig {
 	if ($new ne $sig) {
 	    my $magic = "@@@@@!~${hadrepl}~!@@@@@";
 	    my $sig_quoted = quotemeta $sig;
-	    if ($filestrg =~ s/([^a-zA-Z0-9_\$])$sig_quoted(?=[^a-zA-Z0-9_])/$1$magic/g) {
+	    if ($filestrg =~ s/([^a-zA-Z0-9_\$\%\'\"])$sig_quoted(?=[^a-zA-Z0-9_])/$1$magic/g) {
 		print "match s$sig n$new m$magic\n" if $Debug;
 		$hadrepl ++;
 		$signal_magic{$sig} = $magic;

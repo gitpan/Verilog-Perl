@@ -3,8 +3,16 @@ Copyright (C) 2000 Wilson Snyder.
 See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
-	
-This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
+
+* Changes in Verilog::Language 2.200 5/3/2002
+
+***	Many fixes to vrename --crypt, including fixing `timescale,
+	comments, and replacement of strings.  [Greg Davis]
+
+****	Fixed vpm $asserts dropping extra newlines. [Greg Waters]
+
+****	Fixed `define substitution bug.
+
 
 * Changes in Verilog::Language 2.100 3/11/2002 
 
@@ -109,7 +117,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 
 ----------------------------------------------------------------------
-$Id: NEWS,v 1.27 2002/03/11 16:02:22 wsnyder Exp $
+$Id: NEWS,v 1.30 2002/05/03 13:55:00 wsnyder Exp $
 ----------------------------------------------------------------------
 Copyright information:
 

@@ -65,7 +65,7 @@ COMMENT: /*******COMMENT*****/
 verilog/inc1.v:17:  /*CMT*/ 
 verilog/inc1.v:18:  foo  /*CMT*/  bar    /*CMT*/ 
 verilog/inc1.v:19:  foobar2  /*CMT*/ 
-verilog/inc1.v:20:     deep  deep 
+verilog/inc1.v:20:   deep   deep  
 verilog/inc1.v:21:  first part    		second part 
 verilog/inc1.v:22: 
 verilog/inc1.v:23: 
