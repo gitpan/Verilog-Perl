@@ -4,6 +4,11 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
+* Changes in Verilog::Language 2.213 9/5/2002
+
+****	Support Cygwin (Windows) installations.  [Richard Dje]
+
+
 * Changes in Verilog::Language 2.212 8/30/2002
 
 ***	Fix pin concatenations to not create false pins. [Kenneth Jiang]
@@ -138,7 +143,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #36 $$Date: 2002/08/30 $$Author: wsnyder $
+$Revision: #37 $$Date: 2002/09/05 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

@@ -1,11 +1,11 @@
 #!/usr/local/bin/perl -w
-# $Revision: #7 $$Date: 2002/07/16 $$Author: wsnyder $
+# $Revision: #8 $$Date: 2002/09/05 $$Author: wsnyder $
 #DESCRIPTION: Perl ExtUtils: Common routines required by package tests
 
 use IO::File;
 use vars qw($PERL);
 
-$PERL = "$^X -Iblib/arch -Iblib/lib";
+$PERL = "$^X -Iblib/arch -Iblib/lib -IPreproc/blib/arch -IPreproc/blib/lib";
 
 mkdir 'test_dir',0777;
 
@@ -14,6 +14,8 @@ if (!$ENV{HARNESS_ACTIVE}) {
     use lib '..';
     use lib "blib/lib";
     use lib "blib/arch";
+    use lib "Preproc/blib/lib";
+    use lib "Preproc/blib/arch";
 }
 
 sub run_system {

@@ -1,4 +1,4 @@
-# $Revision: #4 $$Date: 2002/07/16 $$Author: wsnyder $
+# $Revision: #5 $$Date: 2002/09/05 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
@@ -25,10 +25,11 @@ clean::
 
 WriteMakefile(
               NAME => "Verilog::Preproc",
-	      CC => 'g++',
-	      LD => 'g++',
+	      CC => 'g++',	# Don't change LD, it messes up cygwin
+	      LIBS => '-lstdc++',
 	      VERSION_FROM  => 'Preproc.pm',
 	      XSOPT => '-C++',
+    	      OBJECT => '$(O_FILES)',
 	      # Included in .xs, as had problems
 	      #MYEXTLIB => 'src/PreprocSrc.o',
 	      MYEXTLIB => 'src/VFileLine.o src/VPreproc.o src/VPreprocLex.o',

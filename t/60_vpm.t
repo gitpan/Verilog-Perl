@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #7 $$Date: 2002/08/14 $$Author: wsnyder $
+# $Revision: #9 $$Date: 2002/09/05 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use IO::File;
@@ -12,17 +12,15 @@ BEGIN { require "t/test_utils.pl"; }
 print "Checking vpm...\n";
 
 mkdir 'test_dir', 0777;
-chdir 'test_dir';
-
 
 # Preprocess the files
-mkdir ".vpm", 0777;
-run_system ("${PERL} ../vpm --nostop --date ../verilog/");
+mkdir "test_dir/.vpm", 0777;
+run_system ("${PERL} vpm --nostop -o test_dir/.vpm --date verilog/");
 ok(1);
-ok(-r '.vpm/pli.v');
+ok(-r 'test_dir/.vpm/pli.v');
 
-my $orig_lines = lines_in("../verilog/example.v");
-my $new_lines = lines_in(".vpm/example.v");
+my $orig_lines = lines_in("verilog/example.v");
+my $new_lines = lines_in("test_dir/.vpm/example.v");
 print "Line count: $orig_lines =? $new_lines\n";
 ok($orig_lines==$new_lines);
 
@@ -32,6 +30,7 @@ if (!-r "$ENV{VCS_HOME}/bin/vcs") {
     warn "*** You do not have VCS installed, not running rest of test!\n";
     skip(1,1);
 } else {
+    chdir 'test_dir';
     run_system (# We use VCS, insert your simulator here
 		"$ENV{VCS_HOME}/bin/vcs"
 		# vpm uses `pli to point to the hiearchy of the pli module
@@ -46,6 +45,7 @@ if (!-r "$ENV{VCS_HOME}/bin/vcs") {
     # Execute the model (VCS is a compiled simulator)
     run_system ("./simv");
     unlink ("./simv");
+    chdir '..';
 	
     ok(1);
 }
