@@ -9,6 +9,9 @@ module example (/*AUTOARG*/
    // See http://www.ultranet.com/~wsnyder/verilog-perl
    // for what AUTOARG and friends can do for you!
 
+   /*Comment // test*/
+   //
+   
    input a;
    input b;
 

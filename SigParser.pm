@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.5 2000/05/22 17:46:51 wsnyder Exp $
+# $Id: SigParser.pm,v 1.7 2000/11/02 22:03:06 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
@@ -136,11 +136,14 @@ sub new {
     $self->{last_task}    = undef;
     @{$self->{last_symbols}} = ();
     $self->{last_vectors} = "";
+    $self->{last_param} = "";
     $self->{is_inst_ok}   = 1;
     $self->{is_pin_ok}    = 0;
     $self->{is_signal_ok} = 1;
     $self->{in_preproc_line} = -1;
     $self->{in_vector} = 0;
+    $self->{in_param_assign} = 0;
+    $self->{possibly_in_param_assign} = 0;
     $self->{pin_name}    = undef;
 
     bless $self, $class; 
@@ -249,6 +252,8 @@ sub symbol {
     if ($self->{in_preproc_line} != $self->line()) {
 	if ($self->{in_vector} == 1) {
 	    $self->{last_vectors} = $self->{last_vectors} . $token;
+	} elsif ($self->{in_param_assign} == 1) {
+	    $self->{last_param} = $self->{last_param} . $token;
 	} else {
 	    push @{$self->{last_symbols}}, $token;
 	}
@@ -292,6 +297,12 @@ sub operator {
 	}
 	elsif ($self->{in_vector} == 1) {
 	    $self->{last_vectors} = $self->{last_vectors} . $token;
+	}
+	elsif ($self->{in_param_assign} == 1) {
+	    if ($token eq ")") {
+		$self->{in_param_assign} = 0;
+	    }
+	    $self->{last_param} = $self->{last_param} . $token;
 	}
 	elsif ($token eq "("
 	    && ($lkw eq "" || $lkw =~ /^end/ || $self->{got_preproc})
@@ -387,6 +398,15 @@ sub operator {
 	    } else {
 		$self->{last_vectors} = $self->{last_vectors} . ' ' . $token;
 	    }
+	}
+	elsif ($token eq "#") {
+	    $self->{possibly_in_param_assign} = 1;
+	    $self->{last_param} = $token;
+	}
+	elsif ($token eq "(" && $self->{possibly_in_param_assign}) {
+	    $self->{in_param_assign} = 1;
+	    $self->{possibly_in_param_assign} = 0;
+	    $self->{last_param} = $self->{last_param} . $token;
 	}
 	else {
 	    $self->{is_inst_ok} = 0;

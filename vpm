@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm,v 1.86 2000/09/12 19:13:26 wsnyder Exp $
+# $Id: vpm,v 1.88 2000/10/25 15:40:42 wsnyder Exp $
 ######################################################################
 #                                                                           
 # Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@world.std.com>
@@ -108,7 +108,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm,v 1.86 2000/09/12 19:13:26 wsnyder Exp $ ';
+    print 'Version: $Id: vpm,v 1.88 2000/10/25 15:40:42 wsnyder Exp $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -157,7 +157,7 @@ sub assert_info {
     shift;
     my $cond = shift;
     my @params = @_;
-    message_line ("-I", $cond, 0,0, @params);
+    message_line ("-i", $cond, 0,0, @params);
 }
 
 sub check_ilevel {
@@ -260,7 +260,7 @@ sub message_write {
     my $otherargs = shift;
     my @params = @_;	# Task (dropped), Level (dropped), printf string, args
 
-    my $task = (($char ne "-I")
+    my $task = (($char ne "-I") && ($char ne "-i")
 		&& ((   ($char eq "%%E") && "`pli.errors = `pli.errors+1;")
 		    || (($char eq "%%W") && "`pli.warnings = `pli.warnings+1;")
 		    || die "Unknown message character class '$char'\n"));

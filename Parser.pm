@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.7 2000/09/07 17:12:03 wsnyder Exp $
+# $Id: Parser.pm,v 1.8 2000/11/02 19:47:02 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
@@ -202,7 +202,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.6';
+$VERSION = '1.7';
 
 #######################################################################
 
@@ -372,7 +372,7 @@ sub parse {
 		$self->{token_string} = "\/\*";
 		$self->{incomment} = 1;
 	    }
-	    elsif ($text =~ s/^(\/\/[^\n]+)//) {
+	    elsif ($text =~ s/^(\/\/[^\n]*)//) {
 		my $token = $1;
 		print "GotaCOMMENT $token\n"    if ($Debug);
 		$self->comment ($token);
