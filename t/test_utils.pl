@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
+# $Revision: #8 $$Date: 2002/09/05 $$Author: wsnyder $
 #DESCRIPTION: Perl ExtUtils: Common routines required by package tests
 
 use IO::File;

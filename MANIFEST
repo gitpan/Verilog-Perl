@@ -25,6 +25,7 @@ Preproc/src/VPreproc.cpp
 Preproc/src/VPreproc.h
 Preproc/src/VPreprocLex.h
 Preproc/src/VPreprocLex.l
+Preproc/src/example.cpp
 Preproc/typemap
 README
 SigParser.pm

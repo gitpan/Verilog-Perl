@@ -1,4 +1,4 @@
-// $Revision: #2 $$Date: 2003/02/06 $$Author: wsnyder $
+// $Revision: #5 $$Date: 2003/02/06 $$Author: tlevergo $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 `define hsub v_hier_sub

@@ -1,4 +1,4 @@
-// $Revision: #2 $$Date: 2003/02/06 $$Author: wsnyder $
+// $Revision: #4 $$Date: 2003/02/06 $$Author: tlevergo $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 module v_hier_sub (/*AUTOARG*/

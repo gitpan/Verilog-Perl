@@ -1,4 +1,4 @@
-# $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
+# $Revision: #6 $$Date: 2002/10/25 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;

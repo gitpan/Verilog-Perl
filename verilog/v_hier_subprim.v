@@ -1,4 +1,4 @@
-// $Revision: #1 $$Date: 2003/02/06 $$Author: wsnyder $
+// $Revision: #1 $$Date: 2003/02/06 $$Author: tlevergo $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 // surefire lint_off UDPUNS

@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Revision: #1 $$Date: 2002/12/16 $$Author: lab $
+/* $Revision: #8 $$Date: 2002/08/07 $$Author: wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 

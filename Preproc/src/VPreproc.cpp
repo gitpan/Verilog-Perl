@@ -1,4 +1,4 @@
-#ident "$Revision: #1 $$Date: 2002/12/16 $$Author: lab $" //-*- C++ -*-
+#ident "$Revision: #18 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal implementation of default preprocessor
 //
