@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #49 $$Date: 2004/10/26 $$Author: ws150726 $
+# $Revision: #51 $$Date: 2004/11/10 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -132,7 +132,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.301';
+$VERSION = '2.302';
 
 #######################################################################
 
@@ -365,9 +365,11 @@ sub operator {
 	elsif ($self->{in_vector} == 1) {
 	    $self->{last_vectors} = $self->{last_vectors} . $token;
 	}
-	elsif ($self->{in_param_assign} == 1) {
-	    if ($token eq ")") {
+	elsif ($self->{in_param_assign}) {
+	    if ($token eq ")" && $self->{paren_level}==0) {
 		$self->{in_param_assign} = 0;
+		$self->{last_keyword} = "";
+		$self->{last_symbols} = $self->{param_pre_symbols};
 	    }
 	    $self->{last_param} = $self->{last_param} . $token;
 	}
@@ -493,6 +495,7 @@ sub operator {
 	elsif ($token eq "(" && $self->{possibly_in_param_assign}) {
 	    $self->{in_param_assign} = 1;
 	    $self->{possibly_in_param_assign} = 0;
+	    $self->{param_pre_symbols} = [@{$self->{last_symbols}}];
 	    $self->{last_param} = $self->{last_param} . $token;
 	}
 	else {

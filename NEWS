@@ -4,6 +4,10 @@ The contributors that suggested a given feature is shown in [].
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.302 2004/11/10
+
+****	Support Verilog 2001 named instantiation parameters. [Thomas Ziller]
+
 * Changes in Verilog::Language 2.301 2004/10/26
 
 ****	Fix pod documentation errors. [Offer Kaye]
@@ -242,7 +246,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: #78 $$Date: 2004/10/26 $$Author: ws150726 $
+$Revision: #80 $$Date: 2004/11/10 $$Author: ws150726 $
 ----------------------------------------------------------------------
 Copyright information:
 
