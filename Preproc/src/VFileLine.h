@@ -1,4 +1,4 @@
-#ident "$Revision: #7 $$Date: 2002/12/14 $$Author: lab $" //-*- C++ -*-
+// $Revision: #8 $$Date: 2003/04/09 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Error handling
 //

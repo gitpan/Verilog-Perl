@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #38 $$Date: 2003/03/04 $$Author: wsnyder $
+# $Revision: #40 $$Date: 2003/05/06 $$Author: wsnyder $
 ######################################################################
 #
 # This program is Copyright 2002 by Wilson Snyder.
@@ -32,7 +32,7 @@ use Verilog::Parser;
 
 use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
 	     %Vpm_Chiponly_Rename);
-$VERSION = '2.221';
+$VERSION = '2.222';
 
 ######################################################################
 # configuration
@@ -136,7 +136,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #38 $$Date: 2003/03/04 $$Author: wsnyder $ ';
+    print 'Version: $Revision: #40 $$Date: 2003/05/06 $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -807,7 +807,7 @@ sub vpm_recurse_dir {
 			if ($file_directory{$destfile}) {
 			    my $old = $file_directory{$destfile};
 			    die "%Error: Two files with same basename: $srcfile, $old\n";
-			    # This warning is to prevent search order dependance in the
+			    # This warning is to prevent search order dependence in the
 			    # verilog search path.  It also makes sure we don't clobber
 			    # one file with another by the same name in the .vpm directory
 			}

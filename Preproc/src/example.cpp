@@ -1,4 +1,4 @@
-#ident "$Revision: #6 $$Date: 2002/12/12 $$Author: wsnyder $" //-*- C++ -*-
+// $Revision: #7 $$Date: 2003/04/09 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Example use of VPreproc.h
 //

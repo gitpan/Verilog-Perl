@@ -1,4 +1,4 @@
-#ident "$Revision: #10 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
+// $Revision: #11 $$Date: 2003/04/09 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal header for lex interfacing
 //

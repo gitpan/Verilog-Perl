@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-# $Revision: #9 $$Date: 2003/02/06 $$Author: tlevergo $
+# $Revision: #10 $$Date: 2003/03/24 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 
 use strict;
@@ -53,10 +53,11 @@ ok(1);
 	    printf ($indent."	  %sput %s\n", $sig->direction, $sig->name);
 	}
 	foreach my $cell ($mod->cells_sorted) {
-	    show_hier ($cell->submod, $indent."	 ", $hier.".") if $cell->submod;
+	    printf ($indent. "    Cell %s\n", $cell->name);
 	    foreach my $pin ($cell->pins_sorted) {
 		printf ($indent."     .%s(%s)\n", $pin->name, $pin->netname);
 	    }
+	    show_hier ($cell->submod, $indent."	 ", $hier, $cell->name) if $cell->submod;
 	}
     }
 

@@ -1,4 +1,4 @@
-#ident "$Revision: #18 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
+// $Revision: #20 $$Date: 2003/04/09 $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Internal implementation of default preprocessor
 //
@@ -200,7 +200,8 @@ string VPreprocImp::defineSubst(string in) {
 	    in.erase(0,tick);
 	    // Define name now starts at location 0 in in.
 	    int endtick = 1;	// Skip the `
-	    while (in[endtick] && (isalnum(in[endtick]) || in[endtick]=='_' || in[endtick]=='$')) endtick++;
+	    const char *inc = in.c_str();
+	    while (inc[endtick] && (isalnum(inc[endtick]) || inc[endtick]=='_' || inc[endtick]=='$')) endtick++;
 	    string name(in,1,endtick-1);
 	    in.erase(0,endtick);
 	    // Substitute the define

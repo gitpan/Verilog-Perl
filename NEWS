@@ -4,6 +4,12 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
+* Changes in Verilog::Language 2.222 3/6/2003
+
+****	Support instantiations with multiple cell names. [Bruce Nepple]
+
+****	Support uppercase radix letters.  [Wilson Li]
+
 * Changes in Verilog::Language 2.221 3/4/2003
 
 ****	Fix missing example.cpp file
@@ -175,7 +181,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #45 $$Date: 2003/03/04 $$Author: wsnyder $
+$Revision: #48 $$Date: 2003/05/06 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

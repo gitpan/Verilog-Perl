@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #29 $$Date: 2003/03/04 $$Author: wsnyder $
+# $Revision: #31 $$Date: 2003/05/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -120,7 +120,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.221';
+$VERSION = '2.222';
 
 #######################################################################
 
@@ -326,6 +326,8 @@ sub operator {
     if ($self->{in_preproc_line} != $self->line) {
 	if ($token eq "{") { $self->{bracket_level} ++; }
 	elsif ($token eq "}") { $self->{bracket_level}-- if $self->{bracket_level}; }
+	if ($token eq "(") { $self->{paren_level} ++; }
+	elsif ($token eq ")") { $self->{paren_level}-- if $self->{paren_level}; }
 
 	if ($token eq "]") {
 	    $self->{in_vector} = 0;
@@ -352,6 +354,7 @@ sub operator {
 	    $self->{last_vectors} = "";
 	    print "Gotainst $mod $inst\n"    if ($Debug);
 	    $self->instant ($mod, $inst);
+	    $self->{last_inst_mod} = $mod;
 	    $self->{is_inst_ok} = 0;
 	    $self->{is_pin_ok} = 1;
 	}
@@ -371,6 +374,13 @@ sub operator {
 		$self->{last_vectors} = "";
 		@{$self->{last_symbols}} = ();
 	    }
+	    if ($token eq "," && $self->{is_pin_ok} && !$self->{paren_level}) {
+		# At the , that separates instances
+		$self->{last_symbols} = [$self->{last_inst_mod}];
+		$self->{last_keyword} = "";
+		$self->{is_inst_ok} = 1;
+	    }
+
 	    if ($token eq ";") {
 		if ($lkw eq "task") {
 		    my $mod = $self->{last_symbols}[0];

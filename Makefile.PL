@@ -1,4 +1,4 @@
-# $Revision: #24 $$Date: 2002/11/14 $$Author: lab $
+# $Revision: #25 $$Date: 2003/04/03 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 require 5.005;
@@ -49,6 +49,7 @@ WriteMakefile(
 	      AUTHOR	=> 'Wilson Snyder <wsnyder@wsnyder.org>',
 	      ABSTRACT  => 'Verilog language utilities and parsing',
 	      VERSION_FROM  => 'Language.pm',
+	      #OPTIMIZE	=> '-ggdb',
 	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
 	      EXE_FILES => [qw( vrename vpm )],
 	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpm simv ),},

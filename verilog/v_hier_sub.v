@@ -1,4 +1,4 @@
-// $Revision: #4 $$Date: 2003/02/06 $$Author: tlevergo $
+// $Revision: #5 $$Date: 2003/03/24 $$Author: wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 module v_hier_sub (/*AUTOARG*/
@@ -8,8 +8,8 @@ module v_hier_sub (/*AUTOARG*/
    clk, avec
    );
    input clk;
-   input [2:0] avec;
-   output [2:0] qvec;
+   input [3:0] avec;
+   output [3:0] qvec;
 
    /* v_hier_subsub AUTO_TEMPLATE (
 			   .q		(qvec[@]),
@@ -32,6 +32,7 @@ module v_hier_sub (/*AUTOARG*/
    //v_hier_subsub subsub2 (qvec[2], avec[2]);
 
    // Primitives
-   v_hier_subprim subsub3 (qvec[2], avec[2]);
+   v_hier_subprim subsub3 (qvec[2], avec[2]),
+		  subsub4 (qvec[3], avec[3]);
 
 endmodule

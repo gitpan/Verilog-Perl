@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #32 $$Date: 2003/03/04 $$Author: wsnyder $
+# $Revision: #34 $$Date: 2003/05/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -34,7 +34,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.221';
+$VERSION = '2.222';
 
 #######################################################################
 #######################################################################
@@ -456,7 +456,7 @@ This method returns the value of a given define, or undef.
 =item $self->depend_files ()
 
 Returns reference to list of filenames referenced with file_path, useful
-for creating dependancy lists.  With argument, adds that file.  With list
+for creating dependency lists.  With argument, adds that file.  With list
 reference argument, sets the list to the argument.
 
 =item $self->file_abs ( $filename )

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #19 $$Date: 2003/03/04 $$Author: wsnyder $
+# $Revision: #21 $$Date: 2003/05/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,7 +30,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.221';
+$VERSION = '2.222';
 
 ######################################################################
 #### Error Handling
@@ -285,10 +285,11 @@ Verilog::Netlist - Verilog Netlist
 	    printf ($indent."	  %sput %s\n", $sig->direction, $sig->name);
 	}
 	foreach my $cell ($mod->cells_sorted) {
-	    show_hier ($cell->submod, $indent."	 ", $hier.".") if $cell->submod;
+	    printf ($indent. "    Cell %s\n", $cell->name);
 	    foreach my $pin ($cell->pins_sorted) {
 		printf ($indent."     .%s(%s)\n", $pin->name, $pin->netname);
 	    }
+	    show_hier ($cell->submod, $indent."	 ", $hier, $cell->name) if $cell->submod;
 	}
     }
 

@@ -1,5 +1,5 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Revision: #25 $$Date: 2003/03/04 $$Author: wsnyder $
+# $Revision: #27 $$Date: 2003/05/06 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -156,7 +156,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Verilog::Parse::debug = 0;		# for debugging
 
-$VERSION = '2.221';
+$VERSION = '2.222';
 
 #######################################################################
 
@@ -309,7 +309,7 @@ sub parse {
 		    print "GotaOPERATOR $info\n"    if ($Verilog::Parse::debug);
 		    &{$self->{OPERATOR}} ($self, "OPERATOR", $info);
 		}
-		elsif (($line =~ /^([0-9]*'[bhod]\ *[0-9A-FXZa-fxz_?]+)/)    #'
+		elsif (($line =~ /^([0-9]*'[BHODbhod]\ *[0-9A-FXZa-fxz_?]+)/)    #'
 		    || ($line =~ /^([0-9]+[0-9a-fA-F_]*)/ )) {
 		    my $info = $MATCH;
 		    $line = $POSTMATCH;
