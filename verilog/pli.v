@@ -1,4 +1,6 @@
 // DESCRIPTION: vpm: Example pli file for vpm program
+// This file ONLY is placed into the Public Domain, for any use,
+// without warranty, 2000-2003 by Wilson Snyder.
 
 `timescale 1ns/1ns
 
@@ -26,7 +28,7 @@ module pli;
 	 $finish;
       end
       else if (warnings!=0) begin
-	 $info (0, "Warnings found, consider stopping!\n");
+	 $info (0, {"Warnings found, ","consider stopping!\n"});
       end
 `endif
    end

@@ -1,5 +1,7 @@
-// $Revision: #6 $$Date: 2003/05/19 $$Author: wsnyder $
+// $Revision: #8 $$Date: 2003/09/22 $$Author: wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
+// This file ONLY is placed into the Public Domain, for any use,
+// without warranty, 2000-2003 by Wilson Snyder.
 
 module v_hier_sub (/*AUTOARG*/
    // Outputs
@@ -11,27 +13,13 @@ module v_hier_sub (/*AUTOARG*/
    input [3:0] avec;
    output [3:0] qvec;
 
-   /* v_hier_subsub AUTO_TEMPLATE (
-			   .q		(qvec[@]),
-			   .a		(avec[@]));
-    */
-   
    v_hier_subsub subsub0 (/*AUTOINST*/
 			  // Outputs
 			  .q		(qvec[0]),		 // Templated
 			  // Inputs
-			  .a		(avec[0]));		 // Templated
-   v_hier_subsub subsub1 (/*AUTOINST*/
-			  // Outputs
-			  .q		(qvec[1]),		 // Templated
-			  // Inputs
-			  .a		(avec[1]));		 // Templated
+			  .a		(1'b1));		 // Templated
 
    // By pin position
-   v_hier_subsub subsub2 (qvec[2], avec[2]);
-
-   // Primitives
-   v_hier_subprim subsub3 (qvec[2], avec[2]),
-		  subsub4 (qvec[3], avec[3]);
+   v_hier_subsub subsub2 (qvec[2], 1'b0);
 
 endmodule

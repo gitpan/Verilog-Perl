@@ -1,22 +1,17 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #24 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #28 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 package Verilog::Netlist::Cell;
@@ -26,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.226';
+$VERSION = '2.230';
 use strict;
 
 structs('new',
@@ -45,6 +40,19 @@ structs('new',
 	   # system perl
 	   _autoinst	=> '$', #'	# Marked with AUTOINST tag
 	   ]);
+
+sub delete {
+    my $self = shift;
+    foreach my $pinref ($self->pins_sorted) {
+	$pinref->delete;
+    }
+    my $h = $self->module->cells;
+    delete $h->{$self->name};
+    return undef;
+}
+
+######################################################################
+#### Methods
 
 sub netlist {
     my $self = shift;
@@ -70,12 +78,24 @@ sub _link {
     my $self = shift;
     $self->_link_guts();
     if (!$self->submod()
+	&& !$self->netlist->{_relink}
 	&& !$self->module->is_libcell()
 	&& $self->netlist->{link_read}) {
 	print "  Link_Read ",$self->submodname,"\n" if $Verilog::Netlist::Debug;
-	$self->netlist->read_file(filename=>$self->submodname,
-				  error_self=>($self->netlist->{link_read_nonfatal} ? 0:$self));
+	# Try 1: Direct filename
+	$self->netlist->read_file(filename=>$self->submodname, error_self=>0);
 	$self->_link_guts();
+	# Try 2: Libraries
+	if (!$self->submod()) {
+	    $self->netlist->read_libraries();
+	}
+	$self->_link_guts();
+	# Try 3: Bitch about missing file
+	if (!$self->submod()) {
+	    $self->netlist->read_file(filename=>$self->submodname,
+				      error_self=>($self->netlist->{link_read_nonfatal} ? 0:$self));
+	}
+	# Got it; ask for another link
 	if ($self->submod()) {
 	    $self->netlist->{_relink} = 1;
 	}
@@ -92,6 +112,18 @@ sub lint {
 	    $pinref->lint();
 	}
     }
+}
+
+sub verilog_text {
+    my $self = shift;
+    my @out = $self->submodname." ".$self->name." (";
+    my $comma="";
+    foreach my $pinref ($self->pins_sorted) {
+	push @out, $comma if $comma; $comma=", ";
+	push @out, $pinref->verilog_text;
+    }
+    push @out, ");";
+    return (wantarray ? @out : join('',@out));
 }
 
 sub dump {
@@ -161,6 +193,10 @@ module.
 See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
+
+=item $self->delete
+
+Delete the cell from the module it's under.
 
 =item $self->module
 

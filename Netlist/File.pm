@@ -1,22 +1,17 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #26 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #29 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 package Verilog::Netlist::File;
@@ -27,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.226';
+$VERSION = '2.230';
 use strict;
 
 structs('new',
@@ -180,6 +175,7 @@ sub pin {
     $cellref->new_pin (name=>$pin,
 		       portname=>$pin,
 		       portnumber=>$number,
+		       pinnamed=>$hasnamedports,
 		       filename=>$self->filename, lineno=>$self->lineno,
 		       netname=>$net, );
     # If any pin uses call-by-name, then all are assumed to use call-by-name

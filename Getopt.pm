@@ -1,22 +1,17 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #39 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #42 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 package Verilog::Getopt;
@@ -34,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.226';
+$VERSION = '2.230';
 
 #######################################################################
 #######################################################################
@@ -274,6 +269,15 @@ sub get_parameters {
 #######################################################################
 # Utility functions
 
+sub remove_duplicates {
+    my $self = shift if ref $_[0];
+    # return list in same order, with any duplicates removed
+    my @rtn;
+    my %hit;
+    foreach (@_) { push @rtn, $_ unless $hit{$_}++; }
+    return @rtn;
+}
+
 sub file_abs {
     my $self = shift;
     my $filename = shift;
@@ -329,6 +333,17 @@ sub file_path {
     }
     
     return $filename;	# Let whoever needs it discover it doesn't exist
+}
+
+sub libext_matches {
+    my $self = shift;
+    my $filename = shift;
+    return undef if !$filename;
+    foreach my $postfix (@{$self->{libext}}) {
+	my $re = quotemeta($postfix) . "\$";
+	return $filename if ($filename =~ /$re/);
+    }
+    return undef;
 }
 
 #######################################################################
@@ -478,6 +493,10 @@ directory.
 
 Returns reference to list of library extensions.  With argument, adds that
 extension.
+
+=item $self->libext_matches (I<filename>)
+
+Returns true if the passed filename matches the libext.
 
 =item $self->library ()
 

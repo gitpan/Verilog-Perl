@@ -1,22 +1,17 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #26 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #30 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 package Verilog::Netlist;
@@ -30,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.226';
+$VERSION = '2.230';
 
 ######################################################################
 #### Error Handling
@@ -49,6 +44,7 @@ sub new {
 		options => undef,	# Usually pointer to Verilog::Getopt
 		implicit_wires_ok => 1,
 		link_read => 1,
+		_libraries_done => {},
 		@_};
     bless $self, $class;
     return $self;
@@ -77,6 +73,16 @@ sub lint {
 	$modref->lint();
     }
 }
+
+sub verilog_text {
+    my $self = shift;
+    my @out;
+    foreach my $modref ($self->modules_sorted) {
+	push @out, $modref->verilog_text, "\n";
+    }
+    return (wantarray ? @out : join('',@out));
+}
+
 sub dump {
     my $self = shift;
     foreach my $modref ($self->modules_sorted) {
@@ -149,6 +155,11 @@ sub modules_sorted {
     return (sort {$a->name() cmp $b->name()} (values %{$self->{_modules}}));
 }
 
+sub top_modules_sorted {
+    my $self = shift;
+    return grep ($_->is_top && !$_->is_libcell, $self->modules_sorted);
+}
+
 ######################################################################
 #### Files access
 
@@ -201,6 +212,20 @@ sub read_file {
 	(netlist=>$self,
 	 @_);
     return $fileref;
+}
+
+sub read_libraries {
+    my $self = shift;
+    if ($self->{options}) {
+	my @files = $self->{options}->library();
+	foreach my $file (@files) {
+	    if (!$self->{_libraries_done}{$file}) {
+		$self->{_libraries_done}{$file} = 1;
+		$self->read_file(filename=>$file, is_libcell=>1, );
+		$self->dump();
+	    }
+	}
+    }
 }
 
 ######################################################################
@@ -266,10 +291,8 @@ Verilog::Netlist - Verilog Netlist
     $nl->lint();
     $nl->exit_if_error();
 
-    foreach my $mod ($nl->modules_sorted) {
-	if ($mod->is_top) {
-	    show_hier ($mod, "  ", "", "");
-	}
+    foreach my $mod ($nl->top_modules_sorted) {
+        show_hier ($mod, "  ", "", "");
     }
 
     sub show_hier {
@@ -365,6 +388,11 @@ Returns name sorted list of Verilog::Netlist::Module.
 
 Creates a new Verilog::Netlist::Module.
 
+=item $netlist->top_modules_sorted
+
+Returns name sorted list of Verilog::Netlist::Module, only for those
+modules which have no children and are not unused library cells.
+
 =back
 
 =head1 FILE FUNCTIONS
@@ -408,6 +436,12 @@ Generally called as $netlist->read_file.  Pass a hash of parameters.  Reads
 the filename=> parameter, parsing all instantiations, ports, and signals,
 and creating Verilog::Netlist::Module structures.
 
+=item $netlist->read_libraries ()
+
+Read any libraries specified in the options=> argument passed with the
+netlist constuctor.  Automatically invoked when netlist linking results in
+a module that wasn't found, and thus might be inside the libraries.
+
 =item $netlist->remove_defines (I<string>)
 
 Expand any `defines in the string and return the results.  Undefined
@@ -416,6 +450,10 @@ defines will remain in the returned string.
 =item $netlist->resolve_filename (I<string>)
 
 Convert a module name to a filename.  Return undef if not found.
+
+=item $self->verilog_text
+
+Returns verilog code which represents the netlist.
 
 =back
 

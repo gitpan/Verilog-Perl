@@ -1,22 +1,17 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #36 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #40 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 =head1 NAME
@@ -120,7 +115,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.226';
+$VERSION = '2.230';
 
 #######################################################################
 
@@ -129,25 +124,8 @@ sub new {
     my $class = shift;
 
     my $self = $class->SUPER::new(@_);
-
-    $self->{last_operator} = "";
-    $self->{last_keyword} = "";
-    $self->{last_module}  = undef;
-    $self->{last_function} = undef;
-    $self->{last_task}    = undef;
-    @{$self->{last_symbols}} = ();
-    $self->{last_vectors} = "";
-    $self->{last_param} = "";
-    $self->{is_inst_ok}   = 1;
-    $self->{is_pin_ok}    = 0;
-    $self->{is_signal_ok} = 1;
-    $self->{in_preproc_line} = -1;
-    $self->{in_vector} = 0;
-    $self->{in_param_assign} = 0;
-    $self->{possibly_in_param_assign} = 0;
-    $self->{pin_name}    = undef;
-
     bless $self, $class; 
+    $self->reset();
     return $self;
 }
 
@@ -360,16 +338,19 @@ sub operator {
 	}
 	elsif ($token eq "," || $token eq ";") {
 	    if ($self->{is_pin_ok}
-		&& defined $self->{last_symbols}[0]
+		&& (defined $self->{last_symbols}[0]
+		    || $self->{last_vectors}
+		    || $token eq ",")
 		&& !$self->{bracket_level}) {
-		my $vec = "";
+		my $vec = $self->{last_vectors};
+		my $sym = $self->{last_symbols}[0];
+		if (!defined $sym) { $sym=$vec; $vec=""; }
 		my $namedports = 0;
-		$vec = $self->{last_vectors} if ($self->{last_vectors} ne "");
 		my $pin_name = $self->{pin_name};
 		$namedports = 1 if defined $pin_name;
 		$pin_name ||= "pin" . $self->{is_pin_ok};
 		$self->pin ($pin_name,
-			    $self->{last_symbols}[0] . $vec,
+			    $sym . $vec,
 			    $self->{is_pin_ok},
 			    $namedports);
 		$self->{is_pin_ok}++;  # moved to after pin call
@@ -384,7 +365,7 @@ sub operator {
 		$self->{is_inst_ok} = 1;
 	    }
 
-	    if ($token eq ";") {
+	    if ($token eq ";" || $token eq "=") {
 		if ($lkw eq "task") {
 		    my $mod = $self->{last_symbols}[0];
 		    $self->{last_task} = $mod;
@@ -429,18 +410,21 @@ sub operator {
 		    }
 		}
 		# Prepare for next command
-		$self->{last_keyword} = "";
-		@{$self->{last_symbols}} = ();
-		$self->{last_vectors} = "";
-		$self->{is_inst_ok} = 1;
-		$self->{is_signal_ok} = 1;
-		$self->{is_pin_ok} = 0;
-		$self->{got_preproc} = 0;
+		if( $token eq ";") {
+		    $self->{last_keyword} = "";
+		    @{$self->{last_symbols}} = ();
+		    $self->{last_vectors} = "";
+		    $self->{is_inst_ok} = 1;
+		    $self->{is_signal_ok} = 1;
+		    $self->{is_pin_ok} = 0;
+		    $self->{got_preproc} = 0;
+		}
+		elsif ( $token eq "=") {
+		    $self->{is_signal_ok} = 0;
+		    $self->{is_inst_ok} = 0;
+		}
+		else { die "programming error\n" };
 	    }
-	}
-	elsif ($token eq "=") {
-	    $self->{is_signal_ok} = 0;
-	    $self->{is_inst_ok} = 0;
 	}
 	elsif ($token eq "[") {
 	    $self->{in_vector} = 1;

@@ -1,22 +1,17 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #20 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #23 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 package Verilog::Netlist::Pin;
@@ -31,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.226';
+$VERSION = '2.230';
 use strict;
 
 structs('new',
@@ -44,6 +39,7 @@ structs('new',
 	   netname	=> '$', #'	# Net connection
 	   portname 	=> '$', #'	# Port connection name
 	   portnumber   => '$', #'	# Position of name in call
+	   pinnamed 	=> '$', #'	# True if name assigned
 	   cell     	=> '$', #'	# Cell reference
 	   # below only after link()
 	   net		=> '$', #'	# Net connection reference
@@ -54,6 +50,16 @@ structs('new',
 	   #module
 	   #submod
 	   ]);
+
+sub delete {
+    my $self = shift;
+    my $h = $self->cell->pins;
+    delete $h->{$self->name};
+    return undef;
+}
+
+######################################################################
+#### Methods
 
 sub module {
     return $_[0]->cell->module;
@@ -121,6 +127,17 @@ sub lint {
     }
 }
 
+sub verilog_text {
+    my $self = shift;
+    if ($self->port) {  # Even if it was by position, after linking we can write it as if it's by name.
+	return ".".$self->port->name."(".$self->netname.")";
+    } elsif ($self->pinnamed) {
+	return ".".$self->name."(".$self->netname.")";
+    } else { # not by name, and unlinked
+	return $self->netname;
+    }
+}
+
 sub dump {
     my $self = shift;
     my $indent = shift||0;
@@ -167,6 +184,10 @@ See also Verilog::Netlist::Subclass for additional accessors and methods.
 =item $self->cell
 
 Reference to the Verilog::Netlist::Cell the pin is under.
+
+=item $self->delete
+
+Delete the pin from the cell it's under.
 
 =item $self->module
 

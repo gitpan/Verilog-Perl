@@ -1,22 +1,17 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #23 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #26 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 package Verilog::Netlist::Module;
@@ -30,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.226';
+$VERSION = '2.230';
 use strict;
 
 structs('new',
@@ -176,6 +171,32 @@ sub lint {
     foreach my $cellref (values %{$self->cells}) {
 	$cellref->lint();
     }
+}
+
+sub verilog_text {
+    my $self = shift;
+    my @out = "module ".$self->name." (\n";
+    my $indent = "   ";
+    # Port list
+    my $comma="";
+    push @out, $indent;
+    foreach my $portref ($self->ports_sorted) {
+	push @out, $comma, $portref->verilog_text;
+	$comma = ", ";
+    }
+    push @out, ");\n";
+
+    # Signal list
+    foreach my $netref ($self->nets_sorted) {
+	push @out, $indent, $netref->verilog_text, "\n";
+    }
+
+    # Cell list
+    foreach my $cellref ($self->cells_sorted) {
+	push @out, $indent, $cellref->verilog_text, "\n";
+    }
+    push @out, "endmodule\n";
+    return (wantarray ? @out : join('',@out));
 }
 
 sub dump {
@@ -324,6 +345,11 @@ Creates a new Verilog::Netlist::Net.
 =item $self->dump
 
 Prints debugging information for this module.
+
+=item $self->verilog_text
+
+Returns verilog code which represents this module.  Returned as an array
+that must be joined together to form the final text string.
 
 =back
 

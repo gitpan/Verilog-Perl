@@ -5,58 +5,64 @@ verilog/inc2.v:1: `line 1 "verilog/inc1.v" 0
 verilog/inc2.v:1: 
 verilog/inc2.v:1: `line 1 "verilog/inc2.v" 1
 verilog/inc2.v:1: // DESCRIPTION: Verilog::Preproc: Example source code
-verilog/inc2.v:2: At file verilog/inc2.v  line 2
+verilog/inc2.v:2: // This file ONLY is placed into the Public Domain, for any use,
+verilog/inc2.v:3: // without warranty, 2000-2003 by Wilson Snyder.
+verilog/inc2.v:4: At file verilog/inc2.v  line 4
 verilog/inc3.v:1:  
-verilog/inc3.v:1: `line 3 "verilog/inc2.v" 0
+verilog/inc3.v:1: `line 5 "verilog/inc2.v" 0
 verilog/inc3.v:1: 
 verilog/inc3.v:1: `line 1 "verilog/inc3.v" 1
 inc3_a_filename_from_line_directive:2: // DESCRIPTION: Verilog::Preproc: Example source code
-inc3_a_filename_from_line_directive:3: 
-inc3_a_filename_from_line_directive:4:  
-inc3_a_filename_from_line_directive:5:   
-inc3_a_filename_from_line_directive:6:   
-inc3_a_filename_from_line_directive:7:   // FOO
-inc3_a_filename_from_line_directive:8:   At file inc3_a_filename_from_line_directive  line 8
-inc3_a_filename_from_line_directive:9: 
-inc3_a_filename_from_line_directive:10:    
+inc3_a_filename_from_line_directive:3: // This file ONLY is placed into the Public Domain, for any use,
+inc3_a_filename_from_line_directive:4: // without warranty, 2000-2003 by Wilson Snyder.
+inc3_a_filename_from_line_directive:5: 
+inc3_a_filename_from_line_directive:6:  
+inc3_a_filename_from_line_directive:7:   
+inc3_a_filename_from_line_directive:8:   
+inc3_a_filename_from_line_directive:9:   // FOO
+inc3_a_filename_from_line_directive:10:   At file inc3_a_filename_from_line_directive  line 10
 inc3_a_filename_from_line_directive:11: 
-inc3_a_filename_from_line_directive:11: `line 11 "inc3_a_filename_from_line_directive" 0
-inc3_a_filename_from_line_directive:11:  // guard
-inc3_a_filename_from_line_directive:12: 
-inc3_a_filename_from_line_directive:13:  
-inc3_a_filename_from_line_directive:14:   
-inc3_a_filename_from_line_directive:15: 
-inc3_a_filename_from_line_directive:15: `line 15 "inc3_a_filename_from_line_directive" 0
-inc3_a_filename_from_line_directive:15: 
-inc3_a_filename_from_line_directive:16: 
-inc3_a_filename_from_line_directive:16: `line 16 "inc3_a_filename_from_line_directive" 2
-inc3_a_filename_from_line_directive:16: 
-inc3_a_filename_from_line_directive:16: `line 3 "verilog/inc2.v" 0
-verilog/inc2.v:3: 
-verilog/inc2.v:4:   
-verilog/inc2.v:4: `line 4 "verilog/inc2.v" 2
-verilog/inc2.v:4: 
-verilog/inc2.v:4: `line 1 "verilog/inc1.v" 0
+inc3_a_filename_from_line_directive:12:    
+inc3_a_filename_from_line_directive:13: 
+inc3_a_filename_from_line_directive:13: `line 13 "inc3_a_filename_from_line_directive" 0
+inc3_a_filename_from_line_directive:13:  // guard
+inc3_a_filename_from_line_directive:14: 
+inc3_a_filename_from_line_directive:15:  
+inc3_a_filename_from_line_directive:16:   
+inc3_a_filename_from_line_directive:17: 
+inc3_a_filename_from_line_directive:17: `line 17 "inc3_a_filename_from_line_directive" 0
+inc3_a_filename_from_line_directive:17: 
+inc3_a_filename_from_line_directive:18: 
+inc3_a_filename_from_line_directive:18: `line 18 "inc3_a_filename_from_line_directive" 2
+inc3_a_filename_from_line_directive:18: 
+inc3_a_filename_from_line_directive:18: `line 5 "verilog/inc2.v" 0
+verilog/inc2.v:5: 
+verilog/inc2.v:6:   
+verilog/inc2.v:6: `line 6 "verilog/inc2.v" 2
+verilog/inc2.v:6: 
+verilog/inc2.v:6: `line 1 "verilog/inc1.v" 0
 verilog/inc1.v:1: // DESCRIPTION: Verilog::Preproc: Example source code
-verilog/inc1.v:2: text.
-verilog/inc1.v:3: 
-verilog/inc1.v:4:  /*but not *//* or this either */
-verilog/inc1.v:5:  // but not
-verilog/inc1.v:6: 
-verilog/inc1.v:7:  
-verilog/inc1.v:9: 		  
-verilog/inc1.v:10: //===========================================================================
-verilog/inc1.v:11: 
-verilog/inc1.v:12:  
+verilog/inc1.v:2: // This file ONLY is placed into the Public Domain, for any use,
+verilog/inc1.v:3: // without warranty, 2000-2003 by Wilson Snyder.
+verilog/inc1.v:4: text.
+verilog/inc1.v:5: 
+verilog/inc1.v:6:  /*but not *//* or this either */
+verilog/inc1.v:7:  // but not
+verilog/inc1.v:8: 
+verilog/inc1.v:9:  
+verilog/inc1.v:11: 		  
+verilog/inc1.v:12: //===========================================================================
 verilog/inc1.v:13: 
 verilog/inc1.v:14:  
-verilog/inc1.v:15:  
-verilog/inc1.v:16: 
-verilog/inc1.v:17: /*******COMMENT*****/
-verilog/inc1.v:18:  foo  bar 
-verilog/inc1.v:19:  foobar2 
-verilog/inc1.v:20:   deep   deep  
-verilog/inc1.v:21:  first part    		second part 
-verilog/inc1.v:22: 
-verilog/inc1.v:23: 
-verilog/inc1.v:24:   
+verilog/inc1.v:15: 
+verilog/inc1.v:16:  
+verilog/inc1.v:17:  
+verilog/inc1.v:18: 
+verilog/inc1.v:19: /*******COMMENT*****/
+verilog/inc1.v:20:  foo  bar 
+verilog/inc1.v:21:  foobar2 
+verilog/inc1.v:22:   deep   deep  
+verilog/inc1.v:23:  first part    		second part 
+verilog/inc1.v:24: 
+verilog/inc1.v:25: 
+verilog/inc1.v:26:   

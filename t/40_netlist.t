@@ -1,6 +1,10 @@
 #!/usr/local/bin/perl -w
-# $Revision: #10 $$Date: 2003/03/24 $$Author: wsnyder $
+# $Revision: #12 $$Date: 2003/10/02 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
+#
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 
 use strict;
 use Test;
@@ -35,10 +39,8 @@ ok(1);
     $nl->lint();
     $nl->exit_if_error();
 
-    foreach my $mod ($nl->modules_sorted) {
-	if ($mod->is_top) {
-	    show_hier ($mod, "  ", "","");
-	}
+    foreach my $mod ($nl->top_modules_sorted) {
+	show_hier ($mod, "  ", "","");
     }
 
     sub show_hier {

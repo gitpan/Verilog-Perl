@@ -1,22 +1,17 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: #42 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #46 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 =head1 NAME
@@ -97,6 +92,11 @@ will get intuitive results.
 As with split_bus, but faster.  Only supports simple decimal colon
 separated array specifications, such as "foo[3:0]".
 
+=item Verilog::Language::strip_comments ($text)
+
+Return text with any // or /**/ comments stripped, correctly handing quoted
+strings.  Newlines will be preserved in this process.
+
 =back
 
 =head1 DISTRIBUTION
@@ -127,7 +127,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.226';
+$VERSION = '2.230';
 
 ######################################################################
 #### Internal Variables
@@ -185,11 +185,42 @@ sub is_compdirect {
 }
 
 ######################################################################
+#### String utilities
+
+sub strip_comments {
+    return $_[0] if $_[0] !~ m!/!s;  # Fast path
+    my $text = shift;
+    # Spec says that // has no special meaning inside /**/
+    my $quote; my $olcmt; my $cmt;
+    my $out = "";
+    while ($text =~ m!(.*?)(//|/\*|\*/|\n|\"|$)!sg) {
+	$out .= $1 if !$olcmt && !$cmt;
+	my $t = $2;
+	if ($2 eq '"') {
+	    $out .= $t;
+	    $quote = ! $quote;
+	} elsif (!$quote && !$olcmt && $t eq '/*') {
+	    $cmt = 1;
+	} elsif (!$quote && !$cmt && $t eq '//') {
+	    $olcmt = 1;
+	} elsif ($cmt && $t eq '*/') {
+	    $cmt = 0;
+	} elsif ($t eq "\n") {
+	    $olcmt = 0;
+	    $out .= $t;
+	} else {
+	    $out .= $t if !$olcmt && !$cmt;
+	}
+    }
+    return $out;
+}
+
+######################################################################
 #### Numeric utilities
 
 sub number_bits {
     my $number = shift;
-    if ($number =~ /^\s*([0-9]+)\'/i) {
+    if ($number =~ /^\s*([0-9]+)\s*\'/i) {
 	return $1;
     }
     return undef;
@@ -197,7 +228,7 @@ sub number_bits {
 
 sub number_value {
     my $number = shift;
-    $number =~ s/_//g;
+    $number =~ s/[_ ]//g;
     if ($number =~ /\'h([0-9a-f]+)$/i) {
 	return (hex ($1));
     }

@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Revision: #12 $$Date: 2002/12/14 $$Author: lab $
+#* $Revision: #13 $$Date: 2003/09/22 $$Author: wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
@@ -10,9 +10,9 @@
 #* 
 #*********************************************************************
 #* 
-#* This program is free software; you can redistribute it and/or modify
-#* it under the terms of either the GNU General Public License or the
-#* Perl Artistic License.
+#* Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+#* you can redistribute it and/or modify it under the terms of either the GNU
+#* General Public License or the Perl Artistic License.
 #* 
 #* This program is distributed in the hope that it will be useful,
 #* but WITHOUT ANY WARRANTY; without even the implied warranty of

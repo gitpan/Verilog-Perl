@@ -1,6 +1,10 @@
 #!/usr/local/bin/perl -w
-# $Revision: #8 $$Date: 2002/09/05 $$Author: wsnyder $
-#DESCRIPTION: Perl ExtUtils: Common routines required by package tests
+# $Revision: #10 $$Date: 2003/09/22 $$Author: wsnyder $
+# DESCRIPTION: Perl ExtUtils: Common routines required by package tests
+#
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 
 use IO::File;
 use vars qw($PERL);
@@ -35,7 +39,7 @@ sub files_identical {
     my @l1 = $f1->getlines();
     my @l2 = $f2->getlines();
     my $nl = $#l1;  $nl = $#l2 if ($#l2 > $nl);
-    for (my $l=0; $l<$nl; $l++) {
+    for (my $l=0; $l<=$nl; $l++) {
 	if (($l1[$l]||"") ne ($l2[$l]||"")) {
 	    warn ("%Warning: Line ".($l+1)." mismatches; $fn1 != $fn2\n"
 		  ."F1: ".($l1[$l]||"*EOF*\n")

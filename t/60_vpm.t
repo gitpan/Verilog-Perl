@@ -1,6 +1,10 @@
 #!/usr/local/bin/perl -w
-# $Revision: #10 $$Date: 2003/08/12 $$Author: wsnyder $
+# $Revision: #12 $$Date: 2003/09/25 $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
+#
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 
 use IO::File;
 use strict;
@@ -15,7 +19,7 @@ mkdir 'test_dir', 0777;
 
 # Preprocess the files
 mkdir "test_dir/.vpm", 0777;
-run_system ("${PERL} vpm --nostop -o test_dir/.vpm --date verilog/");
+run_system ("${PERL} vpm --nostop -o test_dir/.vpm --date -y verilog/");
 ok(1);
 ok(-r 'test_dir/.vpm/pli.v');
 

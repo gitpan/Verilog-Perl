@@ -1,4 +1,6 @@
 // DESCRIPTION: vpm: Example top verilog file for vpm program
+// This file ONLY is placed into the Public Domain, for any use,
+// without warranty, 2000-2003 by Wilson Snyder.
 
 `timescale 1ns/1ns
 
@@ -12,6 +14,13 @@ module example;
       $info (0, "Welcome to a VPMed file\n");
       i=0;
       $assert (1==1, "Why doesn't 1==1??\n");
+      $assert (/*comm
+		ent*/1==1,
+	       //comment
+	       /*com
+		ent*/"Why doesn't 1==1??\n"/*com
+	       ent*/
+	       );
       //
       i=3'b100;  $assert_amone(i[2:0], "amone ok\n");
       i=3'b010;  $assert_amone(i[2:0], "amone ok\n");
@@ -22,6 +31,8 @@ module example;
       //
       i=2'b10;  $assert_onehot(i[1:0], "onehot ok\n");
       i=2'b01;  $assert_onehot(i[1:0], "onehot ok\n");
+      i=2'b10;  $assert_onehot(i[1],i[0], "onehot ok\n");
+      i=2'b10;  $assert_onehot({i[1],i[0]}, "onehot ok\n");
       //i=2'b11;  $assert_onehot(i[2:0], "onehot error expected\n");
       //i=2'b00;  $assert_onehot(i[2:0], "onehot error expected\n");
    end
@@ -53,7 +64,7 @@ module example;
    end
    always @ (posedge clk) begin
       $assert_req_ack (bus_req,
-		       bus_ack,
+		       bus_ack /*COMMENT*/,
 		       bus_data);
    end
 

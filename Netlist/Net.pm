@@ -1,22 +1,17 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #25 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #28 $$Date: 2003/10/02 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# This program is Copyright 2000 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 package Verilog::Netlist::Net;
@@ -26,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.226';
+$VERSION = '2.230';
 use strict;
 
 ######################################################################
@@ -100,6 +95,29 @@ sub lint {
 	flush STDOUT;
 	flush STDERR;
     }
+}
+
+sub _decls {
+    my $self = shift;
+    if ($self->port) {
+	return "input" if $self->port->direction eq "in";
+	return "output" if $self->port->direction eq "out";
+	return "inout" if $self->port->direction eq "inout";
+    }
+    return $self->type;
+}
+
+sub verilog_text {
+    my $self = shift;
+    my @out;
+    foreach my $decl ($self->_decls) {
+	push @out, $decl;
+	push @out, " [".$self->msb.":".$self->lsb."]" if defined $self->msb;
+	push @out, " ".$self->name;
+	push @out, " ".$self->array if $self->array;
+	push @out, ";";
+    }
+    return (wantarray ? @out : join('',@out));
 }
 
 sub dump {

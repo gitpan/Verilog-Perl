@@ -1,50 +1,51 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #50 $$Date: 2003/08/19 $$Author: wsnyder $
+# $Revision: #55 $$Date: 2003/10/02 $$Author: wsnyder $
 ######################################################################
 #
-# This program is Copyright 2002 by Wilson Snyder.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of either the GNU General Public License or the
-# Perl Artistic License.
+# Copyright 2000-2003 by Wilson Snyder.  This program is free software;
+# you can redistribute it and/or modify it under the terms of either the GNU
+# General Public License or the Perl Artistic License.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
-# If you do not have a copy of the GNU General Public License write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
-# MA 02139, USA.
 ######################################################################
 
 require 5.005;
 use Getopt::Long;
 use IO::File;
+use IO::Dir;
 use Pod::Text;
 use FindBin qw($RealBin);
 use File::Copy;
-#use strict;  # A lot of work needed
+use strict "vars";
 
 use lib "$RealBin/..";
 use Verilog::Parser;
+use Verilog::Getopt;
 
-use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
-	     %Vpm_Chiponly_Rename);
-$VERSION = '2.226';
+use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
+	     $Vpm_Conversions_Regexp
+	     %Vpm_Chiponly_Rename
+	     $Opt_Vericov $Opt_Chiponly
+	     $Last_Filename
+	     $Last_Module
+	     $Last_Task
+	     $Message_Filename
+	     $ReqAck_Num
+	     $Vericov_Enabled
+	     $Got_Change
+	     $Sendout
+	     %Insure_Symbols
+	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
+	     );
+$VERSION = '2.230';
 
 ######################################################################
 # configuration
-
-# A directory matching the key of this hash is ignored if it is come across
-# while recursively preprocessing an entire directory
-%Vpm_Ignore_Directories = (# Omit CVS and other non-source code
-			   # *.old is ommitted automatically
-			   'CVS'=>"",
-			   'History'=>"",
-			   '.vpm'=>"",
-			   );
 
 # Hash with key of macro to convert and value of the function to call when it occurs
 # Avoid having a token that is a substring of a standard function, for example
@@ -76,7 +77,7 @@ $VERSION = '2.226';
 # main
 
 $Debug = 0;
-my $output_filename = ".vpm/";
+my $output_dirname = ".vpm/";
 my $Opt_Quiet = 0;	# Don't blab about what files are being worked on
 my $Opt_AllFiles = 0;	# Preprocess all files
 my $Opt_Date = 0;	# Check dates
@@ -86,18 +87,20 @@ my $Opt_Stop = 1;	# Put $stop in error messages
 my $Opt_Verilator = 0;	# Verilator
 my $Last_Vericov = 0;	# Last run's Opt_Vericov
 my $Last_Chiponly = 0;	# Last run's Opt_Chiponly
+my @Opt_Exclude;
 
 my $Total_Files = 0;
 my @files = ();
 my @instance_tests_list = ();
-
-$Last_Task = "";
 
 my $Prog_Mtime = 0;	# Time program last changed, so we bag cache on change
 (-r "$RealBin/vpm") or die "Where'd my source code go?";
 $Prog_Mtime = (stat("$RealBin/vpm"))[9];
 
 autoflush STDOUT 1;
+
+$Opt = new Verilog::Getopt();
+@ARGV = $Opt->parameter(@ARGV);	# Strip -y, +incdir+, etc
 
 if (! GetOptions (
 		  "help"	=> \&usage,
@@ -109,25 +112,30 @@ if (! GetOptions (
 		  "verilator!"	=> \$Opt_Verilator,
 		  "stop!"	=> \$Opt_Stop,
 		  "chiponly!"	=> \$Opt_Chiponly,	# For makeesim only
-		  "-o=s"	=> \$output_filename,
+		  "-o=s"	=> \$output_dirname,
+		  "exclude=s"	=> sub {shift; push @Opt_Exclude, shift;},
 		  "<>"		=> \&parameter,
 		  )) {
     usage();
 }
 
-if (!@files) { &usage(); }
+push @files, ($Opt->incdir(), $Opt->library(), $Opt->module_dir());
+
+@files = $Opt->remove_duplicates(@files);
+(@files) or die "%Error: No directories or files specified for processing, try --help\n";
 
 if ($#files >= 0) {
-    vpm_recursive_prelude($output_filename);
+    (!-f $output_dirname) or die "%Error: $output_dirname already exists as a file, should be a directory.\n";
+    vpm_recursive_prelude($output_dirname);
+  file:
     foreach my $file (@files) {
-	my $outname = $output_filename;
-	if ($outname eq "") {
-	    $outname = $file;
-	    $outname =~ s/.vh?$/.vpm/;
+	next if $file eq $output_dirname;
+	foreach my $exclude (@Opt_Exclude) {
+	    next file if $file =~ /^$exclude/;
 	}
-	vpm_recursive ($file, $outname);
+	vpm_recursive ($file, $output_dirname);
     }
-    vpm_recursive_postlude($output_filename);
+    vpm_recursive_postlude($output_dirname);
 }
 
 print "\tVPM generated $Total_Files new file(s)\n";
@@ -136,7 +144,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #50 $$Date: 2003/08/19 $$Author: wsnyder $ ';
+    print 'Version: $Revision: #55 $$Date: 2003/10/02 $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -280,7 +288,9 @@ sub assert_hot {
 	    $text .= $elem;
 	    last;
 	}else{
-	    $len = $len + bitwidth($elem);
+	    foreach my $subel (split ',', $elem) {
+		$len = $len + bitwidth($subel);
+	    }
 	    push @cl, $elem;
 	};
     }
@@ -315,7 +325,7 @@ sub message_line {
     my $taskFlag = shift;
     my @params = @_;
 
-    $lineinfo = get_lineinfo();
+    my $lineinfo = get_lineinfo();
     message ($lineinfo, 1, $char, $cond, "", $taskFlag, @params);
 }
 
@@ -387,6 +397,8 @@ sub message {
 	$params[1] =~ s/\"\s*$/ /;
 	$params[1] = $params[1]."${char}: In %m\\n\"";
     }
+
+    $params[1] = convert_concat_string($params[1]);
 
     ($params[0] =~ /^\s*[0-9]/)
 	or die "%Error $Last_Filename:$line: Non-numeric \$message first argument: $params[0]\n";
@@ -480,13 +492,43 @@ sub coverage {
 	    sendout ("vcoverage." . $cover_signal . "[" . $check_signal . "] = "
 		     . "vcoverage." . $cover_signal . "[" . $check_signal . "] + 1;\n");
 	    $Insure_Symbols{$Last_Module}{__message} = ['integer', 5];	# Make this symbol exist if doesn't
-	    push @coverages, $inthash;
+	    #push @coverages, $inthash;
 	}
     }
     message_trailer();
 }
 
 ######################################################################
+
+sub convert_concat_string {
+    my $string = shift;
+    # Convert {"string"} or {"str","in","g"} to just "string"
+    # Beware embeded quotes "\""
+    return $string if ($string !~ /^\s*\{\s*(\".*)\s*\}\s*$/);
+    my $in = $1;
+    my $out = "";
+    my $quote; my $slash;
+    for (my $i=0; $i<length($in); $i++) {
+	my $c = substr($in,$i,1);
+	if ($quote && $c eq '"' && !$slash) {
+	    $quote = 0;
+	    $out .= $c;
+	} elsif ($quote) {
+	    $out .= $c;
+	} elsif ($c eq '"') {
+	    $quote = 1;
+	    $out .= $c;
+	    $out =~ s/\"\"$//;	# Join "" strings
+	} elsif ($c =~ /\s/) {
+	} elsif ($c eq ',') {
+	} else {
+	    # Something strange, just don't convert it
+	    return $string;
+	}
+	$slash = ($c eq "\\");
+    }
+    return $out;
+}
 
 ######################################################################
 ######################################################################
@@ -545,7 +587,6 @@ sub vpm_process {
 
     $Sendout = "";
 
-    @coverages = ();
     @instance_tests_list = ();
 
 
@@ -572,7 +613,7 @@ sub vpm_process {
 	$. = 1;
     }
 
-    while ($line = $fh->getline() ) {
+    while (my $line = $fh->getline() ) {
 	$parser->parse ($line);
     }
     $Sendout .= $parser->unreadback();
@@ -605,8 +646,8 @@ sub vpm_process {
 	print $fh "/* Generated by vpm on $date; File:\"$filename\" */";
 	print $fh $Sendout;
 	$fh->close;
-	if (defined $file_mtime{$filename}) {
-	    utime $file_mtime{$filename}, $file_mtime{$filename}, $outname;
+	if (defined $File_Mtime{$filename}) {
+	    utime $File_Mtime{$filename}, $File_Mtime{$filename}, $outname;
 	}
     }
 
@@ -649,7 +690,8 @@ sub vpm_db_read_file {
 		$Last_Chiponly = 1;
 	    }
 	} else {
-	    $file_mtime_read{$tt_file} = $tt_mtime;
+	    $File_Mtime_Read{$tt_file} = $tt_mtime;
+	    $File_Mtime_Read_Used{$tt_file} = 0;
 	}
     }
     close PWDFILE;
@@ -661,8 +703,8 @@ sub vpm_db_write_file {
     open (PWDFILE,"> $filename")	|| die("%Error: Can't write $filename.");
     print PWDFILE "switch\tvericov\n" if $Opt_Vericov;
     print PWDFILE "switch\tchiponly\n" if $Opt_Chiponly;
-    foreach my $file (sort (keys %file_mtime)) {
-	print PWDFILE "unproc\t$file\t$file_mtime{$file}\n";
+    foreach my $file (sort (keys %File_Mtime)) {
+	print PWDFILE "unproc\t$file\t$File_Mtime{$file}\n";
     }
     close PWDFILE;
 }
@@ -676,11 +718,29 @@ sub vpm_recursive_prelude {
 
     $destdir .= "/"		if ($destdir !~ /[\\\/]$/);
 
-    %file_mtime = ();
-    %file_mtime_read = ();
-    %file_directory = ();
+    %File_Mtime = ();
+    %File_Mtime_Read = ();
     vpm_db_read_file ("${destdir}/.vpm_skipped_times");
     form_conversions_regexp();
+
+    if (! -d $destdir) {
+	mkdir ($destdir,0777) or die "%Error: Can't mkdir $destdir\n";
+    }
+
+    # Don't include directory in time saving, as path may change dep how run
+    my $dest_mtime = $File_Mtime_Read{"vpm"} || 0;
+    if (!$Opt_Date
+	|| ($Prog_Mtime > $dest_mtime)
+	|| ($Opt_Chiponly != $Last_Chiponly)
+	|| ($Opt_Vericov != $Last_Vericov)) {
+	# Flush the whole read cache
+	%File_Mtime_Read = ();
+	print "\t    VPM (or overall flags) changed... Two minutes...\n";
+	print "\t    Mtime = $Prog_Mtime\n" if $Debug;
+    }
+    #print "FF $Opt_Date, $Prog_Mtime, $dest_mtime, $Opt_Vericov, $Last_Vericov\n";
+    $File_Mtime{"vpm"} = $Prog_Mtime;
+    $File_Mtime_Read_Used{"vpm"} = 1;
 }
 
 sub vpm_recursive_postlude {
@@ -689,8 +749,9 @@ sub vpm_recursive_postlude {
     # What to do after processing all files
 
     # Check for deletions
-    foreach my $srcfile (keys %file_mtime_read) {
-	if (!$file_mtime_read_used{$srcfile}) {
+    foreach my $srcfile (keys %File_Mtime_Read) {
+	if (defined $File_Mtime_Read_Used{$srcfile}
+	    && !$File_Mtime_Read_Used{$srcfile}) {
 	    (my $basefile = $srcfile) =~ s/.*\///;
 	    my $destfile = "$destdir$basefile";
 	    print "\t    vpm: Deleted? $srcfile\n" if !$Opt_Quiet;
@@ -706,99 +767,71 @@ sub vpm_recursive {
     my $srcdir = shift;
     my $destdir = shift;
 
+    print "Recursing $srcdir $destdir\n" if ($Debug);
+
     if (-d $srcdir) {
 	$srcdir .= "/"		if ($srcdir !~ /[\\\/]$/);
 	$destdir .= "/"		if ($destdir !~ /[\\\/]$/);
-	vpm_recurse_dir ($srcdir, $destdir, "");
+	my $dh = new IO::Dir $srcdir or die "%Error: Could not directory $srcdir.\n";
+	while (defined (my $basefile = $dh->read)) {
+	    my $srcfile = $srcdir . $basefile;
+	    next if -d $srcfile;
+	    if ($Opt->libext_matches($srcfile)) {
+		vpm_process_one($srcfile, $destdir);
+	    }
+	}
+	$dh->close();
     } else {
 	# Plain file
-	vpm_process ($srcdir, $destdir, 1);
+	vpm_process_one ($srcdir, $destdir, 1);
     }
 }
 
-sub vpm_recurse_dir {
-    # Recursively process this directory
-    my $srcdirbase = shift;
-    my $destdirbase = shift;
-    my $subdirs = shift;
+use vars (qw(%file_directory));
 
-    print "Recursing $subdirs $srcdirbase $destdirbase\n" if ($Debug);
+sub vpm_process_one {
+    # Process one file, keeping cache consistent
+    my $srcfile = shift;
+    my $destdir = shift;
 
-    local $srcdir = $srcdirbase . $subdirs;
-    my $destdir = $destdirbase;	# Not . $subdirs; we don't keep hiearchy now
-    if (! -d $destdir) {
-	mkdir ($destdir,0777) or die "%Error: Can't mkdir $destdir\n";
-    }
+    (my $basefile = $srcfile) =~ s!.*[/\\]!!;
+    my $destfile = "$destdir$basefile";
 
-    # Don't include directory in time saving, as path may change dep how run
-    my $dest_mtime = $file_mtime_read{"vpm"} || 0;
-    my $force = (!$Opt_Date
-		 || ($Prog_Mtime > $dest_mtime)
-		 || ($Opt_Chiponly != $Last_Chiponly)
-		 || ($Opt_Vericov != $Last_Vericov));
-    if ($force && !$Told_wait_chg) {
-	print "\t    VPM (or overall flags) changed... Two minutes...\n";
-	print "\t    Mtime = $Prog_Mtime\n" if $Debug;
-	$Told_wait_chg = 1;
-    }
-    #print "FF $Opt_Date, $Prog_Mtime, $dest_mtime, $Opt_Vericov, $Last_Vericov\n";
-    $file_mtime{"vpm"} = $Prog_Mtime;
-    $file_mtime_read_used{"vpm"} = 1;
+    my $src_mtime = (stat($srcfile))[9];
+    $src_mtime ||= 0;
+    my $dest_mtime = $File_Mtime_Read{$srcfile} || 0;
+    $File_Mtime_Read_Used{$srcfile} = 1;
 
-    opendir ($srcdir,"$srcdir") or die "%Error: Could not directory $srcdir.\n";
-    while (defined(my $basefile = readdir($srcdir))) {
-	if ($basefile !~ /^\./) {
-	    my $srcfile = "$srcdir$basefile";
-	    my $destfile = "$destdir$basefile";
+    # Mark times
+    #print "BCK $basefile $src_mtime, $dest_mtime\n";
+    $File_Mtime{$srcfile} = $src_mtime;
 
-	    if (-d $srcfile) {
-		if (defined $Vpm_Ignore_Directories{$basefile}
-		    || $basefile =~ /\.old$/) {
-		    print "Ignoring directory $destfile\n" if $Debug;
-		} else {
-		    vpm_recurse_dir ($srcdirbase, $destdirbase, "$subdirs$basefile/");
-		}
-	    }
-	    elsif ($basefile =~ /\.vh?$/) {
-		my $src_mtime = (stat($srcfile))[9];
-		$src_mtime ||= 0;
-		$dest_mtime = $file_mtime_read{$srcfile} || 0;
-		$file_mtime_read_used{$srcfile} = 1;
-
-		# Mark times
-		#print "BCK $basefile $src_mtime, $dest_mtime, $force\n";
- 		$file_mtime{$srcfile} = $src_mtime;
-
-		if ($src_mtime != $dest_mtime || $force) {
-		    my $no_output = 0;
-		    unlink $destfile;
-		    $Total_Files++;
-		    if (! vpm_process ($srcfile, $destfile, $Opt_AllFiles)) {
-			# Didn't need to do processing
-                        $no_output = 1;
-			print "nooutput: vpm_process ($srcfile, $destfile,0 )\n" if ($Debug);
-			copy($srcfile,$destfile);
-		    } else {
-			# Make sure didn't clobber another directory's file
-			print "madenew:  vpm_process ($srcfile, $destfile,0 )\n" if ($Debug);
-			if ($file_directory{$destfile}) {
-			    my $old = $file_directory{$destfile};
-			    die "%Error: Two files with same basename: $srcfile, $old\n";
-			    # This warning is to prevent search order dependence in the
-			    # verilog search path.  It also makes sure we don't clobber
-			    # one file with another by the same name in the .vpm directory
-			}
-		    }
-		    if (!$Opt_Quiet) {
-			print "  VPM'ing file ($Total_Files) $srcfile ", 
-			($dest_mtime ? "(Changed)":"(New)"), ($no_output ? " (no-output)" : ""),"\n";
-		    }
-		}
-		$file_directory{$destfile} = $srcfile;
+    if ($src_mtime != $dest_mtime) {
+	my $no_output = 0;
+	unlink $destfile;
+	$Total_Files++;
+	if (! vpm_process ($srcfile, $destfile, $Opt_AllFiles)) {
+	    # Didn't need to do processing
+	    $no_output = 1;
+	    print "nooutput: vpm_process ($srcfile, $destfile,0 )\n" if ($Debug);
+	    copy($srcfile,$destfile);
+	} else {
+	    # Make sure didn't clobber another directory's file
+	    print "madenew:  vpm_process ($srcfile, $destfile,0 )\n" if ($Debug);
+	    if ($file_directory{$destfile}) {
+		my $old = $file_directory{$destfile};
+		die "%Error: Two files with same basename: $srcfile, $old\n";
+		# This warning is to prevent search order dependence in the
+		# verilog search path.  It also makes sure we don't clobber
+		# one file with another by the same name in the .vpm directory
 	    }
 	}
+	if (!$Opt_Quiet) {
+	    print "  VPM'ing file ($Total_Files) $srcfile ", 
+	    ($dest_mtime ? "(Changed)":"(New)"), ($no_output ? " (no-output)" : ""),"\n";
+	}
     }
-    closedir $srcdir;
+    $file_directory{$destfile} = $srcfile;
 }
 
 ######################################################################
@@ -968,15 +1001,19 @@ sub operator {
 	print "Callback OPERATOR $token  ($Parens, $Param_Num)\n"    if ($Debug);
 	if (($token eq ',') && ($Parens==1)) {
 	    # Top level comma
+	    $Params[$Param_Num] .= $since;
 	    $Param_Num ++;
 	}
 	elsif (($token eq ';' && ($Parens==0))) {
 	    # Final statement close
 	    if ($In_Message) {
 		if (defined $Vpm_Conversions {$Params[0]}) {
+		    #print " CALLPRE ",join(':',@Params),"\n" if $Debug;
 		    my $nl = "";
 		    for (my $p=0; $p<=$#Params; $p++) {
-			while ($Params[$p]=~s/\n/ /g) { $nl .= "\n"; }
+			while ($Params[$p]=~/\n/g) { $nl .= "\n"; }
+			$Params[$p] = Verilog::Language::strip_comments($Params[$p]);
+			$Params[$p]=~ s/\n//g;
 		    }
 		    my $func = $Vpm_Conversions {$Params[0]};
 		    print " CALL ",join(':',@Params),"\n" if $Debug;
@@ -988,16 +1025,17 @@ sub operator {
 	    }
 	    $In_Message=0;
 	}
-	elsif (($token eq ')') && ($Parens==1)) {
+	elsif (($token eq ')' || $token eq '}') && ($Parens==1)) {
 	    # Final paren
 	    $Parens--;
+	    $Params[$Param_Num] .= $since;
 	}
-	elsif ($token eq ')') {
+	elsif ($token eq ')' || $token eq '}') {
 	    # Other paren
 	    $Parens--;
 	    $Params[$Param_Num] .= $since . $token;
 	}
-	elsif ($token eq '(') {
+	elsif ($token eq '(' || $token eq '{') {
 	    if ($Parens!=0) {
 		$Params[$Param_Num] .= $since . $token;
 	    }
@@ -1080,18 +1118,31 @@ B<vpm>
 [ B<--help> ]
 [ B<--date> ]
 [ B<--quiet> ]
-[ B<directories...> ]
+[ -y B<directories...> ]
+[ B<files...> ]
 
 =head1 DESCRIPTION
 
-Vpm will read the verilog file specified and preprocess it.  The output
-will be named .vpm unless another name is given with B<-o>.
-
-If a directory is passed, all files in that directory will be preprocessed
-recursively.  Typicall usage in this case is to use a B<-o> with another output
-directory.
+Vpm will read the specified verilog files and preprocess them.  The files
+are written to the directory named .vpm unless another name is given with
+B<-o>.  If a directory is passed, all files in that directory will be
+preprocessed.
 
 =head1 ARGUMENTS
+
+Standard VCS and GCC-like parameters are used to specify the files to be
+preprocessed:
+
+    +libext+I<ext>+I<ext>...	Specify extensions to be processed
+    -f I<file>		Parse parameters in file
+    -v I<file>		Parse the library file (I<file>)
+    -y I<dir>		Parse all files in the directory (I<dir>)
+    -II<dir>		Parse all files in the directory (I<dir>)
+    +incdir+I<dir>	Parse all files in the directory (I<dir>)
+
+To prevent recursion and allow reuse of the input.vc being passed to the
+simulator, if the output directory is requested to be preprocessed, that
+directory is simply ignored.
 
 =over 4
 
@@ -1101,6 +1152,10 @@ Preprocess and write out files that do not have any macros that need
 expanding.  By default, files that do not need processing are not written
 out.
 
+This option may speed up simulator compile times; the file will always be
+found in the preprocessed directory, saving the compiler from having to
+search a large number of -v directories to find it.
+
 =item --chiponly
 
 Special standalone chip compile
@@ -1109,6 +1164,10 @@ Special standalone chip compile
 
 Check file dates versus the last run of VPM and don\'t process if the given
 source file has not changed.
+
+=item --exclude
+
+Exclude processing any files which begin with the specified prefix.
 
 =item --help
 
