@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.17 2001/04/03 21:32:30 wsnyder Exp $
+# $Id: Makefile.PL,v 1.18 2001/07/20 13:32:53 wsnyder Exp $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
@@ -11,6 +11,19 @@ README: readme.texi
 	-rm \$@
 	makeinfo \$< --output \$@ --no-headers --no-validate
 
+clean::
+	-rm -rf simv .vpm
+
+dist: maintainer-copy distcheck README
+
+## Maintainer use:
+tag:
+	cvs tag -F \$(DISTNAME)_\$(VERSION_SYM) .
+
+maintainer-dist: dist tag
+	cp \$(DISTVNAME).tar.gz \$(HOME)/src/kits
+	mv \$(DISTVNAME).tar.gz \$(HOME)/backpack
+
 maintainer-copy:
 #vpm maintainer-copy:
 #	perl -pe '${DOLLAR}skip = 1 if /--MAKER--/; print ${DOLLAR}_ if ! ${DOLLAR}skip; ${DOLLAR}skip = 0 if /--ENDMAKER--/; ${DOLLAR}_=qq{};' < ../../vpm > vpm
@@ -19,13 +32,6 @@ maintainer-copy:
 maintainer-clean: distclean
 	-rm README Makefile
 
-clean::
-	-rm -rf simv .vpm
-
-dist: maintainer-copy distcheck README
-
-tag:
-	cvs tag -F \$(DISTNAME)_\$(VERSION_SYM) .
 ";
 }
 

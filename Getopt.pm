@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm,v 1.3 2001/05/17 18:04:10 wsnyder Exp $
+# $Id: Getopt.pm,v 1.7 2001/07/20 13:27:31 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,11 +29,14 @@ use strict;
 use vars qw($VERSION $Debug);
 use Carp;
 use IO::File;
+use File::Basename;
+use File::Spec;
+use Cwd;
 
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 #######################################################################
 #######################################################################
@@ -165,9 +168,9 @@ sub incdir {
     if (@_) {
 	my $token = shift;
 	print "incdir $token\n" if $Debug;
-	push @{$self->{incdir}}, $token;
+	push @{$self->{incdir}}, $self->file_abs($token);
     }
-    return ($self->{incdir});
+    return (wantarray ? @{$self->{incdir}} : $self->{incdir});
 }
 sub libext {
     my $self = shift;
@@ -176,29 +179,76 @@ sub libext {
 	print "libext $token\n" if $Debug;
 	push @{$self->{libext}}, $token;
     }
-    return ($self->{libext});
+    return (wantarray ? @{$self->{libext}} : $self->{libext});
 }
 sub library {
     my $self = shift;
     if (@_) {
 	my $token = shift;
 	print "library $token\n" if $Debug;
-	push @{$self->{library}}, $token;
+	push @{$self->{library}}, $self->file_abs($token);
     }
-    return ($self->{library});
+    return (wantarray ? @{$self->{library}} : $self->{library});
 }
 sub module_dir {
     my $self = shift;
     if (@_) {
 	my $token = shift;
 	print "module_dir $token\n" if $Debug;
-	push @{$self->{module_dir}}, $token;
+	push @{$self->{module_dir}}, $self->file_abs($token);
     }
-    return ($self->{module_dir});
+    return (wantarray ? @{$self->{module_dir}} : $self->{module_dir});
+}
+
+sub get_parameters {
+    my $self = shift;
+    my @params = ();
+    foreach my $def (sort (keys %{$self->{defines}})) {
+	my $defvalue = $self->defvalue($def);
+	$defvalue = "=".($defvalue||"") if (defined $defvalue && $defvalue ne "");
+	if ($self->{gcc_style}) {
+	    push @params, "-D${def}${defvalue}";
+	} else {
+	    push @params, "+define+${def}${defvalue}";
+	}
+    }
+    foreach my $ext ($self->libext()) {
+	push @params, "+libext+$ext";
+    }
+    foreach my $dir ($self->incdir()) {
+	if ($self->{gcc_style}) {
+	    push @params, "-I${dir}";
+	} else {
+	    push @params, "+incdir+${dir}";
+	}
+    }
+    foreach my $dir ($self->module_dir()) {
+	push @params, "-v", $dir;
+    }
+    foreach my $dir ($self->library()) {
+	push @params, "-y", $dir;
+    }
+    return (@params);
 }
 
 #######################################################################
 # Utility functions
+
+sub file_abs {
+    my $self = shift;
+    my $filename = shift;
+    # return absolute filename
+    # If the user doesn't want this absolutification, they can just
+    # make their own derrived class and override this function.
+    #
+    # We don't absolutify files that don't have any path,
+    # as file_path() will probably be used to resolve them.
+    return $filename if ("" eq dirname($filename));
+    return $filename if File::Spec->file_name_is_absolute($filename);
+    # Cwd::abspath() requires files to exist.  Too annoying...
+    $filename = File::Spec->canonpath(File::Spec->catdir(Cwd::getcwd(),$filename));
+    return $filename;
+}
 
 sub file_path {
     my $self = shift;
@@ -210,7 +260,7 @@ sub file_path {
     # We use both the incdir and moduledir.  This isn't strictly correct,
     # but it's fairly silly to have to specify both all of the time.
     my %checked = ();
-    foreach my $dir (@{$self->{incdir}}, @{$self->{module_dir}}) {
+    foreach my $dir (@{$self->incdir()}, @{$self->module_dir()}) {
 	next if $checked{$dir}; $checked{$dir}=1;  # -r can be quite slow
 	return "$dir/$filename" if -r "$dir/$filename";
 	# Check each postfix added to the file
@@ -218,7 +268,7 @@ sub file_path {
 	    return "$dir/$filename$postfix" if -r "$dir/$filename$postfix";
 	}
     }
-    return undef;
+    return $filename;	# Let whoever needs it discover it doesn't exist
 }
 
 #######################################################################
@@ -295,6 +345,12 @@ parsing of VCS-like parameters is disabled.
 
 Returns a new path to the filename, using the library directories and
 search paths to resolve the file.
+
+=item $self->get_parameter ( )
+
+Returns a list of parameters that when passed through $self->parameter()
+should result in the same state.  Often this is used to form command lines
+for downstream programs that also use Verilog::Getopt.
 
 =item $self->parameter ( \@params )
 

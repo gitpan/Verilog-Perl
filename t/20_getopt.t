@@ -3,8 +3,9 @@
 
 use strict;
 use Test;
+use Cwd;
 
-BEGIN { plan tests => 7 }
+BEGIN { plan tests => 9 }
 BEGIN { require "t/test_utils.pl"; }
 
 use Verilog::Getopt;
@@ -34,7 +35,21 @@ ok ($#left == 0);	# passthru
 ok ($opt->defvalue('read_opt_file'));
 
 my $fp = $opt->file_path('20_getopt.t');
-ok ($opt->file_path('20_getopt.t') eq 't/20_getopt.t');
+print "fp $fp\n";
+ok ($fp eq (Cwd::abs_path("t")."/20_getopt.t"));
+
+my @out = $opt->get_parameters();
+print "OUT: ",(join(" ",@out)),"\n";
+ok ($#out == 14);
+
+{
+    my $opt2 = new Verilog::Getopt ();
+    my @left2 = $opt2->parameter(@out);
+    print join(" ",@left2),"\n";
+    my @out2 = $opt->get_parameters();
+    print join(" ",@out2),"\n";
+    ok ($#out2 == 14);
+}
 
 {
     my $opt2 = new Verilog::Getopt (gcc_style=>1, vcs_style=>0);

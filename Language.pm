@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm,v 1.18 2001/05/17 18:04:10 wsnyder Exp $
+# $Id: Language.pm,v 1.19 2001/07/20 13:27:31 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -119,40 +119,42 @@ require 5.000;
 require Exporter;
 
 use strict;
-use vars qw($VERSION);
+use vars qw($VERSION %Keyword %Compdirect);
 
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 ######################################################################
 #### Internal Variables
 
-my $kwd;
-foreach $kwd ("always", "and", "assign", "begin",
-	      "buf", "bufif0", "bufif1", "case", "casex", "casez", "cmos",
-	      "default", "defparam", "else", "end", "endcase",
-	      "endfunction", "endmodule", "endprimitive", "endspecify",
-	      "endtable", "endtask", "event", "for", "force", "forever",
-	      "fork", "function", "if", "initial", "inout", "input",
-	      "integer", "join", "macromodule", "makefile", "module",
-	      "nand", "negedge", "nmos", "nor", "not", "notif0", "notif1",
-	      "or", "output", "parameter", "pmos", "posedge", "primitive",
-	      "pulldown", "pullup", "rcmos", "real", "realtime", "reg",
-	      "repeat", "rnmos", "rpmos", "rtran", "rtranif0", "rtranif1",
-	      "signed", "specify", "supply", "supply0", "supply1", "table",
-	      "task", "time", "tran", "tranif0", "tranif1", "tri", "tri0",
-	      "tri1", "triand", "trior", "trireg", "vectored", "wait",
-	      "wand", "while", "wire", "wor", "xnor", "xor") {
-    $Verilog::Language::keyword{$kwd} = 1;
+foreach my $kwd (qw(
+		    always and assign begin buf bufif0 bufif1 case
+		    casex casez cmos deassign default defparam
+		    disable else end endcase endfunction endmodule
+		    endprimitive endspecify endtable endtask event
+		    extern for force forever fork function highz0
+		    highz1 if initial inout input integer join large
+		    macromodule makefile medium module nand negedge
+		    nmos nor not notif0 notif1 or output parameter
+		    pmos posedge primitive pull0 pull1 pulldown
+		    pullup rcmos real realtime reg release repeat
+		    rnmos rpmos rtran rtranif0 rtranif1 scalared
+		    signed small specify strong0 strong1 supply
+		    supply0 supply1 table task time tran tranif0
+		    tranif1 tri tri0 tri1 triand trior trireg
+		    vectored wait wand weak0 weak1 while wire wor
+		    xnor xor
+		    )) {
+    $Keyword{$kwd} = 1;
 }
-foreach $kwd ("`celldefine", "`default_nettype", "`define", "`else",
-	      "`endcelldefine", "`endif", "`ifdef", "`include",
-	      "`nounconnected_drive", "`resetall", "`timescale",
-	      "`unconnected_drive", "`undef") {
-    $Verilog::Language::keyword{$kwd} = 1;
-    $Verilog::Language::compdirect{$kwd} = 1;
+foreach my $kwd ("`celldefine", "`default_nettype", "`define", "`else",
+		 "`endcelldefine", "`endif", "`ifdef", "`include",
+		 "`nounconnected_drive", "`resetall", "`timescale",
+		 "`unconnected_drive", "`undef") {
+    $Keyword{$kwd} = 1;
+    $Compdirect{$kwd} = 1;
 }
 
 ######################################################################
@@ -160,12 +162,12 @@ foreach $kwd ("`celldefine", "`default_nettype", "`define", "`else",
 
 sub is_keyword {
     my $symbol = shift;
-    return ($Verilog::Language::keyword {$symbol});
+    return ($Keyword {$symbol});
 }
 
 sub is_compdirect {
     my $symbol = shift;
-    return ($Verilog::Language::compdirect {$symbol});
+    return ($Compdirect {$symbol});
 }
 
 ######################################################################

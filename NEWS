@@ -6,6 +6,17 @@ The contributors that suggested a given feature is shown in [].
 	
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 1.13 5/17/2001
+
+***	Added Verilog::Getopt::get_parameter() function.
+
+***	Added Verilog::Getopt::file_abs() function.
+
+***	Added missing keywords to Verilog::Language:
+	deassign disable extern highz0 highz1 large medium pull0
+	pull1 release scalared small strong0 strong1 weak0 weak1
+
+
 * Changes in Verilog::Language 1.12 5/15/2001
 
 **	Added new Verilog::Getopt, for standard option parsing.
@@ -55,7 +66,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 
 ----------------------------------------------------------------------
-$Id: NEWS,v 1.12 2001/05/16 21:10:28 wsnyder Exp $
+$Id: NEWS,v 1.14 2001/07/20 13:27:31 wsnyder Exp $
 ----------------------------------------------------------------------
 Copyright information:
 
