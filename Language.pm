@@ -1,16 +1,15 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm,v 1.2 1999/06/02 17:30:10 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@ultranet.com>
+# $Id: Language.pm,v 1.5 2000/01/21 15:56:07 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
-# This package provides standard language information for
-# the Verilog Language.
-# 
-# This program is Copyright 1998 by Wilson Snyder.
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# This program is Copyright 2000 by Wilson Snyder.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of either the GNU General Public License or the
+# Perl Artistic License, with the exception that it cannot be placed
+# on a CD-ROM or similar media for commercial distribution without the
+# prior approval of the author.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,14 +36,14 @@ Verilog::Language - Verilog language utilities
 
 =head1 DESCRIPTION
 
-  This package provides useful utilities for general use with the
+This package provides useful utilities for general use with the
 Verilog Language.  General functions will be added as needed.
 
-=over 
+=over 4
 
 =item Verilog::Language::is_keyword ($symbol_string)
 
-  Return true if the given symbol string is a Verilog reserved keyword.
+Return true if the given symbol string is a Verilog reserved keyword.
 
 =head1 EXAMPLE
 
@@ -53,11 +52,9 @@ Verilog Language.  General functions will be added as needed.
   print Verilog::Language::is_keyword ("signalname");
      undef
 
-=over 
-
 =item Verilog::Language::number_value ($number_string)
 
-  Return the numeric value of a Verilog value, or undef if incorrectly
+Return the numeric value of a Verilog value, or undef if incorrectly
 formed.  Since it is returned as a signed integer, it may fail for over 31
 bit integers.
 
@@ -68,11 +65,9 @@ bit integers.
   print Verilog::Language::number_value ("32'p2");
      undef
 
-=over 
-
 =item Verilog::Language::number_bits ($number_string)
 
-  Return the number of bits in a value string, or undef if incorrectly
+Return the number of bits in a value string, or undef if incorrectly
 formed, _or_ not specified.
 
 =head1 EXAMPLE
@@ -80,14 +75,14 @@ formed, _or_ not specified.
   print Verilog::Language::number_bits ("32'h13");
      32
 
-=over 
-
 =item Verilog::Language::split_bus ($bus)
 
-  Return a list of expanded arrays.  When passed a string like
+Return a list of expanded arrays.  When passed a string like
 "foo[5:1:2,10:9]", it will return a array with ("foo[5]", "foo[3]", ...).
 It correctly handles connectivity expansion also, so that "x[1:0] = y[3:0]"
 will get intuitive results.
+
+=back
 
 =head1 DISTRIBUTION
 
@@ -96,7 +91,7 @@ C<http://www.ultranet.com/~wsnyder/verilog-perl>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@ultranet.com>
+Wilson Snyder <wsnyder@world.std.com>
 
 =cut
 ######################################################################
@@ -112,7 +107,7 @@ use English;
 ######################################################################
 #### Configuration Section
 
-$VERSION = sprintf("%d.%03d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = '1.4';
 
 ######################################################################
 #### Internal Variables
@@ -301,6 +296,106 @@ sub split_bus {
 #    }
 #    die;
 #}
+
+sub split_bus_nocomma {
+    # Faster version of split_bus
+    my $bus = shift;
+    if ($bus !~ /:/) {
+	# Fast case: No bussing
+	return $bus;
+    } elsif ($bus =~ /^([^\[]+\[)([0-9]+):([0-9]+)(\][^\]])$/) {
+	# Middle speed case: Simple max:min
+	my $bit;
+	my @vec = ();
+	if ($2 >= $3) {
+	    for ($bit = $2; $bit >= $3; $bit --) {
+		push @vec, $1 . $bit . $4;
+	    }
+	} else {
+	    for ($bit = $2; $bit <= $3; $bit ++) {
+		push @vec, $1 . $bit . $4;
+	    }
+	}
+	return @vec;
+    } else {
+	# Complex case: x:y	etc
+	# Do full parsing
+	my @pretext = ();	# [brnum]
+	my @expanded = ();	# [brnum][bitoccurance]
+	my $inbra = 0;
+	my $brnum = 0;
+	my ($beg,$end);
+	foreach (split (/([:\]\[])/, $bus)) {
+	    if (/^\[/) {
+		$inbra = 1;
+		$pretext[$brnum] .= $_;
+	    } 
+	    if (!$inbra) {
+		# Not in bracket, just remember text
+		$pretext[$brnum] .= $_;
+		next;
+	    }
+	    if (/[\]]/) {
+		if (defined $beg) {
+		    # End of bus piece
+		    #print "Got seg $beg $end\n";
+		    my $bit;
+		    if ($beg >= $end) {
+			for ($bit = $beg; $bit >= $end; $bit--) {
+			    push @{$expanded[$brnum]}, $bit;
+			}
+		    } else {
+			for ($bit = $beg; $bit <= $end; $bit++) {
+			    push @{$expanded[$brnum]}, $bit;
+			}
+		    }
+		}
+		$beg = undef;
+		# Now what?
+		if (/^\]/) {
+		    $inbra = 0;
+		    $brnum++;
+		    $pretext[$brnum] .= $_;
+		}
+	    } elsif (/:/) {
+		$inbra++;
+	    }
+	    else {
+		if ($inbra == 1) {	# Begin value
+		    $beg = $end = $_;
+		} elsif ($inbra == 2) {	# End value
+		    $end = $_;
+		}
+		# Else ignore extra colons
+	    }
+	}
+
+	# Determine max size of any bracket expansion array
+	my $br;
+	my $max_size = $#{$expanded[0]};
+	for ($br=1; $br<$brnum; $br++) {
+	    my $len = $#{$expanded[$br]};
+	    if ($len < 0) {
+		push @{$expanded[$br]}, "";
+		$len = 0;
+	    }
+	    $max_size = $len if $max_size < $len;
+	}
+
+	my $i;
+	my @vec = ();
+	for ($i=0; $i<=$max_size; $i++) {
+	    $bus = "";
+	    for ($br=0; $br<$brnum; $br++) {
+		#print "i $i  br $br >", $pretext[$br],"<\n";
+		$bus .= $pretext[$br] . $expanded[$br][$i % (1+$#{$expanded[$br]})];
+	    }
+	    $bus .= $pretext[$br];	# Trailing stuff
+	    push @vec, $bus;
+	}
+	return @vec;
+    }
+}
 
 ######################################################################
 #### Package return

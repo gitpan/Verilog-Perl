@@ -1,0 +1,26 @@
+Verilog::Language NEWS --  history of user-visible changes.
+Copyright (C) 2000 Wilson Snyder.
+See the end for copying conditions.
+
+The contributors that suggested a given feature is shown in [].
+	
+This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
+
+* Changes in Verilog::Language 1.4 1/21/2000
+
+****	test.pl added
+
+
+----------------------------------------------------------------------
+$Id: NEWS,v 1.1 2000/01/21 15:56:08 wsnyder Exp $
+----------------------------------------------------------------------
+Copyright information:
+
+Copyright (C) 2000 Wilson Snyder
+
+   See the README file included with this file for licencing information.
+
+Local variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+end:

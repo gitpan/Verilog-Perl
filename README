@@ -3,8 +3,8 @@ This is the Verilog Perl Package.
 Copyright
 =========
 
-   This package is Copyright 1998 by Wilson Snyder
-<wsnyder@ultranet.com>.
+   This package is Copyright 2000 by Wilson Snyder
+<wsnyder@world.std.com>.
 
    You may distribute under the terms of either the GNU General Public
 License or the Artistic License, as specified in the Perl README file,
@@ -53,9 +53,11 @@ Installation
 
   3. Type `make' to compile Verilog.
 
-  4. Type `make install' to install the programs and any data files and
+  4. Type `make test' to check the package.
+
+  5. Type `make install' to install the programs and any data files and
      documentation.
 
-  5. Type `rehash' to make the new `vrename' command visible.
+  6. Type `rehash' to make the new `vrename' command visible.
 
 

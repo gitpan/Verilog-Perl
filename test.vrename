@@ -1,0 +1,6 @@
+# For test.pl testing of vrename
+# $Id: test.vrename,v 1.1 2000/01/21 15:56:09 wsnyder Exp $
+######################################################################
+sigren	"a"	"or_term_1"
+sigren	"b"	"or_term_2"
+sigren	"z"	"ored_output"

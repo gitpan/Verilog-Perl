@@ -1,15 +1,15 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Id: Parse.pm,v 1.4 1999/06/02 17:30:11 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@ultranet.com>
+# $Id: Parse.pm,v 1.6 2000/01/21 15:56:08 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
-# This package implements Verilog Parsing;
-# 
-# This program is Copyright 1998 by Wilson Snyder.
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# This program is Copyright 2000 by Wilson Snyder.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of either the GNU General Public License or the
+# Perl Artistic License, with the exception that it cannot be placed
+# on a CD-ROM or similar media for commercial distribution without the
+# prior approval of the author.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -51,7 +51,7 @@ and callbacks are called for various entities in the file, as they occur.
 
 This module is no longer supported.  Use Verilog::Parser instead.
 
-=over 
+=over 4
 
 =item $parser->new
 
@@ -134,7 +134,7 @@ C<http://www.ultranet.com/~wsnyder/verilog-perl>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@ultranet.com>
+Wilson Snyder <wsnyder@world.std.com>
 
 =cut
 
@@ -158,7 +158,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Verilog::Parse::debug = 0;		# for debugging
 
-( $VERSION ) = '$Revision: 1.4 $ ' =~ /\$Revision:\s+([^\s]+)/;
+$VERSION = '1.4';
 
 #######################################################################
 

@@ -1,15 +1,15 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.2 1999/06/02 17:30:14 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@ultranet.com>
+# $Id: SigParser.pm,v 1.4 2000/01/21 15:56:08 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
-# This package implements Verilog Signal Parsing;
-# 
-# This program is Copyright 1998 by Wilson Snyder.
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# This program is Copyright 2000 by Wilson Snyder.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of either the GNU General Public License or the
+# Perl Artistic License, with the exception that it cannot be placed
+# on a CD-ROM or similar media for commercial distribution without the
+# prior approval of the author.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -75,6 +75,8 @@ This method is called when a instantantiation is defined.  The first
 parameter is the name of the module being instantiated, and the second
 parameter is the name of the cell.
 
+=back
+
 =head1 SEE ALSO
 
 C<Verilog::Parser>, 
@@ -93,7 +95,7 @@ C<http://www.ultranet.com/~wsnyder/verilog-perl>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@ultranet.com>
+Wilson Snyder <wsnyder@world.std.com>
 
 =cut
 
@@ -117,7 +119,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = sprintf("%d.%03d", q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = '1.4';
 
 #######################################################################
 

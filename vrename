@@ -1,16 +1,16 @@
 #!/usr/local/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename,v 1.3 1999/06/02 17:30:16 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@ultranet.com>
+# $Id: vrename,v 1.5 2000/01/21 15:56:09 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@world.std.com>
 ################ Introduction ################
 #
-# This program allows signals to be renamed across many files.
-# 
-# This program is Copyright 1998 by Wilson Snyder.
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# This program is Copyright 2000 by Wilson Snyder.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of either the GNU General Public License or the
+# Perl Artistic License, with the exception that it cannot be placed
+# on a CD-ROM or similar media for commercial distribution without the
+# prior approval of the author.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,6 +20,7 @@
 # If you do not have a copy of the GNU General Public License write to
 # the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 # MA 02139, USA.
+######################################################################
 
 require 5.005;
 use English;
@@ -29,7 +30,7 @@ use Pod::Text;
 use Verilog::Language;
 use Verilog::Parser;
 
-( $VERSION ) = '$Revision: 1.3 $ ' =~ /\$Revision:\s+([^\s]+)/;
+$VERSION = '1.4';
 
 ######################################################################
 
@@ -41,11 +42,12 @@ use Verilog::Parser;
      "__FILE__"  => "",
      "__LINE__"  => "",
      );
-    
+
 # These defines contain a preprocessor directive
 # Thus when crypting we have to keep them at left edge
 %Vrename_Left_Edge_Define =
     ('`time_scale' => "",
+     '`timescale' => "",
      );
 
 ######################################################################
@@ -53,11 +55,12 @@ use Verilog::Parser;
 
 # capitalized are globals
 my $Debug = 0;
-$do_change = 0;
-$do_list = 0;
-$Do_Xref = 0;
-$Do_Crypt = 0;
-$do_read = 0;
+$opt_change = 0;
+$opt_list = 0;
+$Opt_Xref = 0;
+$Opt_Crypt = 0;
+$Opt_Write = 1;
+$opt_read = 0;
 $change_filename = "signals.vrename";
 $output_dir = "";
 @Files = ();
@@ -66,13 +69,14 @@ $result = &GetOptions (
 		       "help"		=> \&usage,
 		       "debug"		=> \&debug,
 		       "version"	=> \&version,
-		       "crypt!"		=> \$Do_Crypt,
-		       "change!"	=> \$do_change,
+		       "crypt!"		=> \$Opt_Crypt,
+		       "change!"	=> \$opt_change,
 		       "changefile=s"	=> \$change_filename,
 		       "o=s"		=> \$output_dir,
-		       "read!"		=> \$do_read,
-		       "list!"		=> \$do_list,
-		       "xref!"		=> \$Do_Xref,
+		       "read!"		=> \$opt_read,
+		       "write!"		=> \$Opt_Write,
+		       "list!"		=> \$opt_list,
+		       "xref!"		=> \$Opt_Xref,
 		       "<>"		=> \&parameter,
 		       );
 
@@ -83,27 +87,27 @@ if ($output_dir ne ""
 
 if (!$result || !@Files) { &usage(); }
 
-if ($output_dir eq "" && $Do_Crypt && $do_change) {
+if ($output_dir eq "" && $Opt_Crypt && $opt_change) {
     print STDERR "You must use -o with -crypt or your uncrypted files will be overwritten.\n";
     exit (10);
 }
 
-if ($do_read || $do_change) {
+if ($opt_read || $opt_change) {
     changes_read ($change_filename);
 }
 
-if ($do_change) {
+if ($opt_change) {
     foreach $file (@Files) {
 	verilog_change_sig ($file);
     }
 }
 
-if ($do_list) {
+if ($opt_list) {
     foreach $file (@Files) {
 	my $parser = Verilog::Vrename::Reader->new();
 	$parser->parse_file ($file);
     }
-    if ($Do_Crypt) {
+    if ($Opt_Crypt) {
 	changes_crypt();
     }
     changes_from_loc ();
@@ -118,7 +122,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print '$Id: vrename,v 1.3 1999/06/02 17:30:16 wsnyder Exp $ ', "\n";
+    print 'Id: $Id: vrename,v 1.5 2000/01/21 15:56:09 wsnyder Exp $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -126,7 +130,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename,v 1.3 1999/06/02 17:30:16 wsnyder Exp $ ', "\n";
+    print '$Id: vrename,v 1.5 2000/01/21 15:56:09 wsnyder Exp $ ', "\n";
     exit (1);
 }
 
@@ -142,7 +146,7 @@ sub parameter {
 }
 
 ######################################################################
-	      
+
 sub changes_from_loc {
     # If a signal was found, but doesn't have change information, make it
     # default to have a change record with replacement same as basename.
@@ -185,7 +189,7 @@ sub changes_crypt {
 }
 
 sub random_string {
-    return  sprintf ("%c%c%c%c%c%c", 
+    return  sprintf ("%c%c%c%c%c%c",
 		     (rand (26)) + 65,
 		     (rand (26)) + 65,
 		     (rand (26)) + 65,
@@ -231,7 +235,7 @@ sub changes_write {
 	    $len += 8;
 	}
 	print $fh "\t\"$Signal_Newname{$sig}\"";
-	if ($Do_Xref) {
+	if ($Opt_Xref) {
 	    my $len = 40 + 2 + length $sig;
 	    while ($len < 64) {
 		print $fh "\t";
@@ -291,7 +295,7 @@ sub changes_read {
 }
 
 ######################################################################
-	      
+
 sub crypt_string {
     my $filestrg = shift;
 
@@ -320,7 +324,7 @@ sub crypt_string {
 	    } else {
 		$filestrg .= " "; $pos++;
 	    }
-	} 
+	}
 	elsif ($char eq "`" && !$literal) {
 	    my $defkwd = (substr $oldstrg, $oldpos);
             $defkwd =~ /^(\`[a-z0-9_]*)/;
@@ -360,7 +364,7 @@ sub crypt_string {
     $filestrg .= "\n";
     return $filestrg;
 }
-    
+
 ######################################################################
 
 sub verilog_change_sig {
@@ -373,7 +377,7 @@ sub verilog_change_sig {
     my $filestrg = <VFILE>;
     close VFILE;
 
-    if ($Do_Crypt) {
+    if ($Opt_Crypt) {
 	if ($filestrg =~ /ENCRYPT_ME/) {
 	    $Encrypt{$filename} = 1;
 	}
@@ -389,7 +393,7 @@ sub verilog_change_sig {
     my $sig;
     my %signal_magic = ();
     # pass1: replace with magic replacement string
-    # (two steps so renaming a->b and b->a at the same time doesn't screw up) 
+    # (two steps so renaming a->b and b->a at the same time doesn't screw up)
     foreach $sig (keys %Signal_Newname) {
 	my $new = $Signal_Newname{$sig};
 	if ($new ne $sig) {
@@ -413,12 +417,16 @@ sub verilog_change_sig {
     }
 
     # Save it
-    if ($hadrepl || $Do_Crypt) {
-	open (VFILE, ">$output_dir$filename") or die "%Error: $! $output_dir$filename.\n";
-	print VFILE $filestrg;
-	close VFILE;
-	if ($Encrypt{$filename}) {print "Encrypted ";} else {print "Wrote ";}
-	print "$filename  ($hadrepl signals matched)\n";
+    if ($hadrepl || $Opt_Crypt) {
+	if (!$Opt_Write) {
+	    print "$filename  ($hadrepl signals matched) (-n: Not written)\n";
+	} else {
+	    open (VFILE, ">$output_dir$filename") or die "%Error: $! $output_dir$filename.\n";
+	    print VFILE $filestrg;
+	    close VFILE;
+	    if ($Encrypt{$filename}) {print "Encrypted ";} else {print "Wrote ";}
+	    print "$filename  ($hadrepl signals matched)\n";
+	}
     }
 }
 
@@ -443,7 +451,7 @@ BEGIN {
 sub new {
     my $class = shift;
     my $self = $class->SUPER::new();
-    bless $self, $class; 
+    bless $self, $class;
     return $self;
 }
 
@@ -513,7 +521,7 @@ __END__
 
 =head1 NAME
 
-vrename - change signal names across many verilog files
+vrename - change signal names across many Verilog files
 
 =head1 SYNOPSIS
 
@@ -524,7 +532,6 @@ C<vrename> I<filename.v> I<filename.v> ...
 Vrename will allow a signal to be changed across all levels of the
 design hiearchy using a three step process.  (It actually includes
 module names, macros, and other definitions, so those can be changed too.)
-
 
 First, use C<vrename --list file.v file2.v ....>
 
@@ -554,7 +561,7 @@ signals file.  Either --list or --change must be specified.
 
 =item --list
 
-Create a list of signals in the design and write to 
+Create a list of signals in the design and write to
 signals.dat.  Either --list or --change must be specified.
 
 =item --xref
@@ -567,12 +574,23 @@ Include a cross reference of where the signals are used.
 Read the changes list, allows --list to append to the
 changes already read.
 
+=item --nowrite
+
+Don't write the actual changes, just report the files that would be changed.
+
 =item --crypt
 
 With --list, randomize the signal renames.  With --change, compress spaces
 and comments and apply those renames listed in the file (presumably created
-with vrename --list --crypt).  The comment /*ENCRYPT_ME*/ must be included
-in all files that need to be encrypted.
+with vrename --list --crypt).
+
+The comment /*ENCRYPT_ME*/ must be included in all files that need to be
+encrypted.  If a signal should not be encrypted, it can simply be set in
+the signals.vrename list to be changed to itself.  After encrypting, you
+may want to save the signals.vrename file so you have a key for decoding,
+and also so that it may be used for the next encryption run.  When used in
+this way for the next encryption run, only new signals will get new
+encryptions, all other encryptions will be encrypted the same.
 
 =item --o {dir}
 
@@ -595,6 +613,6 @@ C<http://www.ultranet.com/~wsnyder/veripool/verilog-perl.html>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@ultranet.com>
+Wilson Snyder <wsnyder@world.std.com>
 
 =cut
