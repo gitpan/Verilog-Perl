@@ -4,7 +4,11 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
-* Changes in Verilog::Language 2.222 3/6/2003
+* Changes in Verilog::Language 2.223 5/19/2003
+
+**	Add order based pin/cell connections.  [by David Duxstad]
+
+* Changes in Verilog::Language 2.223 3/6/2003
 
 ****	Support instantiations with multiple cell names. [Bruce Nepple]
 
@@ -181,7 +185,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #48 $$Date: 2003/05/06 $$Author: wsnyder $
+$Revision: #49 $$Date: 2003/05/19 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #16 $$Date: 2003/05/06 $$Author: wsnyder $
+# $Revision: #17 $$Date: 2003/05/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -31,7 +31,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.222';
+$VERSION = '2.223';
 use strict;
 
 structs('new',
@@ -43,6 +43,7 @@ structs('new',
 	   #
 	   netname	=> '$', #'	# Net connection
 	   portname 	=> '$', #'	# Port connection name
+	   portnumber   => '$', #'	# Position of name in call
 	   cell     	=> '$', #'	# Cell reference
 	   # below only after link()
 	   net		=> '$', #'	# Net connection reference
@@ -73,8 +74,15 @@ sub _link {
 	$change = 1;
     }
     if (!$self->port
-	&& $self->portname && $self->submod) {
+	&& $self->portname && $self->submod && $self->cell->namedports ) {
 	$self->port($self->submod->find_port($self->portname));
+	$change = 1;
+    }
+    elsif (!$self->port
+	&& $self->submod) {
+	$self->port($self->submod->find_port_by_index($self->portnumber));
+	# changing name from pin# to actual port name
+	$self->name($self->port->name()) if $self->port;
 	$change = 1;
     }
     if ($change && $self->net && $self->port) {

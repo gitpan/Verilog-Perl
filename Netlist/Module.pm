@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #19 $$Date: 2003/05/06 $$Author: wsnyder $
+# $Revision: #20 $$Date: 2003/05/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -30,7 +30,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.222';
+$VERSION = '2.223';
 use strict;
 
 structs('new',
@@ -42,6 +42,7 @@ structs('new',
 	   userdata	=> '%',		# User information
 	   #
 	   ports	=> '%',		# hash of Verilog::Netlist::Ports
+	   portsordered	=> '@',		# list of Verilog::Netlist::Ports as ordered in list of ports   
 	   nets		=> '%',		# hash of Verilog::Netlist::Nets
 	   cells	=> '%',		# hash of Verilog::Netlist::Cells
 	   _celldecls	=> '%',		# hash of declared cells (for autocell only)
@@ -71,6 +72,14 @@ sub find_port {
     my $search = shift;
     return $self->ports->{$search};
 }
+sub find_port_by_index {
+    my $self = shift;
+    my $myindex = shift;
+    # @{$self->portsordered}[$myindex-1] returns the name of
+    # the port in the module at this index.  Then, this is
+    # used to find the port reference via the port hash
+    return $self->ports->{@{$self->portsordered}[$myindex-1]}; 
+}
 sub find_cell {
     my $self = shift;
     my $search = shift;
@@ -91,6 +100,10 @@ sub nets_sorted {
 sub ports_sorted {
     my $self = shift;
     return (sort {$a->name() cmp $b->name()} (values %{$self->ports}));
+}
+sub ports_ordered {
+    my $self = shift;
+    return ( @{$self->portsordered});
 }
 sub cells_sorted {
     my $self = shift;
@@ -221,6 +234,10 @@ Returns list of references to Verilog::Netlist::Cell in the module.
 =item $self->cells_sorted
 
 Returns list of name sorted references to Verilog::Netlist::Cell in the module.
+
+=item $self->find_port_by_index
+
+Returns the port name associated with the given index.
 
 =item $self->is_top
 

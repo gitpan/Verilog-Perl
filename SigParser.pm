@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #31 $$Date: 2003/05/06 $$Author: wsnyder $
+# $Revision: #32 $$Date: 2003/05/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -120,7 +120,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.222';
+$VERSION = '2.223';
 
 #######################################################################
 
@@ -363,13 +363,16 @@ sub operator {
 		&& defined $self->{last_symbols}[0]
 		&& !$self->{bracket_level}) {
 		my $vec = "";
+		my $namedports = 0;
 		$vec = $self->{last_vectors} if ($self->{last_vectors} ne "");
 		my $pin_name = $self->{pin_name};
+		$namedports = 1 if defined $pin_name;
 		$pin_name ||= "pin" . $self->{is_pin_ok};
-		$self->{is_pin_ok}++;
 		$self->pin ($pin_name,
 			    $self->{last_symbols}[0] . $vec,
-			    $self->{is_pin_ok});
+			    $self->{is_pin_ok},
+			    $namedports);
+		$self->{is_pin_ok}++;  # moved to after pin call
 		$self->{pin_name} = undef;
 		$self->{last_vectors} = "";
 		@{$self->{last_symbols}} = ();
@@ -389,10 +392,10 @@ sub operator {
 		    $self->task ($lkw, $mod);
 		} elsif ($lkw eq "module"
 			 || $lkw eq "primitive") {
-		    my $mod = $self->{last_symbols}[0];
+		    my $mod = shift @{$self->{last_symbols}};
 		    $self->{last_module} = $mod;
 		    print "Gota$lkw $mod\n"    if ($Debug);
-		    $self->module ($lkw, $mod);
+		    $self->module ($lkw, $mod, $self->{last_symbols});
 		} elsif ($lkw eq "function") {
 		    my $mod = $self->{last_symbols}[0];
 		    $self->{last_function} = $mod;

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #21 $$Date: 2003/05/06 $$Author: wsnyder $
+# $Revision: #22 $$Date: 2003/05/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -27,7 +27,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.222';
+$VERSION = '2.223';
 use strict;
 
 structs('new',
@@ -77,6 +77,7 @@ sub module {
     my $self = shift;
     my $keyword = shift;
     my $module = shift;
+    my $orderref = shift;
 
     my $fileref = $self->{fileref};
     my $netlist = $self->{netlist};
@@ -86,6 +87,7 @@ sub module {
 	 (name=>$module,
 	  is_libcell=>$fileref->is_libcell(),
 	  filename=>$self->filename, lineno=>$self->lineno);
+    @{$self->{modref}->portsordered} = @$orderref;
     $fileref->_modules($module, $self->{modref});
 }
 
@@ -147,6 +149,7 @@ sub instant {
     my $self = shift;
     my $submodname = shift;
     my $instname = shift;
+    my $hasnamedports = shift;
 
     print " Cell $instname\n" if $Verilog::Netlist::Debug;
     my $modref = $self->{modref};
@@ -164,16 +167,20 @@ sub pin {
     my $pin = shift;
     my $net = shift;
     my $number = shift;
+    my $hasnamedports = shift;
 
-    print "   Pin $pin  $net\n" if $Verilog::Netlist::Debug;
+    print "   Pin $pin  $net $number \n" if $Verilog::Netlist::Debug;
     my $cellref = $self->{cellref};
     if (!$cellref) {
 	return $self->error ("PIN outside of cell definition", $net);
     }
     $cellref->new_pin (name=>$pin,
 		       portname=>$pin,
+		       portnumber=>$number,
 		       filename=>$self->filename, lineno=>$self->lineno,
 		       netname=>$net, );
+    # If any pin uses call-by-name, then all are assumed to use call-by-name
+    $cellref->namedports(1) if $hasnamedports;
 }
 
 sub ppdefine {
