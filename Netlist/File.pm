@@ -1,9 +1,9 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #38 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.42 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.303';
+$VERSION = '2.310';
 use strict;
 
 structs('new',
@@ -91,8 +91,13 @@ sub module {
 	 (name=>$module,
 	  is_libcell=>($fileref->is_libcell() || $in_celldefine),
 	  filename=>$self->filename, lineno=>$self->lineno);
-    @{$self->{modref}->portsordered} = @$orderref;
     $fileref->_modules($module, $self->{modref});
+}
+
+sub port {
+    my $self = shift;
+    my $name = shift;
+    push @{$self->{modref}->_portsordered}, $name;
 }
 
 sub attribute {
@@ -353,7 +358,7 @@ Prints debugging information for this file.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

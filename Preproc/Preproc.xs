@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Revision: #17 $$Date: 2004/08/26 $$Author: ws150726 $
+#* $Revision: 1.19 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
@@ -10,7 +10,7 @@
 #* 
 #*********************************************************************
 #* 
-#* Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+#* Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 #* you can redistribute it and/or modify it under the terms of either the GNU
 #* General Public License or the Perl Artistic License.
 #* 
@@ -195,6 +195,7 @@ int pedantic
 PROTOTYPE: $$$$$
 CODE:
 {
+    if (CLASS) {}  // Prevent unused warning
     VFileLineXs* filelinep = new VFileLineXs(1/*ok,for initial*/);
     VPreprocXs* preprocp = new VPreprocXs(filelinep);
     filelinep->setPreproc(preprocp);

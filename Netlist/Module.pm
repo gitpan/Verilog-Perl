@@ -1,9 +1,9 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #36 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.40 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.303';
+$VERSION = '2.310';
 use strict;
 
 structs('new',
@@ -37,10 +37,10 @@ structs('new',
 	   userdata	=> '%',		# User information
 	   #
 	   attrs	=> '@',		# list of "category name[ =](.*)" strings
-	   ports	=> '%',		# hash of Verilog::Netlist::Ports
-	   portsordered	=> '@',		# list of Verilog::Netlist::Ports as ordered in list of ports   
-	   nets		=> '%',		# hash of Verilog::Netlist::Nets
-	   cells	=> '%',		# hash of Verilog::Netlist::Cells
+	   _ports	=> '%',		# hash of Verilog::Netlist::Ports
+	   _portsordered=> '@',		# list of Verilog::Netlist::Ports as ordered in list of ports   
+	   _nets	=> '%',		# hash of Verilog::Netlist::Nets
+	   _cells	=> '%',		# hash of Verilog::Netlist::Cells
 	   _celldecls	=> '%',		# hash of declared cells (for autocell only)
 	   _cellarray	=> '%',		# hash of declared cell widths (for autocell only)
 	   is_top	=> '$', #'	# Module is at top of hier (not a child)
@@ -66,52 +66,56 @@ sub modulename_from_filename {
 sub find_port {
     my $self = shift;
     my $search = shift;
-    return $self->ports->{$search};
+    return $self->_ports->{$search};
 }
 sub find_port_by_index {
     my $self = shift;
     my $myindex = shift;
-    # @{$self->portsordered}[$myindex-1] returns the name of
+    # @{$self->_portsordered}[$myindex-1] returns the name of
     # the port in the module at this index.  Then, this is
     # used to find the port reference via the port hash
-    return $self->ports->{@{$self->portsordered}[$myindex-1]}; 
+    return $self->_ports->{@{$self->_portsordered}[$myindex-1]}; 
 }
 sub find_cell {
     my $self = shift;
     my $search = shift;
-    return $self->cells->{$search};
+    return $self->_cells->{$search};
 }
 sub find_net {
     my $self = shift;
     my $search = shift;
-    my $rtn = $self->nets->{$search}||"";
+    my $rtn = $self->_nets->{$search}||"";
     #print "FINDNET ",$self->name, " SS $search  $rtn\n";
-    return $self->nets->{$search};
+    return $self->_nets->{$search};
 }
 
 sub attrs_sorted {
-    my $self = shift;
-    return (sort {$a cmp $b} @{$self->attrs});
+    return (sort {$a cmp $b} @{$_[0]->attrs});
+}
+sub nets {
+    return (values %{$_[0]->_nets});
 }
 sub nets_sorted {
-    my $self = shift;
-    return (sort {$a->name() cmp $b->name()} (values %{$self->nets}));
+    return (sort {$a->name() cmp $b->name()} (values %{$_[0]->_nets}));
+}
+sub ports {
+    return (values %{$_[0]->_ports});
 }
 sub ports_sorted {
-    my $self = shift;
-    return (sort {$a->name() cmp $b->name()} (values %{$self->ports}));
+    return (sort {$a->name() cmp $b->name()} (values %{$_[0]->_ports}));
 }
 sub ports_ordered {
-    my $self = shift;
-    return ( @{$self->portsordered});
+    return ( @{$_[0]->_portsordered});
+}
+sub cells {
+    return (values %{$_[0]->_cells});
 }
 sub cells_sorted {
-    my $self = shift;
-    return (sort {$a->name() cmp $b->name()} (values %{$self->cells}));
+    return (sort {$a->name() cmp $b->name()} (values %{$_[0]->_cells}));
 }
 sub nets_and_ports_sorted {
     my $self = shift;
-    my @list = ((values %{$self->nets}), (values %{$self->ports}), );
+    my @list = ($self->nets, $self->ports,);
     my @outlist; my $last = "";
     # Eliminate duplicates
     foreach my $e (sort {$a->name() cmp $b->name()} (@list)) {
@@ -127,7 +131,7 @@ sub new_net {
     # @_ params
     # Create a new net under this module
     my $netref = new Verilog::Netlist::Net (direction=>'net', @_, module=>$self, );
-    $self->nets ($netref->name(), $netref);
+    $self->_nets ($netref->name(), $netref);
     return $netref;
 }
 
@@ -142,7 +146,7 @@ sub new_port {
     # @_ params
     # Create a new port under this module
     my $portref = new Verilog::Netlist::Port (@_, module=>$self,);
-    $self->ports ($portref->name(), $portref);
+    $self->_ports ($portref->name(), $portref);
     return $portref;
 }
 
@@ -151,20 +155,20 @@ sub new_cell {
     # @_ params
     # Create a new cell under this module
     my $cellref = new Verilog::Netlist::Cell (@_, module=>$self,);
-    $self->cells ($cellref->name(), $cellref);
+    $self->_cells ($cellref->name(), $cellref);
     return $cellref;
 }
 
 sub link {
     my $self = shift;
     # Ports create nets, so link ports before nets
-    foreach my $portref (values %{$self->ports}) {
+    foreach my $portref ($self->ports) {
 	$portref->_link();
     }
-    foreach my $netref (values %{$self->nets}) {
+    foreach my $netref ($self->nets) {
 	$netref->_link();
     }
-    foreach my $cellref (values %{$self->cells}) {
+    foreach my $cellref ($self->cells) {
 	$cellref->_link();
     }
 }
@@ -172,14 +176,14 @@ sub link {
 sub lint {
     my $self = shift;
     if (!$self->netlist->{skip_pin_interconnect}) {
-	foreach my $portref (values %{$self->ports}) {
+	foreach my $portref ($self->ports) {
 	    $portref->lint();
 	}
-	foreach my $netref (values %{$self->nets}) {
+	foreach my $netref ($self->nets) {
 	    $netref->lint();
 	}
     }
-    foreach my $cellref (values %{$self->cells}) {
+    foreach my $cellref ($self->cells) {
 	$cellref->lint();
     }
 }
@@ -369,7 +373,7 @@ that must be joined together to form the final text string.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 # vppp - Preprocess Verilog
-# $Id: //depot/hw/main/utils/perltools/Verilog/vppp#6 $
+# $Id: vppp 538 2005-01-24 15:18:02Z wsnyder $
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder <wsnyder@wsnyder.org>.  This
+# Copyright 2000-2005 by Wilson Snyder <wsnyder@wsnyder.org>.  This
 # program is free software; you can redistribute it and/or modify it under
 # the terms of either the GNU Lesser General Public License or the Perl
 # Artistic License.
@@ -92,7 +92,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: //depot/hw/main/utils/perltools/Verilog/vppp#6 $ '."\n";
+    print 'Version: $Id: vppp 538 2005-01-24 15:18:02Z wsnyder $ '."\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -130,11 +130,8 @@ vppp - Preprocess Verilog code using verilog-perl
 
 =head1 DESCRIPTION
 
-Vppp reads the verilog files passwd on the command line and outputs
-preprocessed output to standard out or the filename passewd with B<-p>.
-preprocesses Verilog code (Verilog PreProcessor in Perl).  It reads all of
-the files on the command line similar to B<verilog> or B<vcs>, and prints
-to standard out or the argument of B<-o> the preprocessed code.
+Vppp reads the Verilog files passed on the command line and outputs
+preprocessed output to standard out or the filename passed with B<-p>.
 
 =head1 VERILOG ARGUMENTS
 
@@ -237,7 +234,7 @@ This will report an error when encountered, like C++'s #error.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

@@ -1,9 +1,9 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #31 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.35 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -26,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.303';
+$VERSION = '2.310';
 use strict;
 
 structs('new',
@@ -53,7 +53,7 @@ structs('new',
 
 sub delete {
     my $self = shift;
-    my $h = $self->cell->pins;
+    my $h = $self->cell->_pins;
     delete $h->{$self->name};
     return undef;
 }
@@ -242,7 +242,7 @@ Prints debugging information for this pin.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

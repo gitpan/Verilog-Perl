@@ -1,9 +1,9 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #52 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.57 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.303';
+$VERSION = '2.310';
 
 #######################################################################
 #######################################################################
@@ -124,6 +124,9 @@ sub _parameter_parse {
 	elsif (($param =~ /^-D([^=]*)=(.*)$/
 		|| $param =~ /^-D([^=]*)()$/) && $self->{gcc_style}) {
 	    $self->define($1,$2);
+	}
+	elsif (($param =~ /^-U([^=]*)$/) && $self->{gcc_style}) {
+	    $self->undef($1);
 	}
 	elsif ($param =~ /^-I(.*)$/ && $self->{gcc_style}) {
 	    $self->incdir($1);
@@ -462,8 +465,9 @@ functions that are called:
 
     +libext+I<ext>+I<ext>...	libext (I<ext>)
     +incdir+I<dir>		incdir (I<dir>)
-    +define+I<var>+I<value>	define (I<val>,I<value>)
-    +define+I<var>		define (I<val>,undef)
+    +define+I<var>[+=]I<value>	define (I<var>,I<value>)
+    +define+I<var>		define (I<var>,undef)
+    +librescan		Ignored
     -f I<file>		Parse parameters in file
     -v I<file>		library (I<file>)
     -y I<dir>		module_dir (I<dir>)
@@ -472,8 +476,9 @@ functions that are called:
 The below list shows the GCC-like parameters that are supported, and the
 functions that are called:
 
-    -DI<var>=I<value>		define (I<val>,I<value>)
-    -DI<var>		define (I<val>,undef)
+    -DI<var>=I<value>		define (I<var>,I<value>)
+    -DI<var>		define (I<var>,undef)
+    -UI<var>		undefine (I<var>)
     -II<dir>		incdir (I<dir>)
     -f I<file>		Parse parameters in file
     all others		Put in returned list
@@ -549,7 +554,7 @@ function may also be called outside parsing to erase a predefined value.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

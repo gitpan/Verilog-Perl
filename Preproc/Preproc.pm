@@ -1,7 +1,7 @@
-#$Revision: #38 $$Date: 2004/11/18 $$Author: ws150726 $
+#$Revision: 1.41 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 ######################################################################
 #
-# Copyright 2001-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2001-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -22,7 +22,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '2.303';
+$VERSION = '2.310';
 
 ######################################################################
 #### Configuration Section
@@ -155,7 +155,7 @@ __END__
 
 =head1 NAME
 
-Verilog::Preproc - Preprocess Verilog files Files
+Verilog::Preproc - Preprocess Verilog files
 
 =head1 SYNOPSIS
 
@@ -332,7 +332,7 @@ These are useful for error macros, similar to assert() in C++.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

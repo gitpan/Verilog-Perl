@@ -1,9 +1,9 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: #57 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.61 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -24,16 +24,13 @@ Verilog::Language - Verilog language utilities
 
   use Verilog::Language;
 
-  $result = Verilog::Language::is_keyword ($symbol_string)
-  $result = Verilog::Language::is_compdirect ($symbol_string)
-  $result = Verilog::Language::number_value ($number_string)
-  $result = Verilog::Language::number_bits  ($number_string)
-  @vec    = Verilog::Language::split_bus ($bus)
-
-  print Verilog::Language::is_compdirect ("`include");
-     1
-  print Verilog::Language::number_value ("32'h13");
-     19
+  $result = Verilog::Language::is_keyword ("wire");  # true
+  $result = Verilog::Language::is_compdirect ("`notundef");  # false
+  $result = Verilog::Language::number_value ("4'b111");  # 8
+  $result = Verilog::Language::number_bits  ("32'h1b");  # 32
+  @vec    = Verilog::Language::split_bus ("[31,5:4]"); # 31, 5, 4
+  @vec    = Verilog::Language::split_bus_nocomma ("[31:29]"); # 31, 30, 29
+  $result = Verilog::Language::strip_comments ("a/*b*/c");  # ac
 
 =head1 DESCRIPTION
 
@@ -85,7 +82,7 @@ strings.  Newlines will be preserved in this process.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 
@@ -112,7 +109,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.303';
+$VERSION = '2.310';
 
 ######################################################################
 #### Internal Variables

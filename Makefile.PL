@@ -1,7 +1,7 @@
-# $Revision: #32 $$Date: 2004/08/26 $$Author: ws150726 $
+# $Revision: 1.34 $$Date: 2005-01-24 11:37:03 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
@@ -26,13 +26,10 @@ preexist:
 	test ! -r \$(HOME)/src/kits/\$(DISTVNAME).tar.gz
 
 tag:
-	c4 label -d     \$(DISTNAME)_\$(VERSION_SYM) || true
-	c4 label        \$(DISTNAME)_\$(VERSION_SYM)
-	c4 labelsync -l \$(DISTNAME)_\$(VERSION_SYM) ...
-#	cvs tag -F      \$(DISTNAME)_\$(VERSION_SYM) .
+	svnorcvs tag  \$(DISTNAME)_\$(VERSION_SYM)
 
 maintainer-diff:
-	c4 diff     ...@\$(DISTNAME)_\$(VERSION_SYM) 
+	svnorcvs diff \$(DISTNAME)_\$(VERSION_SYM) 
 
 maintainer-dist: preexist dist tag
 	cp \$(DISTVNAME).tar.gz \$(HOME)/src/kits
@@ -56,6 +53,7 @@ WriteMakefile(
 	      AUTHOR	=> 'Wilson Snyder <wsnyder@wsnyder.org>',
 	      ABSTRACT  => 'Verilog language utilities and parsing',
 	      VERSION_FROM  => 'Language.pm',
+	      NO_META	=> 1,
 	      #OPTIMIZE	=> '-ggdb',
 	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
 	      EXE_FILES => [qw( vrename vpm vppp )],

@@ -1,9 +1,12 @@
-   This is the Verilog Perl Package.
+1 Verilog Perl
+**************
 
-Copyright
-=========
+This is the Verilog Perl Package.
 
-   This package is Copyright 2000-2004 by Wilson Snyder
+1.1 Copyright
+=============
+
+This package is Copyright 2000-2005 by Wilson Snyder
 <wsnyder@wsnyder.org>.
 
    This program is free software; you can redistribute it and/or modify
@@ -13,10 +16,10 @@ Artistic License.
    This code is provided with no warranty of any kind, and is used
 entirely at your own risk.
 
-Description
-===========
+1.2 Description
+===============
 
-   This package provides functions to support writing utilities that use
+This package provides functions to support writing utilities that use
 the Verilog language.  See `man Verilog::Language' and `man vrename'
 after installation.
 
@@ -42,27 +45,27 @@ calls), but have the simulator do something special with them.
    where the filename and line number of the message have been added
 along with the timestamp.
 
-Complete Parsing
-================
+1.3 Complete Parsing
+====================
 
-   The lower level parsing routines do not keep behavioral statements,
-or bit connectivity within busses.  If you're looking for a front end
-that keeps all information, you may want to consider using the C++
-front end that is part of Verilator.  See
+The lower level parsing routines do not keep behavioral statements, or
+bit connectivity within busses.  If you're looking for a front end that
+keeps all information, you may want to consider using the C++ front end
+that is part of Verilator.  See
 `http://www.veripool.com/verilator.html'.
 
-Obtaining Distribution
-======================
+1.4 Obtaining Distribution
+==========================
 
-   The latest version is available at `http://www.perl.org/CPAN/'
+The latest version is available at `http://www.perl.org/CPAN/'
 
    Download the latest package from that site, and decompress.  `gunzip
 Verilog-Perl_version.tar.gz ; tar xvf Verilog-Perl_version.tar'
 
-Supported Systems
-=================
+1.5 Supported Systems
+=====================
 
-   This version of Verilog has been built and tested on:
+This version of Verilog has been built and tested on:
 
    * sparc-sun-solaris2.5.1
 
@@ -72,8 +75,8 @@ Supported Systems
 
    It should run on any system with Perl, G++ and Flex.
 
-Installation
-============
+1.6 Installation
+================
 
   1. `cd' to the directory containing this README notice.
 

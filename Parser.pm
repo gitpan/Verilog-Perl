@@ -1,9 +1,9 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Revision: #61 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.66 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -178,7 +178,7 @@ of parenthesis are required.  (Use "cell cell();", not "cell cell;".)
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 
@@ -189,12 +189,13 @@ Wilson Snyder <wsnyder@wsnyder.org>
 =head1 SEE ALSO
 
 L<Verilog::Preproc>, 
-L<Verilog::ParserSig>, 
+L<Verilog::SigParser>, 
 L<Verilog::Language>, 
 L<Verilog::Netlist>, 
 L<Verilog::Getopt>, 
 L<vrename>,
 L<vpm>
+L<vppp>
 
 =cut
 
@@ -217,7 +218,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.303';
+$VERSION = '2.310';
 
 #######################################################################
 

@@ -1,9 +1,9 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #36 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.40 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.303';
+$VERSION = '2.310';
 use strict;
 
 structs('new',
@@ -33,7 +33,7 @@ structs('new',
 	   #
 	   submodname	=> '$', #'	# Which module it instantiates
 	   module	=> '$', #'	# Module reference
-	   pins		=> '%',		# List of Verilog::Netlist::Pins
+	   _pins	=> '%',		# List of Verilog::Netlist::Pins
 	   byorder 	=> '$',		# True if Cell call uses order based pins
 	   # after link():
 	   submod	=> '$', #'	# Sub Module reference
@@ -46,7 +46,7 @@ sub delete {
     foreach my $pinref ($self->pins_sorted) {
 	$pinref->delete;
     }
-    my $h = $self->module->cells;
+    my $h = $self->module->_cells;
     delete $h->{$self->name};
     return undef;
 }
@@ -70,7 +70,7 @@ sub _link_guts {
 	$self->submod($sm);
 	$sm->is_top(0) if $sm;
     }
-    foreach my $pinref (values %{$self->pins}) {
+    foreach my $pinref ($self->pins) {
 	$pinref->_link();
     }
 }
@@ -108,7 +108,7 @@ sub lint {
         $self->error ($self,"Module reference not found: ",$self->submodname(),,"\n");
     }
     if (!$self->netlist->{skip_pin_interconnect}) {
-	foreach my $pinref (values %{$self->pins}) {
+	foreach my $pinref ($self->pins) {
 	    $pinref->lint();
 	}
     }
@@ -150,18 +150,22 @@ sub new_pin {
     # Create a new pin under this cell
     my $pinref = new Verilog::Netlist::Pin (cell=>$self, @_);
     $self->portname($self->name) if !$self->name;	# Back Version 1.000 compatibility
-    $self->pins ($pinref->name(), $pinref);
+    $self->_pins ($pinref->name(), $pinref);
     return $pinref;
 }
 
 sub find_pin {
     my $self = shift;
     my $name = shift;
-    return $self->pins($name);
+    return $self->_pins($name);
+}
+
+sub pins {
+    return (values %{$_[0]->_pins});
 }
 
 sub pins_sorted {
-    return (sort {$a->name() cmp $b->name()} (values %{$_[0]->pins}));
+    return (sort {$a->name() cmp $b->name()} (values %{$_[0]->_pins}));
 }
 
 ######################################################################
@@ -258,7 +262,7 @@ Prints debugging information for this cell.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #68 $$Date: 2004/11/18 $$Author: ws150726 $
+# $Revision: 1.74 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
 ######################################################################
 #
-# Copyright 2000-2004 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.303';
+$VERSION = '2.310';
 
 ######################################################################
 # configuration
@@ -146,7 +146,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #68 $$Date: 2004/11/18 $$Author: ws150726 $ ';
+    print 'Version: $Revision: 1.74 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -1016,7 +1016,7 @@ sub operator {
 		if ($Opt_NoPli) {
 		    # ""  doesn't work, as need semi for "if (1) $x()"
 		    # ";" doesn't work, as need empty for "begin $x() end"
-		    ::sendout ("begin end");
+		    ::sendout ("begin end ");
 		    for (my $p=0; $p<=$#Params; $p++) {
 			while ($Params[$p]=~/\n/g) { ::sendout("\n"); }
 		    }
@@ -1128,7 +1128,7 @@ __END__
 
 =head1 NAME
 
-vpm - Preprocess verilog code
+vpm - Preprocess Verilog code assertions
 
 =head1 SYNOPSIS
 
@@ -1141,10 +1141,10 @@ B<vpm>
 
 =head1 DESCRIPTION
 
-Vpm will read the specified verilog files and preprocess them.  The files
-are written to the directory named .vpm unless another name is given with
-B<-o>.  If a directory is passed, all files in that directory will be
-preprocessed.
+Vpm will read the specified verilog files and preprocess special PLI
+assertions.  The files are written to the directory named .vpm unless
+another name is given with B<-o>.  If a directory is passed, all files in
+that directory will be preprocessed.
 
 =head1 ARGUMENTS
 
@@ -1285,7 +1285,7 @@ Report a warning message in standard form.
 The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2005 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 
