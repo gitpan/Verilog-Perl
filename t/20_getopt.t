@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Revision: 1.11 $$Date: 2005-01-25 17:10:49 -0500 (Tue, 25 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.11 $$Date: 2005-02-23 08:28:55 -0500 (Wed, 23 Feb 2005) $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -10,7 +10,7 @@ use strict;
 use Test;
 use Cwd;
 
-BEGIN { plan tests => 9 }
+BEGIN { plan tests => 13 }
 BEGIN { require "t/test_utils.pl"; }
 
 use Verilog::Getopt;
@@ -70,3 +70,10 @@ ok ($#out == 13);
     print "LEFT: ",join(" ",@left2),"\n";
     ok ($#left2 == 3);
 }
+
+$opt->map_directories(sub{s![a-z]!x!; $_});
+ok(1);
+
+ok($opt->file_skip_special(".svn"));
+ok(!$opt->file_skip_special("svn"));
+ok($opt->file_skip_special("foo/bar/baz/CVS"));

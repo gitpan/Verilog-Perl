@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: 1.57 $$Date: 2005-02-04 17:48:47 -0500 (Fri, 04 Feb 2005) $$Author: wsnyder $
+# $Revision: 1.57 $$Date: 2005-03-01 17:59:56 -0500 (Tue, 01 Mar 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -19,7 +19,7 @@ require 5.000;
 require Exporter;
 
 use strict;
-use vars qw($VERSION $Debug);
+use vars qw($VERSION $Debug %Skip_Basenames);
 use Carp;
 use IO::File;
 use File::Basename;
@@ -29,7 +29,17 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.312';
+$VERSION = '2.313';
+
+# Basenames we should ignore when recursing directories,
+# Because they contain large files of no relevance
+foreach ( '.', '..',
+	  'CVS',
+	  '.svn',
+	  'blib',
+	  ) {
+    $Skip_Basenames{$_} = 1;
+}
 
 #######################################################################
 #######################################################################
@@ -275,6 +285,16 @@ sub get_parameters {
     return (@params);
 }
 
+sub write_parameters_file {
+    my $self = shift;
+    my $filename = shift;
+    # Write get_parameters to a file
+    my $fh = IO::File->new($filename, "w") or croak "%Error: $! $filename,";
+    my @opts = $self->get_parameters();
+    print $fh join("\n",@opts);
+    $fh->close;
+}
+
 #######################################################################
 # Utility functions
 
@@ -285,6 +305,13 @@ sub remove_duplicates {
     my %hit;
     foreach (@_) { push @rtn, $_ unless $hit{$_}++; }
     return @rtn;
+}
+
+sub file_skip_special {
+    my $self = shift;
+    my $filename = shift;
+    $filename =~ s!.*[/\\]!!;
+    return $Skip_Basenames{$filename};
 }
 
 sub file_abs {
@@ -353,6 +380,22 @@ sub libext_matches {
 	return $filename if ($filename =~ /$re/);
     }
     return undef;
+}
+
+sub map_directories {
+    my $self = shift;
+    my $func = shift;
+    # Execute map function on all directories listed in self.
+    {
+	my @newdir = $self->incdir();
+	@newdir = map {&{$func}} @newdir;
+	$self->incdir(\@newdir);
+    }
+    {
+	my @newdir = $self->module_dir();
+	@newdir = map {&{$func}} @newdir;
+	$self->module_dir(\@newdir);
+    }
 }
 
 #######################################################################
@@ -489,6 +532,10 @@ functions that are called:
     -f I<file>		Parse parameters in file
     all others		Put in returned list
 
+=item $self->write_parameters_file ( I<filename> )
+
+Write the output from get_parameters to the specified file.
+
 =back
 
 =head1 ACCESSORS
@@ -524,6 +571,11 @@ reference argument, sets the list to the argument.
 
 Using the incdir and libext lists, convert the specified module or filename
 ("foo") to a absolute filename ("include/dir/foo.v").
+
+=item $self->file_skip_special ( $filename )
+
+Return true if the filename is one that generally should be ignored when
+recursing directories, such as for example, ".", "CVS", and ".svn".
 
 =item $self->incdir ()
 

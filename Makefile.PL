@@ -1,4 +1,4 @@
-# $Revision: 1.34 $$Date: 2005-01-24 11:37:03 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.34 $$Date: 2005-02-07 07:34:31 -0500 (Mon, 07 Feb 2005) $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -13,7 +13,7 @@ $DOLLAR = '$$';	# Quoted properly for make
 sub MY::postamble {
 "
 README: readme.texi
-	-rm \$@
+	-rm -rf \$@
 	makeinfo \$< --output \$@ --no-headers --no-validate
 
 clean::
@@ -38,7 +38,7 @@ maintainer-dist: preexist dist tag
 maintainer-copy:
 
 maintainer-clean: distclean
-	-rm README Makefile
+	-rm -rf README Makefile
 
 ";
 }

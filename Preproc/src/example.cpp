@@ -1,11 +1,4 @@
-// $Revision: 1.10 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $  -*- C++ -*-
-//*************************************************************************
-// DESCRIPTION: Verilog::Preproc: Example use of VPreproc.h
-//
-// Code available from: http://www.veripool.com/
-//
-// Authors: Wilson Snyder
-//
+// $Revision: 1.10 $$Date: 2005-02-21 10:11:49 -0500 (Mon, 21 Feb 2005) $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -17,6 +10,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
+//*************************************************************************
+/// \file
+/// \brief Verilog::Preproc: Example use of VPreproc.h
+///
+/// Authors: Wilson Snyder
+///
+/// Code available from: http://www.veripool.com/verilog-perl
+///
 //*************************************************************************
 
 #include <stdio.h>

@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: 1.61 $$Date: 2005-02-04 17:48:47 -0500 (Fri, 04 Feb 2005) $$Author: wsnyder $
+# $Revision: 1.61 $$Date: 2005-03-01 17:59:56 -0500 (Tue, 01 Mar 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -114,7 +114,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.312';
+$VERSION = '2.313';
 
 ######################################################################
 #### Internal Variables
@@ -140,7 +140,7 @@ foreach my $kwd (qw(
 		    automatic cell config design endconfig endgenerate
 		    generate genvar instance liblist localparam
 		    noshowcancelled pulsestyle_ondetect pulsestyle_onevent
-		    showcancelled signed use
+		    showcancelled signed specparam use
 
 		    alias always_comb always_ff always_latch assert
 		    assert_strobe before bind bit break byte chandle class
