@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #24 $$Date: 2002/08/07 $$Author: wsnyder $
+# $Revision: #26 $$Date: 2002/08/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -34,7 +34,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.210';
+$VERSION = '2.211';
 
 #######################################################################
 #######################################################################
@@ -166,7 +166,11 @@ sub incdir {
     if (@_) {
 	my $token = shift;
 	print "incdir $token\n" if $Debug;
-	push @{$self->{incdir}}, $self->file_abs($token);
+	if (ref $token) {
+	    @{$self->{incdir}} = @{$token};
+	} else {
+	    push @{$self->{incdir}}, $self->file_abs($token);
+	}
 	$self->file_path_cache_flush();
     }
     return (wantarray ? @{$self->{incdir}} : $self->{incdir});
@@ -176,7 +180,11 @@ sub libext {
     if (@_) {
 	my $token = shift;
 	print "libext $token\n" if $Debug;
-	push @{$self->{libext}}, $token;
+	if (ref $token) {
+	    @{$self->{libext}} = @{$token};
+	} else {
+	    push @{$self->{libext}}, $token;
+	}
 	$self->file_path_cache_flush();
     }
     return (wantarray ? @{$self->{libext}} : $self->{libext});
@@ -186,7 +194,11 @@ sub library {
     if (@_) {
 	my $token = shift;
 	print "library $token\n" if $Debug;
-	push @{$self->{library}}, $self->file_abs($token);
+	if (ref $token) {
+	    @{$self->{library}} = @{$token};
+	} else {
+	    push @{$self->{library}}, $self->file_abs($token);
+	}
     }
     return (wantarray ? @{$self->{library}} : $self->{library});
 }
@@ -195,7 +207,11 @@ sub module_dir {
     if (@_) {
 	my $token = shift;
 	print "module_dir $token\n" if $Debug;
-	push @{$self->{module_dir}}, $self->file_abs($token);
+	if (ref $token) {
+	    @{$self->{module_dir}} = @{$token};
+	} else {
+	    push @{$self->{module_dir}}, $self->file_abs($token);
+	}
 	$self->file_path_cache_flush();
     }
     return (wantarray ? @{$self->{module_dir}} : $self->{module_dir});

@@ -4,6 +4,12 @@ See the end for copying conditions.
 
 The contributors that suggested a given feature is shown in [].
 
+* Changes in Verilog::Language 2.211 8/19/2002
+
+***	If Verilog::Getopt list accessors are passed a reference,
+	set the entire list to the reference, rather then adding a element.
+
+
 * Changes in Verilog::Language 2.210 8/8/2002
 
 ****	Cleanups to support GNU Bison 1.35
@@ -124,7 +130,7 @@ The contributors that suggested a given feature is shown in [].
 
 
 ----------------------------------------------------------------------
-$Revision: #33 $$Date: 2002/08/08 $$Author: wsnyder $
+$Revision: #35 $$Date: 2002/08/19 $$Author: wsnyder $
 ----------------------------------------------------------------------
 Copyright information:
 

@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: #30 $$Date: 2002/08/07 $$Author: wsnyder $
+# $Revision: #31 $$Date: 2002/08/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -122,7 +122,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.210';
+$VERSION = '2.211';
 
 ######################################################################
 #### Internal Variables
