@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Revision: #54 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #59 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -32,10 +32,10 @@ Verilog::Parser - Parse Verilog language files
 
 =head1 DESCRIPTION
 
-The C<Verilog::Parser> package will tokenize a Verilog file when the parse()
+The L<Verilog::Parser> package will tokenize a Verilog file when the parse()
 method is called and invoke various callback methods.   This is useful for
 extracting information and editing files while retaining all context.  For
-netlist like extractions, see C<Verilog::Netlist>.
+netlist like extractions, see L<Verilog::Netlist>.
 
 The external interface to Verilog::Parser is:
 
@@ -123,76 +123,78 @@ useful for converting a Verilog value to a Perl integer.
 
 =head1 EXAMPLE
 
-Here\'s a simple example which will print every symbol in a verilog
+Here's a simple example which will print every symbol in a verilog
 file.
 
-package MyParser;
-use Verilog::Parser;
-@ISA = qw(Verilog::Parser);
-
-# parse, parse_file, etc are inherited from Verilog::Parser
-sub new {
-    my $class = shift;
-    #print "Class $class\n";
-    my $self = $class->SUPER::new();
-    # we could have inherited new, but we want to initialize symbols
-    %{$self->{symbols}} = ();
-    bless $self, $class; 
-    return $self;
-}
-
-sub symbol {
-    my $self = shift;
-    my $token = shift;
-    
-    $self->{symbols}{$token}++;
-}
-
-sub report {
-    my $self = shift;
-
-    foreach my $sym (sort keys %{$self->{symbols}}) {
-	 printf "Symbol %-30s occurs %4d times\n",
-	 $sym, $self->{symbols}{$sym};
-    }
-}
-
-package main;
-
-my $parser = MyParser->new();
-$parser->parse_file (shift);
-$parser->report();
-
-=head1 SEE ALSO
-
-C<Verilog::Preproc>, 
-C<Verilog::ParserSig>, 
-C<Verilog::Language>, 
-C<Verilog::Netlist>, 
-C<Verilog::Getopt>, 
-C<vrename>,
-C<vpm>
+  package MyParser;
+  use Verilog::Parser;
+  @ISA = qw(Verilog::Parser);
+  
+  # parse, parse_file, etc are inherited from Verilog::Parser
+  sub new {
+      my $class = shift;
+      #print "Class $class\n";
+      my $self = $class->SUPER::new();
+      bless $self, $class; 
+      return $self;
+  }
+  
+  sub symbol {
+      my $self = shift;
+      my $token = shift;
+      
+      $self->{symbols}{$token}++;
+  }
+  
+  sub report {
+      my $self = shift;
+  
+      foreach my $sym (sort keys %{$self->{symbols}}) {
+  	 printf "Symbol %-30s occurs %4d times\n",
+  	 $sym, $self->{symbols}{$sym};
+      }
+  }
+  
+  package main;
+  
+  my $parser = MyParser->new();
+  $parser->parse_file (shift);
+  $parser->report();
 
 =head1 BUGS
 
-This is being distributed as a baseline for future contributions.  Don\'t
+This is being distributed as a baseline for future contributions.  Don't
 expect a lot, the Parser is still naive, and there are many awkward cases
-that aren\'t covered.
+that aren't covered.
 
 The parser currently assumes the string it is passed ends on a newline
 boundary.  It should be changed to allow arbitrary chunks.
 
-Cell instantiations without any arguments are not supported, a empty set
+Cell instantiations without any arguments are not supported, an empty set
 of parenthesis are required.  (Use "cell cell();", not "cell cell;".)
 
 =head1 DISTRIBUTION
 
-The latest version is available from
-C<http://veripool.com/verilog-perl>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Preproc>, 
+L<Verilog::ParserSig>, 
+L<Verilog::Language>, 
+L<Verilog::Netlist>, 
+L<Verilog::Getopt>, 
+L<vrename>,
+L<vpm>
 
 =cut
 
@@ -215,7 +217,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 #######################################################################
 

@@ -1,12 +1,12 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Revision: #16 $$Date: 2004/03/31 $$Author: wsnyder $
+#* $Revision: #17 $$Date: 2004/08/26 $$Author: ws150726 $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
 #* 
 #* Author: Wilson Snyder <wsnyder@wsnyder.org>
 #* 
-#* Code available from: http://veripool.com/
+#* Code available from: http://www.veripool.com/
 #* 
 #*********************************************************************
 #* 

@@ -1,4 +1,4 @@
-#$Revision: #33 $$Date: 2004/04/01 $$Author: wsnyder $
+#$Revision: #36 $$Date: 2004/10/26 $$Author: ws150726 $
 ######################################################################
 #
 # Copyright 2001-2004 by Wilson Snyder.  This program is free software;
@@ -22,7 +22,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 ######################################################################
 #### Configuration Section
@@ -183,7 +183,7 @@ Verilog::Preproc - Preprocess Verilog files Files
 
 =head1 DESCRIPTION
 
-C<Verilog::Preproc> reads Verilog files, and preprocesses them according
+L<Verilog::Preproc> reads Verilog files, and preprocesses them according
 to the Verilog 2001 specification.  Programs can be easily converted from
 reading a IO::File into reading preprocessed output from Verilog::Preproc.
 
@@ -327,20 +327,25 @@ These are useful for error macros, similar to assert() in C++.
 
 =back
 
-=head1 SEE ALSO
-
-C<Verilog::Language>, C<Verilog::Getopt>
-
-C<IO::File> 
-
-This package is layered on a C++ interface which may be found in the kit.
-
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from C<http://veripool.com/>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Language>, L<Verilog::Getopt>
+
+L<IO::File> 
+
+This package is layered on a C++ interface which may be found in the kit.
 
 =cut

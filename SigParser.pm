@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: #46 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #49 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -31,10 +31,10 @@ Verilog::SigParser - Signal Parsing for Verilog language files
 
 =head1 DESCRIPTION
 
-The C<Verilog::SigParser> package builds upon the Verilog::Parse function
+The L<Verilog::SigParser> package builds upon the Verilog::Parse function
 to provide callbacks for when a signal is declared, a module instantiated,
 or a module defined.  For a higher level interface to this package, see
-C<Verilog::Netlist>.
+L<Verilog::Netlist>.
 
 The external interface to Verilog::SigParser is described in the
 Verilog::Parser module.  You will probably want to use the preprocessing
@@ -85,27 +85,31 @@ value in hash C<$self->metacomment>.
 
 =back
 
-=head1 SEE ALSO
-
-C<Verilog::Parser>, 
-C<Verilog::Language>, 
-C<Verilog::Netlist>, 
-C<Verilog::Getopt>, 
-
 =head1 BUGS
 
-This is being distributed as a baseline for future contributions.  Don\'t
+This is being distributed as a baseline for future contributions.  Don't
 expect a lot, the Parser is still naive, and there are many awkward cases
-that aren\'t covered.
+that aren't covered.
 
 =head1 DISTRIBUTION
 
-The latest version is available from
-C<http://veripool.com/verilog-perl>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Parser>, 
+L<Verilog::Language>, 
+L<Verilog::Netlist>, 
+L<Verilog::Getopt>
 
 =cut
 
@@ -128,7 +132,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 #######################################################################
 

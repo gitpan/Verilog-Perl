@@ -4,6 +4,10 @@ The contributors that suggested a given feature is shown in [].
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 2.301 2004/10/26
+
+****	Fix pod documentation errors. [Offer Kaye]
+
 * Changes in Verilog::Language 2.300 2004/04/01
 
 **	Added vppp preprocessor command.
@@ -238,7 +242,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: #76 $$Date: 2004/04/01 $$Author: wsnyder $
+$Revision: #78 $$Date: 2004/10/26 $$Author: ws150726 $
 ----------------------------------------------------------------------
 Copyright information:
 

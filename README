@@ -89,7 +89,7 @@ Installation
   5. Type `make install' to install the programs and any data files and
      documentation.
 
-  6. Look at `test.pl' to see how to use `vpm' in your build
+  6. Look at `t/60_vpm.t' to see how to use `vpm' in your build
      methodology.
 
 

@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Revision: #43 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #47 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -35,7 +35,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 ######################################################################
 
@@ -133,7 +133,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Revision: #43 $$Date: 2004/04/01 $$Author: wsnyder $ ', "\n";
+    print 'Id: $Revision: #47 $$Date: 2004/10/26 $$Author: ws150726 $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -141,7 +141,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Revision: #43 $$Date: 2004/04/01 $$Author: wsnyder $ ', "\n";
+    print '$Revision: #47 $$Date: 2004/10/26 $$Author: ws150726 $ ', "\n";
     exit (1);
 }
 
@@ -575,7 +575,7 @@ vrename - change signal names across many Verilog files
 
 =head1 SYNOPSIS
 
-C<vrename> I<filename_or_directory>...
+  vrename <filename_or_directory>...
 
 =head1 DESCRIPTION
 
@@ -583,15 +583,17 @@ Vrename will allow a signal to be changed across all levels of the
 design hiearchy using a three step process.  (It actually includes
 module names, macros, and other definitions, so those can be changed too.)
 
-First, use C<vrename --list file.v file2.v directory....>
+First, use
+
+    vrename --list  [<file.v>...]  [<directory>....]
 
 This reads the specified files, or all files below the specified directory,
 and creates a signals.vrename file. 
 
 Now, edit the signals.vrename file manually to specify the new signal
-names.
+names.  Then, use
 
-Last, use C<vrename --change file.v file2.v directory....>
+    vrename --change [<file.v>...]  [<directory>....]
 
 =head1 ARGUMENTS
 
@@ -663,17 +665,21 @@ Include a cross reference of where the signals are used.
 
 =back
 
-=head1 SEE ALSO
-
-C<Verilog::Parser>
-
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN or
-C<http://veripool.com/verilog-perl.html>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Parser>
 
 =cut

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #33 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #36 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.300';
+$VERSION = '2.301';
 use strict;
 
 structs('new',
@@ -348,13 +348,22 @@ Prints debugging information for this file.
 
 =back
 
-=head1 SEE ALSO
+=head1 DISTRIBUTION
 
-L<Verilog::Netlist::Subclass>
-L<Verilog::Netlist>
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Netlist::Subclass>
+L<Verilog::Netlist>
 
 =cut

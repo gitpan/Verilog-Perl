@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Revision: #13 $$Date: 2004/03/31 $$Author: wsnyder $
+/* $Revision: #14 $$Date: 2004/08/26 $$Author: ws150726 $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 
@@ -11,7 +11,7 @@
  * 
  * Author: Wilson Snyder <wsnyder@wsnyder.org>
  * 
- * Code available from: http://veripool.com/systemperl
+ * Code available from: http://www.veripool.com/systemperl
  * 
  ******************************************************************************
  * 

@@ -1,4 +1,4 @@
-# $Revision: #5 $$Date: 2004/01/27 $$Author: wsnyder $ */
+# $Revision: #6 $$Date: 2004/10/01 $$Author: ws150726 $ */
 #*****************************************************************************
 #
 # DESCRIPTION: Verilog::Preproc:  Example make for standalone C++ preprocessor
@@ -38,7 +38,7 @@ LIBS = -ll -lm
 COPT = -ggdb
 
 CPPFLAGSNOWALL = -MMD -I. -I$(srcdir) $(COPT)
-CPPFLAGS = $(CPPFLAGSNOWALL) -Wall -Wno-implicit-int -Wno-char-subscripts -Werror
+CPPFLAGS = $(CPPFLAGSNOWALL) -Wall -Wno-char-subscripts -Werror
 
 HEADERS = symboltab.h $(wildcard V*.h v*.h)
 

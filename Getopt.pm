@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Revision: #47 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #50 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 #######################################################################
 #######################################################################
@@ -430,7 +430,7 @@ Verilog::Getopt - Get Verilog command line options
 
 =head1 DESCRIPTION
 
-The C<Verilog::Getopt> package provides standardized handling of options similar
+The L<Verilog::Getopt> package provides standardized handling of options similar
 to Verilog/VCS and cc/GCC.
 
 =over 4
@@ -544,17 +544,21 @@ function may also be called outside parsing to erase a predefined value.
 
 =back
 
-=head1 SEE ALSO
-
-C<Verilog::Language>, 
-
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN or
-C<http://veripool.com/verilog-perl>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Language>
 
 =cut

@@ -1,5 +1,5 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Revision: #37 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #40 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -59,7 +59,7 @@ The tokens that may be parsed are:
 
     "COMMENT"	Any text in // or /**/ comments.
     "STRING"	Any quoted string, including the quotes.
-    "KEYWORD"	A Verilog keyword.  (See C<Verilog::Language>) 
+    "KEYWORD"	A Verilog keyword.  (See L<Verilog::Language>) 
     "SYMBOL"	A textual non-keyword
     "OPERATOR"	A non-alphanumeric operator.
     "NUMBER"	A number.
@@ -84,52 +84,56 @@ preprocessors, pretty-printers, and such.
 
 =head1 EXAMPLE
 
-Here\'s a simple example which will print every symbol in a verilog
+Here's a simple example which will print every symbol in a verilog
 file.  We also remember what line it occurred on, just for the heck of it.
 
-sub symbol_cb {
-    # Callback from parser when a symbol occurs
-    sub function (my ($parser, $what, $info) = @_; ...)
-    $signals_and_symbols{$info} = $.;
-}
-
-sub verilog_read_symbols {
-    my $filename = shift;
-
-    local %signals_and_symbols = ();	# Signals already found in module
-
-    my $fh = new FileHandle;
-    my $parser = new Verilog::Parse;
-    $parser->callback ("SYMBOL", \&symbol_cb);
-    $fh->open("<$filename") or die "Can't read $filename.";
-    $parser->Verilog::Parse::parse ($fh);
-    $fh->close;
-
-    foreach $sym (sort (keys %signals_and_symbols)) {
-	print "Symbol $sym\n";
+    sub symbol_cb {
+        # Callback from parser when a symbol occurs
+        sub function (my ($parser, $what, $info) = @_; ...)
+        $signals_and_symbols{$info} = $.;
     }
-}
-
-=head1 SEE ALSO
-
-C<Verilog::ParseSig>, 
-C<Verilog::Language>, 
-C<FileHandle>, 
+    
+    sub verilog_read_symbols {
+        my $filename = shift;
+    
+        local %signals_and_symbols = ();	# Signals already found in module
+    
+        my $fh = new FileHandle;
+        my $parser = new Verilog::Parse;
+        $parser->callback ("SYMBOL", \&symbol_cb);
+        $fh->open("<$filename") or die "Can't read $filename.";
+        $parser->Verilog::Parse::parse ($fh);
+        $fh->close;
+    
+        foreach $sym (sort (keys %signals_and_symbols)) {
+    	print "Symbol $sym\n";
+        }
+    }
 
 =head1 BUGS
 
-This is being distributed as a baseline for future contributions.  Don\'t
+This is being distributed as a baseline for future contributions.  Don't
 expect a lot, the parser is still naive, and there are many awkward cases
-that aren\'t covered.
+that aren't covered.
 
 =head1 DISTRIBUTION
 
-The latest version is available from
-C<http://veripool.com/verilog-perl>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::ParseSig>, 
+L<Verilog::Language>, 
+L<IO::File>
 
 =cut
 
@@ -153,7 +157,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Verilog::Parse::debug = 0;		# for debugging
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 #######################################################################
 

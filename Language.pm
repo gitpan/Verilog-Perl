@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Revision: #51 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #55 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -82,18 +82,22 @@ strings.  Newlines will be preserved in this process.
 
 =head1 DISTRIBUTION
 
-The latest version is available from
-C<http://veripool.com/verilog-perl>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
 
-=head1 SEE ALSO
-
-C<Verilog::Parser>, 
-C<Verilog::ParseSig>, 
-C<Verilog::Getopt>, 
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
 
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Parser>, 
+L<Verilog::ParseSig>, 
+L<Verilog::Getopt>
 
 =cut
 ######################################################################
@@ -108,7 +112,7 @@ use vars qw($VERSION %Keyword %Compdirect);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 ######################################################################
 #### Internal Variables
@@ -253,7 +257,7 @@ sub split_bus {
     if ($bus !~ /\[/) {
 	# Fast case: No bussing
 	return $bus;
-    } elsif ($bus =~ /^([^\[]+\[)([0-9]+):([0-9]+)(\][^\]])$/) {
+    } elsif ($bus =~ /^([^\[]+\[)([0-9]+):([0-9]+)(\][^\]]*)$/) {
 	# Middle speed case: Simple max:min
 	my $bit;
 	my @vec = ();
@@ -359,7 +363,7 @@ sub split_bus_nocomma {
     if ($bus !~ /:/) {
 	# Fast case: No bussing
 	return $bus;
-    } elsif ($bus =~ /^([^\[]+\[)([0-9]+):([0-9]+)(\][^\]])$/) {
+    } elsif ($bus =~ /^([^\[]+\[)([0-9]+):([0-9]+)(\][^\]]*)$/) {
 	# Middle speed case: Simple max:min
 	my $bit;
 	my @vec = ();

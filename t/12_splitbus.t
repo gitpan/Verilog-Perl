@@ -1,5 +1,5 @@
-#!/usr/local/bin/perl -w
-# $Revision: #5 $$Date: 2004/01/27 $$Author: wsnyder $
+#!/usr/bin/perl -w
+# $Revision: #7 $$Date: 2004/06/21 $$Author: ws150726 $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2004 by Wilson Snyder.  This program is free software;
@@ -9,11 +9,22 @@
 use strict;
 use Test;
 
-BEGIN { plan tests => 3 }
+BEGIN { plan tests => 5 }
 BEGIN { require "t/test_utils.pl"; }
 
 use Verilog::Language;
 ok(1);
+
+array_ck (['none',
+	   ],
+	Verilog::Language::split_bus
+	  ("none"));
+
+array_ck (['ff[1]',
+	   'ff[2]',
+	   ],
+	Verilog::Language::split_bus
+	  ("ff[1:2]"));
 
 array_ck (['ff[5]e',
 	   'ff[3]e',

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #34 $$Date: 2004/04/01 $$Author: wsnyder $
+# $Revision: #38 $$Date: 2004/10/26 $$Author: ws150726 $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.300';
+$VERSION = '2.301';
 
 ######################################################################
 #### Error Handling
@@ -222,7 +222,7 @@ sub read_libraries {
 	    if (!$self->{_libraries_done}{$file}) {
 		$self->{_libraries_done}{$file} = 1;
 		$self->read_file(filename=>$file, is_libcell=>1, );
-		$self->dump();
+		## $self->dump();
 	    }
 	}
     }
@@ -272,7 +272,7 @@ Verilog::Netlist - Verilog Netlist
 
 =head1 SYNOPSIS
 
-  use Verilog::Netlist;
+    use Verilog::Netlist;
 
     # Setup options so files can be found
     use Verilog::Getopt;
@@ -464,6 +464,19 @@ parenthesis are required.  (Use "cell cell();", not "cell cell;".)
 
 Order based pin interconnect is not supported, use name based connections.
 
+=head1 DISTRIBUTION
+
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
+
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
+
+=head1 AUTHORS
+
+Wilson Snyder <wsnyder@wsnyder.org>
+
 =head1 SEE ALSO
 
 L<Verilog::Netlist::Cell>,
@@ -473,13 +486,5 @@ L<Verilog::Netlist::Net>,
 L<Verilog::Netlist::Pin>,
 L<Verilog::Netlist::Port>,
 L<Verilog::Netlist::Subclass>
-
-=head1 DISTRIBUTION
-
-The latest version is available from CPAN and from C<http://veripool.com/>.
-
-=head1 AUTHORS
-
-Wilson Snyder <wsnyder@wsnyder.org>
 
 =cut

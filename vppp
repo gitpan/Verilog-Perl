@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 # vppp - Preprocess Verilog
-# $Id: //depot/hw/main/utils/perltools/Verilog/vppp#3 $
+# $Id: //depot/hw/main/utils/perltools/Verilog/vppp#6 $
 ######################################################################
 #
 # Copyright 2000-2004 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -92,7 +92,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: //depot/hw/main/utils/perltools/Verilog/vppp#3 $ '."\n";
+    print 'Version: $Id: //depot/hw/main/utils/perltools/Verilog/vppp#6 $ '."\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -232,20 +232,23 @@ This will report an error when encountered, like C++'s #error.
 
 =back
 
-=head1 SEE ALSO
-
-C<Verilog::Getopt>
-C<Verilog::Preproc>
-
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN C<http://www.perl.org/CPAN/> as
-part of Verilog-Perl or
-C<http://veripool.com/verilog-perl.html>.
+The latest version is available from CPAN and from
+L<http://www.veripool.com/verilog-perl.html>.
 
-=head1 AUTHOR
+Copyright 2000-2004 by Wilson Snyder.  This package is free software; you
+can redistribute it and/or modify it under the terms of either the GNU
+Lesser General Public License or the Perl Artistic License.
+
+=head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
+
+=head1 SEE ALSO
+
+L<Verilog::Getopt>,
+L<Verilog::Preproc>
 
 =cut
 ######################################################################
