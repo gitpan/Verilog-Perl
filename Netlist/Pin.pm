@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #17 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #18 $$Date: 2003/05/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -31,7 +31,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.223';
+$VERSION = '2.224';
 use strict;
 
 structs('new',
@@ -74,7 +74,7 @@ sub _link {
 	$change = 1;
     }
     if (!$self->port
-	&& $self->portname && $self->submod && $self->cell->namedports ) {
+	&& $self->portname && $self->submod && !$self->cell->byorder ) {
 	$self->port($self->submod->find_port($self->portname));
 	$change = 1;
     }

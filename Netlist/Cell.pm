@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #20 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #21 $$Date: 2003/05/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.223';
+$VERSION = '2.224';
 use strict;
 
 structs('new',
@@ -39,7 +39,7 @@ structs('new',
 	   submodname	=> '$', #'	# Which module it instantiates
 	   module	=> '$', #'	# Module reference
 	   pins		=> '%',		# List of Verilog::Netlist::Pins
-	   namedports 	=> '$',		# True if Cell call uses port naming
+	   byorder 	=> '$',		# True if Cell call uses order based pins
 	   # after link():
 	   submod	=> '$', #'	# Sub Module reference
 	   # system perl

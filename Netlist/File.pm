@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #22 $$Date: 2003/05/19 $$Author: wsnyder $
+# $Revision: #23 $$Date: 2003/05/19 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -27,7 +27,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.223';
+$VERSION = '2.224';
 use strict;
 
 structs('new',
@@ -180,7 +180,7 @@ sub pin {
 		       filename=>$self->filename, lineno=>$self->lineno,
 		       netname=>$net, );
     # If any pin uses call-by-name, then all are assumed to use call-by-name
-    $cellref->namedports(1) if $hasnamedports;
+    $cellref->byorder(1) if !$hasnamedports;
 }
 
 sub ppdefine {
