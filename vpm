@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm,v 1.91 2001/02/13 15:11:07 wsnyder Exp $
+# $Id: vpm,v 1.2 2001/05/17 18:04:10 wsnyder Exp $
 ######################################################################
 #                                                                           
 # Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@wsnyder.org>
@@ -14,6 +14,8 @@ use IO::File;
 use Pod::Text;
 use FindBin qw($RealBin);
 use File::Copy;
+
+$VERSION = '1.12';
 
 ######################################################################
 # configuration
@@ -108,7 +110,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm,v 1.91 2001/02/13 15:11:07 wsnyder Exp $ ';
+    print 'Version: $Id: vpm,v 1.2 2001/05/17 18:04:10 wsnyder Exp $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -726,7 +728,7 @@ BEGIN {
 
 use strict;
 use vars (@GLOBALS,
-	  qw ( @ISA @EXPORT
+	  qw ( @ISA @EXPORT $VERSION
 	       $Last_Keyword
 	       @Last_Symbols
 	       @Last_Number_Ops

@@ -6,14 +6,19 @@ The contributors that suggested a given feature is shown in [].
 	
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 1.12 5/15/2001
+
+**	Added new Verilog::Getopt, for standard option parsing.
+
+
 * Changes in Verilog::Language 1.11 3/31/2001
 
-**	Fixed \net### hang in Parser.  [Mark Lakata]
+***	Fixed \net### hang in Parser.  [Mark Lakata]
 
 
 * Changes in Verilog::Language 1.10 3/15/2001
 
-**	Fixed line number being incorrect in Parser.  [Alan Heinold]
+***	Fixed line number being incorrect in Parser.  [Alan Heinold]
 
 
 * Changes in Verilog::Language 1.9 2/13/2001
@@ -50,7 +55,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 
 ----------------------------------------------------------------------
-$Id: NEWS,v 1.11 2001/03/31 16:48:00 wsnyder Exp $
+$Id: NEWS,v 1.12 2001/05/16 21:10:28 wsnyder Exp $
 ----------------------------------------------------------------------
 Copyright information:
 

@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.14 2001/03/31 16:48:00 wsnyder Exp $
+# $Id: Parser.pm,v 1.15 2001/05/17 18:04:10 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -206,7 +206,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 #######################################################################
 

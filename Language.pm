@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm,v 1.15 2001/03/31 16:47:59 wsnyder Exp $
+# $Id: Language.pm,v 1.18 2001/05/17 18:04:10 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -101,6 +101,12 @@ will get intuitive results.
 The latest version is available from
 C<http://veripool.com/verilog-perl>.
 
+=head1 SEE ALSO
+
+C<Verilog::Parser>, 
+C<Verilog::ParseSig>, 
+C<Verilog::Getopt>, 
+
 =head1 AUTHORS
 
 Wilson Snyder <wsnyder@wsnyder.org>
@@ -118,7 +124,7 @@ use vars qw($VERSION);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 ######################################################################
 #### Internal Variables
@@ -305,19 +311,6 @@ sub split_bus {
 	return @vec;
     }
 }
-
-#sub split_bus_test {
-#    my $x;
-#    $x = "ff[5:1:2,4]e";
-#    foreach (Verilog::Language::split_bus ($x)) {
-#	 print "MM $x .. $_\n";
-#    }
-#    $x = "ff[3:1]  bar [4'ha:3] end";
-#    foreach (Verilog::Language::split_bus ($x)) {
-#	 print "MM $x .. $_\n";
-#    }
-#    die;
-#}
 
 sub split_bus_nocomma {
     # Faster version of split_bus
