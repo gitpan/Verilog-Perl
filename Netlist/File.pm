@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #15 $$Date: 2002/09/05 $$Author: wsnyder $
+# $Revision: #17 $$Date: 2002/10/21 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -27,7 +27,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.213';
+$VERSION = '2.214';
 use strict;
 
 structs('new',
@@ -120,16 +120,23 @@ sub signal_decl {
 	     simple_type=>1, type=>'wire', array=>$array,
 	     comment=>undef, msb=>$msb, lsb=>$lsb,
 	     );
-	$self->{netref} = $net;
     }
     elsif ($inout =~ /(inout|in|out)(put|)$/) {
 	my $dir = $1;
-	my $net = $modref->new_port
+	##
+	my $net = $modref->find_net ($netname);
+	$net or $net = $modref->new_net
+	    (name=>$netname,
+	     filename=>$self->filename, lineno=>$self->lineno,
+	     simple_type=>1, type=>'wire', array=>$array,
+	     comment=>undef, msb=>$msb, lsb=>$lsb,
+	     );
+	##
+	my $port = $modref->new_port
 	    (name=>$netname,
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     direction=>$dir, type=>'wire',
 	     array=>$array, comment=>undef,);
-	$self->{netref} = $net;
     }
     else {
 	return $self->error ("Strange signal type: $inout", $inout);

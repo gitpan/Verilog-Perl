@@ -1,4 +1,4 @@
-#ident "$Revision: #10 $$Date: 2002/08/07 $$Author: wsnyder $" //-*- C++ -*-
+#ident "$Revision: #11 $$Date: 2002/10/11 $$Author: mloprest $" //-*- C++ -*-
 //*************************************************************************
 // DESCRIPTION: Verilog::Preproc: Preprocess verilog code
 //
@@ -42,7 +42,7 @@ public:
 
     // CONSTANTS
     static const unsigned DEFINE_RECURSION_LEVEL_MAX = 50;	// How many `def substitutions before an error
-    static const unsigned INCLUDE_DEPTH_MAX = 200;	// How many `includes deep before an error
+    static const unsigned INCLUDE_DEPTH_MAX = 500;	// How many `includes deep before an error
 
     // ACCESSORS
     // Insert given file into this point in input stream

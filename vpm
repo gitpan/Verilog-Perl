@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: #32 $$Date: 2002/09/05 $$Author: wsnyder $
+# $Revision: #35 $$Date: 2002/10/21 $$Author: wsnyder $
 ######################################################################
 #
 # This program is Copyright 2002 by Wilson Snyder.
@@ -30,7 +30,7 @@ use File::Copy;
 
 use vars qw ($VERSION $Debug %Vpm_Ignore_Directories %Vpm_Conversions
 	     %Vpm_Chiponly_Rename);
-$VERSION = '2.213';
+$VERSION = '2.214';
 
 ######################################################################
 # configuration
@@ -134,7 +134,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: #32 $$Date: 2002/09/05 $$Author: wsnyder $ ';
+    print 'Version: $Revision: #35 $$Date: 2002/10/21 $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -287,14 +287,16 @@ sub assert_hot {
     for (my $i=0;$i<$len;$i++){
 	$ptemp = $len."'b";
 	for (my $j=0;$j<$len;$j++){
-	    if ($j==$i) { $ptemp = $ptemp."1"; }
-	    else{ $ptemp = $ptemp."0"; }
+	    if ($j==$i) { $ptemp .= "1"; }
+	    else{ $ptemp .= "0"; }
 	}
-	if ($plist){ $plist = $plist.", ".$ptemp; }
+	if ($plist){ $plist .= ", ".$ptemp; }
 	else { $plist = $ptemp; }
     }
-    $plist = $plist.", ".$len."'b";
-    for (my $i=0; $i<$len; $i++) {$plist = $plist."X"; }
+    if (!$Opt_Verilator) {
+	$plist .= ", ".$len."'b";
+	for (my $i=0; $i<$len; $i++) {$plist = $plist."X"; }
+    }
     $pnone = $len."'b";
     for (my $i=0; $i<$len; $i++) {$pnone = $pnone."0"; }
 
@@ -307,12 +309,12 @@ sub assert_hot {
     sendout(" ${plist}: ;");
     if ($check_nohot==1){
 	sendout(" ${pnone}: if (`__message_on) ");
-	message_write($lineinfo,1,"%%E","",0,0,"NONE ACTIVE --> $text".'"',$vec);
+	message_write($lineinfo,1,"%%E","",0,0,"NONE ACTIVE %b --> $text".'"',$vec);
     } else {
 	sendout(" ${pnone}: ; ");
     }
     sendout("default: if (`__message_on) ");
-    message_write($lineinfo,1,"%%E","",0,0,"MULTIPLE ACTIVE --> $text".'"',$vec);
+    message_write($lineinfo,1,"%%E","",0,0,"MULTIPLE ACTIVE %b --> $text".'"',$vec);
     sendout("endcase ");
     
     message_trailer();

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Revision: #14 $$Date: 2002/09/05 $$Author: wsnyder $
+# $Revision: #16 $$Date: 2002/10/21 $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.213';
+$VERSION = '2.214';
 use strict;
 
 ######################################################################
@@ -106,7 +106,9 @@ sub dump {
     my $indent = shift||0;
     print " "x$indent,"Net:",$self->name()
 	,"  ",($self->_used_in() ? "I":""),($self->_used_out() ? "O":""),
-	,"  Type:",$self->type(),"  Array:",$self->array()||"","\n";
+	,"  Type:",$self->type(),"  Array:",$self->array()||"";
+    print "  ",($self->msb).":".($self->lsb) if defined $self->msb;
+    print "\n";
 }
 
 sub dump_drivers {
