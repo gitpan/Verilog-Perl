@@ -1,2 +1,3 @@
 #!/bin/sh
+# DESCRIPTION: Perl ExtUtils: Invoke 'perl Makefile.PL' for those more familiar with GNU tools
 perl Makefile.PL

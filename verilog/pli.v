@@ -1,3 +1,5 @@
+// DESCRIPTION: vpm: Example pli file for vpm program
+
 `timescale 1ns/1ns
 
 module pli;

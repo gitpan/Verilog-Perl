@@ -1,10 +1,22 @@
-#$Id: test.pl,v 1.6 2000/09/07 15:30:14 wsnyder Exp $
+#$Id: test.pl,v 1.8 2001/02/09 15:43:48 wsnyder Exp $
+# DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 ######################################################################
 
 use Verilog::Language;
 print "ok 1\n";
+
+######################################################################
+# Test package
+if (1) {
+    print ((Verilog::Language::is_keyword("input"))
+	   ? "ok 1\n" : "not ok 1\n");
+    print ((!Verilog::Language::is_keyword("not_input"))
+	   ? "ok 2\n" : "not ok 2\n");
+    print ((Verilog::Language::is_compdirect("`define"))
+	   ? "ok 3\n" : "not ok 3\n");
+}
 
 ######################################################################
 # Test vrename
@@ -14,13 +26,13 @@ if (1) {
     unlink 'signals.vrename';
     run_system ("perl -Iblib/arch -Iblib/lib vrename -list -xref verilog/test.v");
     print ((-r 'signals.vrename')
-	   ? "ok 2\n" : "not ok 2\n");
+	   ? "ok 10\n" : "not ok 10\n");
 
     mkdir 'test_dir', 0777;
     mkdir 'test_dir/verilog', 0777;
     run_system ("perl -Iblib/arch -Iblib/lib vrename -change --changefile verilog/test.vrename -o test_dir verilog/test.v");
     print ((-r 'test_dir/verilog/test.v')
-	   ? "ok 3\n" : "not ok 3\n");
+	   ? "ok 11\n" : "not ok 11\n");
 }
 
 ######################################################################
@@ -32,13 +44,13 @@ if (1) {
     mkdir ".vpm", 0777;
     run_system ("perl -Iblib/arch -Iblib/lib ./vpm --date verilog/");
     print ((-r '.vpm/pli.v')
-	   ? "ok 4\n" : "not ok 4\n");
+	   ? "ok 20\n" : "not ok 20\n");
 
     # Build the model
     unlink "simv";
     if (!-r "$ENV{VCS_HOME}/bin/vcs") {
 	warn "*** You do not have VCS installed, not running rest of test!\n";
-	print ("not ok 5\n");
+	print ("not ok 21\n");
     } else {
 	run_system (# We use VCS, insert your simulator here
 		    "$ENV{VCS_HOME}/bin/vcs"
@@ -54,7 +66,7 @@ if (1) {
 	# Execute the model (VCS is a compiled simulator)
 	run_system ("./simv");
 	
-	print ("ok 5\n");
+	print ("ok 21\n");
     }
 }
 

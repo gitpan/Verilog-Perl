@@ -1,6 +1,6 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.8 2000/11/02 19:47:02 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@world.std.com>
+# $Id: Parser.pm,v 1.11 2001/02/13 17:41:05 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # This program is Copyright 2000 by Wilson Snyder.
@@ -70,6 +70,10 @@ preprocessors, pretty-printers, and such.
 =item $parser->line ($set)
 
 Return (if $set is undefined) or set current line number.
+
+=item $parser->filename ($set)
+
+Return (if $set is undefined) or set current filename.
 
 =back
 
@@ -179,7 +183,7 @@ C<http://www.ultranet.com/~wsnyder/verilog-perl>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@world.std.com>
+Wilson Snyder <wsnyder@wsnyder.org>
 
 =cut
 
@@ -202,7 +206,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.7';
+$VERSION = '1.9';
 
 #######################################################################
 
@@ -215,6 +219,7 @@ sub new {
 
     my $self = {unreadback => "",	# Text since last callback
 		line => 1,
+		filename => "UNKNOWN",
 		incomment => 0,
 		inquote => 0,
 		preprocess => 0,
@@ -244,12 +249,21 @@ sub unreadback {
 }
 
 sub line {
-    # Return any un read text and clear it
+    # Return or set line number
     my $self = shift;	# Parser
     if (@_) {
 	$self->{line} = shift;
     }
     return $self->{line};
+}
+
+sub filename {
+    # Return or set filename
+    my $self = shift;	# Parser
+    if (@_) {
+	$self->{filename} = shift;
+    }
+    return $self->{filename};
 }
 
 #######################################################################
@@ -409,6 +423,7 @@ sub parse_file {
 
     my $fh = new FileHandle;
     $fh->open($filename) or croak "%Error: $! $filename";
+    $self->filename($filename);
     my $line;
     while ($line = $fh->getline() ) {
 	$self->parse ($line);

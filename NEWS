@@ -6,6 +6,11 @@ The contributors that suggested a given feature is shown in [].
 	
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
+* Changes in Verilog::Language 1.9 2/13/2001
+
+**	Added Verilog::Language::is_compdirect.  [Darren Jones]
+
+
 * Changes in Verilog::Language 1.7 11/02/2000
 
 **	Added parametric module support to Parser.pm.  [Darren Jones]
@@ -35,7 +40,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 
 ----------------------------------------------------------------------
-$Id: NEWS,v 1.7 2000/11/02 19:47:02 wsnyder Exp $
+$Id: NEWS,v 1.9 2001/02/13 17:41:05 wsnyder Exp $
 ----------------------------------------------------------------------
 Copyright information:
 

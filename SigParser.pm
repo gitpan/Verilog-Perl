@@ -1,6 +1,6 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm,v 1.7 2000/11/02 22:03:06 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@world.std.com>
+# $Id: SigParser.pm,v 1.8 2001/02/13 15:11:15 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # This program is Copyright 2000 by Wilson Snyder.
@@ -95,7 +95,7 @@ C<http://www.ultranet.com/~wsnyder/verilog-perl>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@world.std.com>
+Wilson Snyder <wsnyder@wsnyder.org>
 
 =cut
 

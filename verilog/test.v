@@ -1,3 +1,5 @@
+// $Id: test.v,v 1.5 2001/02/13 15:11:16 wsnyder Exp $
+// DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 
 module example (/*AUTOARG*/
    // Outputs
@@ -6,7 +8,7 @@ module example (/*AUTOARG*/
    a, b
    );
 
-   // See http://www.ultranet.com/~wsnyder/verilog-perl
+   // See http://veripool.com
    // for what AUTOARG and friends can do for you!
 
    /*Comment // test*/

@@ -1,5 +1,5 @@
-# For test.pl testing of vrename
-# $Id: test.vrename,v 1.1 2000/08/25 21:45:12 wsnyder Exp $
+# $Id: test.vrename,v 1.2 2001/02/09 15:43:48 wsnyder Exp $
+# DESCRIPTION: vrename: For test.pl testing of vrename
 ######################################################################
 sigren	"a"	"or_term_1"
 sigren	"b"	"or_term_2"

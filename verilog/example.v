@@ -1,3 +1,4 @@
+// DESCRIPTION: vpm: Example top verilog file for vpm program
 
 `timescale 1ns/1ns
 

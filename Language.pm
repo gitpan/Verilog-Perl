@@ -1,6 +1,6 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm,v 1.9 2000/11/02 19:47:02 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@world.std.com>
+# $Id: Language.pm,v 1.12 2001/02/13 17:41:05 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # This program is Copyright 2000 by Wilson Snyder.
@@ -30,6 +30,7 @@ Verilog::Language - Verilog language utilities
   use Verilog::Language;
 
   $result = Verilog::Language::is_keyword ($symbol_string)
+  $result = Verilog::Language::is_compdirect ($symbol_string)
   $result = Verilog::Language::number_value ($number_string)
   $result = Verilog::Language::number_bits  ($number_string)
   @vec    = Verilog::Language::split_bus ($bus)
@@ -50,6 +51,17 @@ Return true if the given symbol string is a Verilog reserved keyword.
   print Verilog::Language::is_keyword ("module");
      1
   print Verilog::Language::is_keyword ("signalname");
+     undef
+
+=item Verilog::Language::is_compdirect ($symbol_string)
+
+Return true if the given symbol string is a Verilog compiler directive.
+
+=head1 EXAMPLE
+
+  print Verilog::Language::is_compdirect ("`include");
+     1
+  print Verilog::Language::is_compdirect ("`MYDEFINE");
      undef
 
 =item Verilog::Language::number_value ($number_string)
@@ -91,7 +103,7 @@ C<http://www.ultranet.com/~wsnyder/verilog-perl>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@world.std.com>
+Wilson Snyder <wsnyder@wsnyder.org>
 
 =cut
 ######################################################################
@@ -106,14 +118,13 @@ use vars qw($VERSION);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '1.7';
+$VERSION = '1.9';
 
 ######################################################################
 #### Internal Variables
 
 my $kwd;
-foreach $kwd ("`define", "`else", "`endif", "`ifdef", "`include",
-	      "`timescale", "`undef", "always", "and", "assign", "begin",
+foreach $kwd ("always", "and", "assign", "begin",
 	      "buf", "bufif0", "bufif1", "case", "casex", "casez", "cmos",
 	      "default", "defparam", "else", "end", "endcase",
 	      "endfunction", "endmodule", "endprimitive", "endspecify",
@@ -130,6 +141,13 @@ foreach $kwd ("`define", "`else", "`endif", "`ifdef", "`include",
 	      "wand", "while", "wire", "wor", "xnor", "xor") {
     $Verilog::Language::keyword{$kwd} = 1;
 }
+foreach $kwd ("`celldefine", "`default_nettype", "`define", "`else",
+	      "`endcelldefine", "`endif", "`ifdef", "`include",
+	      "`nounconnected_drive", "`resetall", "`timescale",
+	      "`unconnected_drive", "`undef") {
+    $Verilog::Language::keyword{$kwd} = 1;
+    $Verilog::Language::compdirect{$kwd} = 1;
+}
 
 ######################################################################
 #### Keyword utilities
@@ -137,6 +155,11 @@ foreach $kwd ("`define", "`else", "`endif", "`ifdef", "`include",
 sub is_keyword {
     my $symbol = shift;
     return ($Verilog::Language::keyword {$symbol});
+}
+
+sub is_compdirect {
+    my $symbol = shift;
+    return ($Verilog::Language::compdirect {$symbol});
 }
 
 ######################################################################

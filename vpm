@@ -1,9 +1,9 @@
 #!/usr/local/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm,v 1.88 2000/10/25 15:40:42 wsnyder Exp $
+# $Id: vpm,v 1.90 2000/12/12 14:36:56 wsnyder Exp $
 ######################################################################
 #                                                                           
-# Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@world.std.com>
+# Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@wsnyder.org>
 # All Rights Reserved.                                                      
 ######################################################################
 
@@ -108,7 +108,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm,v 1.88 2000/10/25 15:40:42 wsnyder Exp $ ';
+    print 'Version: $Id: vpm,v 1.90 2000/12/12 14:36:56 wsnyder Exp $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -449,6 +449,7 @@ sub vpm_process {
 
     # Set up parsing
     my $parser = new Verilog::Vpm::Parser;
+    $parser->filename($filename);
 
     # Open file for reading and parse it
     my $fh = IO::File->new("<$filename") or die "%Error: $! $filename.";
@@ -796,8 +797,8 @@ sub symbol {
     my ($parser, $token) = @_;
     my $since = $parser->unreadback();
 
-    if ($token eq "__LINE__") { $token = $.; }
-    if ($token eq "__FILE__") { $token = $Last_Filename; }
+    if ($token eq "__LINE__") { $token = $parser->line(); }
+    if ($token eq "__FILE__") { $token = $parser->filename(); }
 
     if ($In_Message) {
 	$Params[$Param_Num] .= $since . $token;
@@ -911,7 +912,8 @@ sub string {
 	$Sendout .= $since . $token;
 	if (($Last_Keyword eq "`include")
 	    && ($token =~ /\//)) {
-	    print STDERR "%Warning: $Last_Filename:$.: `include has directory,"
+	    my $line_file = $parser->filename() . ":". $parser->line();
+	    print STDERR "%Warning: $line_file: `include has directory,"
 		. " remove and add +incdir+ to input.vc\n";
 	}
     }
@@ -1064,11 +1066,11 @@ C<Verilog::Parse>, C<Verilog::Pli>
 
 The latest version is available from CPAN C<http://www.perl.org/CPAN/> as
 part of Verilog-Perl or
-C<http://www.ultranet.com/~wsnyder/veripool/verilog-perl.html>.
+C<http://veripool.com/verilog-perl.html>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@world.std.com>,
+Wilson Snyder <wsnyder@wsnyder.org>,
 Duane Galbi <duane.galbi@conexant.com>
 
 =cut

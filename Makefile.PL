@@ -1,4 +1,5 @@
-# vrename Makefile.PL
+# $Id: Makefile.PL,v 1.15 2001/02/13 15:11:15 wsnyder Exp $
+# DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 
 use ExtUtils::MakeMaker;
 use Carp;
@@ -30,7 +31,7 @@ tag:
 WriteMakefile(
 	      DISTNAME  => 'Verilog-Perl',
 	      NAME      => 'Verilog::Language',
-	      AUTHOR	=> 'Wilson Snyder <wsnyder@world.std.com>',
+	      AUTHOR	=> 'Wilson Snyder <wsnyder@wsnyder.org>',
 	      ABSTRACT  => 'Verilog language utilities and parsing',
 	      VERSION_FROM  => 'Language.pm',
 	      EXE_FILES => [qw( vrename vpm )],

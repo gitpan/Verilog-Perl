@@ -1,6 +1,6 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Id: Parse.pm,v 1.6 2000/01/21 15:56:08 wsnyder Exp $
-# Author: Wilson Snyder <wsnyder@world.std.com>
+# $Id: Parse.pm,v 1.7 2001/02/13 15:11:15 wsnyder Exp $
+# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # This program is Copyright 2000 by Wilson Snyder.
@@ -134,7 +134,7 @@ C<http://www.ultranet.com/~wsnyder/verilog-perl>.
 
 =head1 AUTHORS
 
-Wilson Snyder <wsnyder@world.std.com>
+Wilson Snyder <wsnyder@wsnyder.org>
 
 =cut
 
