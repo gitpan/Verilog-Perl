@@ -1,0 +1,115 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename readme.info
+@settitle Perl Verilog Installation
+@c %**end of header
+
+@c This file is included by autoconf.texi and is used to produce
+@c the INSTALL file.
+
+@node Top, Copyright, (dir), (dir)
+
+This is the Verilog Perl Package.
+
+@menu
+* Copyright::                   
+* Description::                 
+* Obtaining Distribution::      
+* Supported Systems::           
+* Installation::                
+@end menu
+
+@node Copyright, Description, Top, Top
+@section Copyright
+
+This package is Copyright 2000 by Wilson Snyder @email{wsnyder@@world.std.com}.
+
+You may distribute under the terms of either the GNU General Public License
+or the Artistic License, as specified in the Perl README file, with the
+exception that it cannot be placed on a CD-ROM or similar media for commercial
+distribution without the prior approval of the author.
+
+This code is provided with no warranty of any kind, and is used entirely at
+your own risk.
+
+@node Description, Obtaining Distribution, Copyright, Top
+@section Description
+
+This package provides functions to support writing utilities that use
+the Verilog language.  See @samp{man Verilog::Language} and @samp{man vrename}
+after installation.
+
+Included is @samp{vrename}, a program for renaming signals, modules,
+and parameters across many verilog files at once.
+
+Also included is @samp{vpm} to convert macros that look like pli calls,
+such as $info, into different Verilog code.  This enables programs like
+Verilint and Synopsys dc_shell to ignore the macros (as they ignore pli
+calls), but have the simulator do something special with them.
+
+For example:
+
+@example
+      $info (0, "Welcome to a VPMed file\n");
+@end example
+
+becomes
+
+@example
+      ... $write ("[%0t] -I:example.v:0012: Welcome to a VPMed file\n",$time); ...
+@end example
+
+where the filename and line number of the message have been added along
+with the timestamp.
+
+@node Obtaining Distribution, Supported Systems, Description, Top
+@section Obtaining Distribution
+
+The latest version is available at 
+@uref{http://www.perl.org/CPAN/}
+
+Download the latest package from that site, and decompress.
+@samp{gunzip Verilog-Perl_version.tar.gz ; tar xvf Verilog-Perl_version.tar}
+
+@node Supported Systems, Installation, Obtaining Distribution, Top
+@section Supported Systems
+
+This version of Verilog has been built and tested on:
+
+@itemize @bullet
+@item sparc-sun-solaris2.5.1
+@item sparc-sun-sunos4.1.4
+@item i386-linux
+@end itemize
+
+It should run on any system with perl.
+
+@node Installation,  , Supported Systems, Top
+@section Installation
+
+@enumerate
+@item
+@code{cd} to the directory containing this INSTALL notice.
+
+@item
+Type @samp{perl Makefile.PL} to configure Verilog for your system.
+
+@item
+Type @samp{make} to compile Verilog.
+
+@item
+Type @samp{make test} to check the package.
+
+@item
+Type @samp{make install} to install the programs and any data files and
+documentation.
+
+@item
+Type @samp{rehash} to make the new @samp{vrename} command visible.
+
+@item
+Look at @samp{test.pl} to see how to use @samp{vpm} in your build methodology.
+
+@end enumerate
+
+

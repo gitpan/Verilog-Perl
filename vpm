@@ -1,0 +1,1075 @@
+#!/usr/local/bin/perl -w
+# vpm - Preprocess Verilog signals
+# $Id: vpm,v 1.86 2000/09/12 19:13:26 wsnyder Exp $
+######################################################################
+#                                                                           
+# Unpublished Work Copyright (C) 2000 Wilson Snyder  <wsnyder@world.std.com>
+# All Rights Reserved.                                                      
+######################################################################
+
+require 5.005;
+use Getopt::Long;
+use Verilog::Parser;
+use IO::File;
+use Pod::Text;
+use FindBin qw($RealBin);
+use File::Copy;
+
+######################################################################
+# configuration
+
+# A directory matching the key of this hash is ignored if it is come across
+# while recursively preprocessing an entire directory
+%Vpm_Ignore_Directories = (# Omit CVS and other non-source code
+			   # *.old is ommitted automatically
+			   'CVS'=>"",
+			   'History'=>"",
+			   '.vpm'=>"",
+			   );
+
+# Hash with key of macro to convert and value of the function to call when it occurs
+# Avoid having a token that is a substring of a standard function, for example
+#     $wr would be bad (beginning of $write).  That would slow down the parsing.
+%Vpm_Conversions  
+    = (#Token 			Function for processing it
+       '$assert' =>		\&assert,
+       '$assert_amone' =>	sub {do_checkhot(0,@_); },   # atmost one hot
+       '$assert_onehot' =>	sub {do_checkhot(1,@_); },
+       '$assert_info' =>	\&assert_info,
+       '$check_ilevel' =>	\&check_ilevel,
+       '$coverage' =>		\&coverage,
+       '$error' =>		\&error,
+       '$info' =>		\&info,
+       '$warn' =>		\&warn,
+       );
+
+# Any tokens appearing here will be removed with the --chiponly option
+# This allows v files to be given to people that don't have our PLI library, and
+# cah have these "true-PLI" functions to do something simpler.
+%Vpm_Chiponly_Rename = ();
+%Vpm_Chiponly_Rename
+    = (#Token	  Convert to (0=remove)
+       '$cmd_stop' => '$stop',
+       );
+
+######################################################################
+# main
+
+$Debug = 0;
+$output_filename = ".vpm/";
+$Opt_Quiet = 0;		# Don't blab about what files are being worked on
+$Opt_AllFiles = 0;	# Preprocess all files
+$Opt_Date = 0;		# Check dates
+$Opt_Vericov = 0;	# Add vericov on/off comments (messes up line # counts)
+$Opt_Chiponly = 0;	# Only chip model; apply Vpm_Chiponly_Rename's
+$Last_Vericov = 0;	# Last run's Opt_Vericov
+$Last_Chiponly = 0;	# Last run's Opt_Chiponly
+
+$Total_Files = 0;
+$Last_Task = "";
+@files = ();
+@instance_tests_list = ();
+
+$Prog_Mtime = 0;	# Time program last changed, so we bag cache on change
+(-r "$RealBin/vpm") or die "Where'd my source code go?";
+$Prog_Mtime = (stat("$RealBin/vpm"))[9];
+
+autoflush STDOUT 1;
+
+$result = &GetOptions ("help"		=> \&usage,
+		       "debug"		=> \&debug,
+		       "allfiles!"	=> \$Opt_AllFiles,
+		       "quiet!"		=> \$Opt_Quiet,
+		       "date!"		=> \$Opt_Date,
+		       "vericov!"	=> \$Opt_Vericov,
+		       "chiponly!"	=> \$Opt_Chiponly,	# For makeesim only
+		       "-o=s"		=> \$output_filename,
+		       "<>"		=> \&parameter,
+		       );
+
+if (!$result || !@files) { &usage(); }
+
+if ($#files >= 0) {
+    vpm_recursive_prelude($output_filename);
+    foreach my $file (@files) {
+	my $outname = $output_filename;
+	if ($outname eq "") {
+	    $outname = $file;
+	    $outname =~ s/.vh?$/.vpm/;
+	}
+	vpm_recursive ($file, $outname);
+    }
+    vpm_recursive_postlude($output_filename);
+}
+
+print "\tVPM generated $Total_Files new file(s)\n";
+exit (0);
+
+######################################################################
+
+sub usage {
+    print 'Version: $Id: vpm,v 1.86 2000/09/12 19:13:26 wsnyder Exp $ ';
+    print "\n";
+    $SIG{__WARN__} = sub{};	#pod2text isn't clean.
+    pod2text($0);
+    print "\nThe following tokens are converted:\n";
+    foreach my $tok (keys %Vpm_Conversions ) {
+	print "\tToken $tok\n";
+    }
+    exit (1);
+}
+
+sub debug {
+    $Debug = 1;
+    $Verilog::Parser::Debug = 1;
+    $Opt_Quiet = 0;
+}
+
+sub parameter {
+    my $param = shift;
+    (-r $param) or die "%Error: Can't open $param";
+    push @files, $param;
+}
+
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+# Functions that transform the tokens
+
+# Note -I is specially detected below
+sub info   {     message_line ("-I",  1, @_); }
+sub warn   {     message_line ("%%W", 1, @_); }
+sub error  {     message_line ("%%E", 1, @_); }
+
+sub assert {
+    shift;
+    my $cond = shift;
+    my @params = @_;
+    $params[0] =~ s/\"\s*$/ /;
+    $params[0] = $params[0]."%%E: In %m\\n\"";
+    message_line ("%%E", $cond, 0,0, @params);
+}
+
+sub assert_info {
+    shift;
+    my $cond = shift;
+    my @params = @_;
+    message_line ("-I", $cond, 0,0, @params);
+}
+
+sub check_ilevel {
+    shift;
+    my $level = shift;
+    my $chk = "/*vpm*/if ((`__message_on!=0) && ";
+    $chk = $chk . '(__message >= (' . $level . ')))';
+    sendout ($chk);
+}
+
+sub do_checkhot {
+    my $check_nohot = shift;
+    shift;
+    my @params = @_;
+
+    my $text = "";
+    my ($elem,$i,$ptemp,$plist,$pnone);
+
+    my $len = 0; 
+    my @cl = ();
+    while ($elem = shift @params){
+	$elem =~ s/^\s*//;
+	if ($elem =~ /^\"/){   # beginning quote
+	    $elem =~ s/\"//g;
+	    $text .= $elem;
+	    last;
+	}else{
+	    $len = $len + bitwidth($elem);
+	    push @cl, $elem;
+	};
+    }
+
+    $plist = "";
+    for($i=0;$i<$len;$i++){
+	$ptemp = $len."'b";
+	for($j=0;$j<$len;$j++){
+	    if ($j==$i) { $ptemp = $ptemp."1"; }
+	    else{ $ptemp = $ptemp."0"; }
+	}
+	if ($plist){ $plist = $plist.", ".$ptemp; }
+	else { $plist = $ptemp; }
+    }
+    $plist = $plist.", ".$len."'b";
+    for ($i=0; $i<$len; $i++) {$plist = $plist."X"; }
+    $pnone = $len."'b";
+    for ($i=0; $i<$len; $i++) {$pnone = $pnone."0"; }
+
+    my $lineinfo = get_lineinfo();
+
+    message_header();
+
+    my $vec = "({".join(",",@cl)."})";
+    sendout("case $vec");
+    sendout(" ${plist}: ;");
+    if ($check_nohot==1){
+	sendout(" ${pnone}: if (`__message_on!=0) ");
+	message_write($lineinfo,1,"%%E","",0,0,"NONE ACTIVE --> $text".'"',$vec);
+    } else {
+	sendout(" ${pnone}: ; ");
+    }
+    sendout("default: if (`__message_on!=0) ");
+    message_write($lineinfo,1,"%%E","",0,0,"MULTIPLE ACTIVE --> $text".'"',$vec);
+    sendout("endcase ");
+    
+    message_trailer();
+}
+
+sub get_lineinfo {
+    my $line = $.;
+    # Align the lineinfo so that right hand sides are aligned
+    my $lineinfo = substr ($Message_Filename, 0, 17); # Don't make too long
+    $lineinfo = $lineinfo . ":" . sprintf ( "%04d", $line );
+    $lineinfo = sprintf ("%-22s:", $lineinfo);
+}
+
+sub message_line {
+    my $char = shift;
+    my $cond = shift;
+    my @params = @_;
+
+    $lineinfo = get_lineinfo();
+    message ($lineinfo, 1, $char, $cond, "", @params);
+}
+
+sub message_header {
+    sendout ("\n/*summit modcovoff -bpen*/\n") if $Vericov_Enabled;
+    sendout ("/*vpm*/begin ");
+}
+
+sub message_trailer {
+    sendout ('end/*vpm*/');
+    sendout ("\n/*summit modcovon -bpen*/\n") if $Vericov_Enabled;
+}
+
+sub message_write {
+#    print "ARGS=".join("/",@_)."\n";
+    my $lineinfo = shift;
+    my $show_id = shift;
+    my $char = shift;
+    my $otherargs = shift;
+    my @params = @_;	# Task (dropped), Level (dropped), printf string, args
+
+    my $task = (($char ne "-I")
+		&& ((   ($char eq "%%E") && "`pli.errors = `pli.errors+1;")
+		    || (($char eq "%%W") && "`pli.warnings = `pli.warnings+1;")
+		    || die "Unknown message character class '$char'\n"));
+
+    my $ids = "";
+    my $idm = "";
+    sendout ("begin \$write (\"[%0t] ${char}:$ids${lineinfo} ");
+    my $par = $params[2];
+    $par =~ s/^\s*\"//;
+    sendout ("$par,\$time$idm$otherargs");
+    for $par (3 .. $#params) {
+	my $p = $params[$par];
+	sendout (", $p");
+	print "MESSAGE $char, Parameter $p\n" if ($Debug);
+    }
+    sendout (');');
+    sendout ($task)    if ($task && !$Opt_Chiponly);
+    sendout ('$stop;') if ($task && $Opt_Chiponly);
+    sendout (' end ');
+}
+
+sub message {
+    my $lineinfo = shift;
+    my $show_id = shift;
+    my $char = shift;
+    my $cond = shift;
+    my $otherargs = shift;
+    my @params = @_;
+    my $line = $.;
+
+    (($params[1] =~ /^\s*[0-9]/) && ($params[2] =~ /^\s*\"/))
+	or die "%Error $Last_Filename:$line: Format of \$message boggled.\n";
+
+    message_header();
+
+    # These long lines without breaks are intentional; I want to preserve line numbers
+    if ($cond ne "1") {
+	# Conditional code, for $assert
+	# Note this will only work in RTL code!  Chiponly build issues otherwise.
+	my $chk = "if (($cond)==0 && `__message_on!=0) ";
+	sendout ($chk);
+    } elsif ($params[1] =~ /^\s*0\s*$/) {
+	# Always enabled
+    } else {
+	# Complex test
+	$Insure_Symbols{$Last_Module}{__message} = 5;	# Make this symbol exist if doesn't
+	my $chk = 'if (__message >= (' . $params[1] . ')';
+	$chk .= ') ';
+	sendout ($chk);
+    }
+
+    message_write($lineinfo,$show_id,$char,$otherargs,@params);
+
+    message_trailer();
+}
+
+#----------------------------------------------------------------------
+
+sub coverage {
+    # Add simulation coverage for these signals
+    my @params = @_;
+    my $line = $.;
+
+    # Error check
+    ($#params >= 1)
+	or die "%Error $Last_Filename:$line: Format of \$coverage boggled.\n";
+
+    sendout ("/*vpm*/begin ");
+    for $par (1 .. $#params) {
+	my $sig = $params[$par];
+	$sig =~ s/\s+//g;
+	#print "COVERAGE $sig\n" if ($Debug);
+	my $realbit_high = -1;
+	my $realbit_low = -1;
+	my $realbit_width = 1;
+	if ($sig =~ /(.*)\[([0-9]+):([0-9]+)\]/) {
+	    $sig = $1;
+	    $realbit_high = $2;
+	    $realbit_low = $3;
+	    $realbit_width = $realbit_high - $realbit_low + 1;
+	}
+	elsif ($sig =~ /(.*)\[([0-9]+)\]/) {
+	    $sig = $1;
+	    $realbit_high = $2;
+	    $realbit_low = $2;
+	    $realbit_width = 1;
+	}
+	if ($sig =~ /\$expand\(([0-9]+),(.*)\)?$/) {
+	    $realbit_width = $1;
+	    $sig = $2;
+	    ($realbit_high != $realbit_low && $realbit_high > 0)
+		or die "%Error $Last_Filename:$line: \$expand on zero-width signal $sig\n";
+	}
+	my $bit_low;
+	for ($bit_low = $realbit_low; $bit_low<=$realbit_high; $bit_low+=$realbit_width) {
+	    my $text_low = ($bit_low>=0) ? $bit_low : "";
+	    my $text_high = ($bit_low>=0) ? ($bit_low + $realbit_width - 1) : "";
+	    print "COVERAGESIG ${sig} [${realbit_high}:${realbit_low}::${realbit_width}] [${text_high}:${text_low}]\n" if ($Debug);
+	    my $cover_signal = "__${sig}__${text_high}_${text_low}";
+	    $cover_signal =~ s/\./_/g;
+	    my $check_signal = $sig . (($bit_low>=0)
+				       ? ("[${text_high}:${text_low}]")
+				       : "");
+	    my $inthash = {"module" => $Last_Module,
+			   "file" => $Last_Filename,
+			   "line" => $line,
+			   "bit_low" => $text_low,
+			   "bit_high" => $text_high,
+			   "cover_signal" => $cover_signal,
+			   "signal" => $check_signal};
+	    sendout ("vcoverage." . $cover_signal . "[" . $check_signal . "] = "
+		     . "vcoverage." . $cover_signal . "[" . $check_signal . "] + 1;\n");
+	    $Insure_Symbols{$Last_Module}{__message} = 5;	# Make this symbol exist if doesn't
+	    push @coverages, $inthash;
+	}
+    }
+    sendout (" end/*vpm*/");
+}
+
+######################################################################
+
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+
+sub sendout {
+    # Send out the string to the output file, consider this a change.
+    my $string = shift;
+    $Sendout .= $string;
+    $Got_Change = 1;
+}
+
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+
+sub form_conversions_regexp {
+    # Create $Vpm_Conversions_Regexp, a regexp that matches any of the conversions
+    # This regexp will allow us to quickly look at the file and ignore it if no matches
+    $Vpm_Conversions_Regexp = '\$(';
+    my $last_tok = "\$ignore";
+    foreach $tok (sort (keys %Vpm_Conversions)) {
+	($tok =~ s/^\$//) or die "%Error: Vpm_Conversion $tok doesn't have leading \$\n";
+	if (substr ($tok, 0, length($last_tok)) eq $last_tok) {
+	    #print "Suppress $tok   $last_tok\n" if $Debug;
+	} else {
+	    $Vpm_Conversions_Regexp .= "${tok}|";
+	    $last_tok = $tok;
+	}
+    }
+    $Vpm_Conversions_Regexp =~ s/\|$ /\)/x;
+    
+    $Vpm_Conversions_Regexp = "\$NEVER_MATCH_ANYTHING" if $Vpm_Conversions_Regexp eq '\$()';
+    #print "CV REGEXP $Vpm_Conversions_Regexp\n" if $Debug;
+}
+
+sub vpm_process {
+    # Read all signals in this filename
+    # Return TRUE if the file changed
+    my $filename = shift;
+    my $outname = shift;
+    $Got_Change = shift;	# True if should always write output, not only if have change
+
+    if ($outname =~ /[\/\\]$/) {
+	# Directory, not file, so append filename
+	my $basename = $filename;
+	$basename =~ s/.*[\/\\]//g;
+	$outname .= $basename;
+    }
+
+    print "vpm_process ($filename, $outname, $Got_Change)\n"	if ($Debug);
+
+    ($filename ne $outname) or die "%Error: $filename: Would overwrite self.";
+
+    $Sendout = "";
+
+    @coverages = ();
+    @instance_tests_list = ();
+
+
+    $Last_Filename = $filename;
+    $Message_Filename = $filename;
+    $Message_Filename =~ s/^.*\///g;
+
+    # Set up parsing
+    my $parser = new Verilog::Vpm::Parser;
+
+    # Open file for reading and parse it
+    my $fh = IO::File->new("<$filename") or die "%Error: $! $filename.";
+    if (!$Got_Change) {
+	while (<$fh>) {
+	    if (/$Vpm_Conversions_Regexp/o) {
+		goto diff;
+	    }
+	}
+	print "$filename: No dollars, not processing\n" if ($Debug);
+	return;
+      diff: 
+	$fh->seek(0,0);
+	$. = 1;
+    }
+
+    while ($line = $fh->getline() ) {
+	$parser->parse ($line);
+    }
+    $Sendout .= $parser->unreadback();
+    $fh->close;
+
+    # Hack the output text to add in the messages variable
+    foreach my $mod (keys %Insure_Symbols) {
+	my $sym;
+	foreach $sym (keys %{$Insure_Symbols{$mod}}) {
+	    if (1 #|| ! $module_symbols{$sym} 	# For now always put it in
+		) {
+		my $value = $Insure_Symbols{$mod}{$sym};
+		my $insert = "/*vpm*/integer $sym; initial $sym = $value;/*vpm*/";
+		$Sendout =~ s/\/\*vpm symbols $mod\*\//\/\*vpm symbols\*\/$insert/
+		    or die "vpm %Error: $filename: Couldn't find $sym insertion point in $mod\n";
+	    }
+	}
+    }
+
+    # Put out the processed file
+    print "Got_Change? $Got_Change  $outname\n"	if ($Debug);
+    if ($Got_Change) {
+	my $date = localtime;
+	$fh->open(">$outname") or die "%Error: Can't write $outname.";
+	print $fh "/* Generated by vpm on $date; File:\"$filename\" */";
+	print $fh $Sendout;
+	$fh->close;
+	if (defined $file_mtime{$filename}) {
+	    utime $file_mtime{$filename}, $file_mtime{$filename}, $outname;
+	}
+    }
+
+    return $Got_Change;
+}
+
+#----------------------------------------------------------------------
+
+sub bitwidth {
+    # Take a string like "{foo[5:0],bar} and return bit width (7 in this case)
+    my $statement = shift;
+    my $bits = 0;
+    foreach my $sig (split /,\{\]/, $statement) {
+	if ($sig =~ /[a-z].* \[ ([0-9]+) : ([0-9]+) \]/x) {
+	    $bits += ($1 - $2) + 1;
+	} elsif ($sig =~ /[a-z]/) {
+	    $bits ++;
+	}
+    }
+    return $bits;
+}
+
+#----------------------------------------------------------------------
+#----------------------------------------------------------------------
+#----------------------------------------------------------------------
+
+sub vpm_db_read_file {
+    # Read when the unprocessed files were last known to not need processing
+    my $filename = shift;
+    open (PWDFILE,"< $filename")	|| return;  # no error if fails
+    while (<PWDFILE>) {
+	chomp $_;
+	my ($tt_cmd, $tt_file, $tt_mtime) = split(/\t/);
+	$tt_cmd .= "";	# Warning removal
+	if ($tt_cmd eq "switch") {
+	    if ($tt_file =~ /vericov/) {
+		$Last_Vericov = 1;
+	    }
+	    if ($tt_file =~ /chiponly/) {
+		$Last_Chiponly = 1;
+	    }
+	} else {
+	    $file_mtime_read{$tt_file} = $tt_mtime;
+	}
+    }
+    close PWDFILE;
+}
+
+sub vpm_db_write_file {
+    # Save which unprocessed files did not need processing
+    my $filename = shift;
+    open (PWDFILE,"> $filename")	|| die("%Error: Can't write $filename.");
+    print PWDFILE "switch\tvericov\n" if $Opt_Vericov;
+    print PWDFILE "switch\tchiponly\n" if $Opt_Chiponly;
+    foreach my $file (sort (keys %file_mtime)) {
+	print PWDFILE "unproc\t$file\t$file_mtime{$file}\n";
+    }
+    close PWDFILE;
+}
+
+
+#----------------------------------------------------------------------
+
+sub vpm_recursive_prelude {
+    # What to do before processing any files
+    my $destdir = shift;
+
+    $destdir .= "/"		if ($destdir !~ /[\\\/]$/);
+
+    %file_mtime = ();
+    %file_mtime_read = ();
+    %file_directory = ();
+    vpm_db_read_file ("${destdir}/.vpm_skipped_times");
+    form_conversions_regexp();
+}
+
+sub vpm_recursive_postlude {
+    my $destdir = shift;
+    $destdir .= "/"		if ($destdir !~ /[\\\/]$/);
+    # What to do after processing all files
+
+    # Check for deletions
+    foreach my $srcfile (keys %file_mtime_read) {
+	if (!$file_mtime_read_used{$srcfile}) {
+	    (my $basefile = $srcfile) =~ s/.*\///;
+	    my $destfile = "$destdir$basefile";
+	    print "\t    vpm: Deleted? $srcfile\n" if !$Opt_Quiet;
+	    unlink $destfile;
+	}
+    }
+
+    vpm_db_write_file ("${destdir}/.vpm_skipped_times");
+}
+
+sub vpm_recursive {
+    # Recursively process this directory or file argument
+    my $srcdir = shift;
+    my $destdir = shift;
+
+    if (-d $srcdir) {
+	$srcdir .= "/"		if ($srcdir !~ /[\\\/]$/);
+	$destdir .= "/"		if ($destdir !~ /[\\\/]$/);
+	vpm_recurse_dir ($srcdir, $destdir, "");
+    } else {
+	# Plain file
+	vpm_process ($srcdir, $destdir, 1);
+    }
+}
+
+sub vpm_recurse_dir {
+    # Recursively process this directory
+    my $srcdirbase = shift;
+    my $destdirbase = shift;
+    my $subdirs = shift;
+
+    print "Recursing $subdirs $srcdirbase $destdirbase\n" if ($Debug);
+
+    local $srcdir = $srcdirbase . $subdirs;
+    local $destdir = $destdirbase;	# Not . $subdirs; we don't keep hiearchy now
+    if (! -d $destdir) {
+	mkdir ($destdir,0777) or die "%Error: Can't mkdir $destdir\n";
+    }
+
+    # Don't include directory in time saving, as path may change dep how run
+    my $dest_mtime = $file_mtime_read{"vpm"} || 0;
+    my $force = (!$Opt_Date
+		 || ($Prog_Mtime > $dest_mtime)
+		 || ($Opt_Chiponly != $Last_Chiponly)
+		 || ($Opt_Vericov != $Last_Vericov));
+    if ($force && !$Told_wait_chg) {
+	print "\t    VPM (or overall flags) changed... Two minutes...\n";
+	print "\t    Mtime = $Prog_Mtime\n" if $Debug || ($ENV{USER} && $ENV{USER} eq "wsnyder");
+	$Told_wait_chg = 1;
+    }
+    #print "FF $Opt_Date, $Prog_Mtime, $dest_mtime, $Opt_Vericov, $Last_Vericov\n";
+    $file_mtime{"vpm"} = $Prog_Mtime;
+    $file_mtime_read_used{"vpm"} = 1;
+
+    opendir ($srcdir,"$srcdir") or die "%Error: Could not directory $srcdir.\n";
+    while (defined($basefile = readdir($srcdir))) {
+	if ($basefile !~ /^\./) {
+	    $srcfile = "$srcdir$basefile";
+	    $destfile = "$destdir$basefile";
+
+	    if (-d $srcfile) {
+		if (defined $Vpm_Ignore_Directories{$basefile}
+		    || $basefile =~ /\.old$/) {
+		    print "Ignoring directory $destfile\n" if $Debug;
+		} else {
+		    vpm_recurse_dir ($srcdirbase, $destdirbase, "$subdirs$basefile/");
+		}
+	    }
+	    elsif ($basefile =~ /\.vh?$/) {
+		my $src_mtime = (stat($srcfile))[9];
+		$src_mtime ||= 0;
+		$dest_mtime = $file_mtime_read{$srcfile} || 0;
+		$file_mtime_read_used{$srcfile} = 1;
+
+		# Mark times
+		#print "BCK $basefile $src_mtime, $dest_mtime, $force\n";
+ 		$file_mtime{$srcfile} = $src_mtime;
+
+		if ($src_mtime != $dest_mtime || $force) {
+		    my $no_output = 0;
+		    unlink $destfile;
+		    $Total_Files++;
+		    if (! vpm_process ($srcfile, $destfile, $Opt_AllFiles)) {
+			# Didn't need to do processing
+                        $no_output = 1;
+			print "nooutput: vpm_process ($srcfile, $destfile,0 )\n" if ($Debug);
+			copy($srcfile,$destfile);
+		    } else {
+			# Make sure didn't clobber another directory's file
+			print "madenew:  vpm_process ($srcfile, $destfile,0 )\n" if ($Debug);
+			if ($file_directory{$destfile}) {
+			    my $old = $file_directory{$destfile};
+			    die "%Error: Two files with same basename: $srcfile, $old\n";
+			    # This warning is to prevent search order dependance in the
+			    # verilog search path.  It also makes sure we don't clobber
+			    # one file with another by the same name in the .vpm directory
+			}
+		    }
+		    if (!$Opt_Quiet) {
+			print "  VPM'ing file ($Total_Files) $srcfile ", 
+			($dest_mtime ? "(Changed)":"(New)"), ($no_output ? " (no-output)" : ""),"\n";
+		    }
+		}
+		$file_directory{$destfile} = $srcfile;
+	    }
+	}
+    }
+    closedir $srcdir;
+}
+
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+# Parser functions called by Verilog::Parser
+
+package Verilog::Vpm::Parser;
+require Exporter;
+
+BEGIN {
+    # Symbols to alias to global scope
+    use vars qw(@GLOBALS);
+    @GLOBALS = qw
+	(
+	 $Debug
+	 $Sendout
+	 $Last_Task
+	 $Last_Module
+	 $Last_Filename
+	 $Opt_Chiponly
+	 $Opt_Vericov
+	 $Vericov_Enabled
+	 %Vpm_Conversions
+	 %Vpm_Chiponly_Rename
+	 %Insure_Symbols
+	 );
+    foreach (@GLOBALS) {
+	my ($type,$sym) = /^(.)(.*)$/;
+	*{"$sym"} = \${"::$sym"} if ($type eq "\$");
+	*{"$sym"} = \%{"::$sym"} if ($type eq "%");
+	*{"$sym"} = \@{"::$sym"} if ($type eq "@");
+    }
+}
+
+use strict;
+use vars (@GLOBALS,
+	  qw ( @ISA @EXPORT
+	       $Last_Keyword
+	       @Last_Symbols
+	       @Last_Number_Ops
+	       $Need_Vpm_Symbols
+	       @Params
+	       $Param_Num
+	       $Parens
+	       $In_Message
+	       ));
+use Verilog::Parser;
+
+BEGIN {
+    @ISA = qw( Verilog::Parser );
+}
+
+sub new {
+    my $class = shift;
+    my $self = $class->SUPER::new();
+
+    bless $self, $class;
+
+    # State of the parser
+    # These could be put under the class, but this is faster and we only parse
+    # one file at a time
+    $Last_Keyword = "";
+    @Last_Symbols = ();
+    @Last_Number_Ops = ();
+    $Last_Task = "";
+    $Last_Module = "";
+    $Vericov_Enabled = $Opt_Vericov;
+    $Need_Vpm_Symbols = 0;
+    $Param_Num = 0;
+    $Parens = 0;
+    $In_Message = 0;
+    #%module_symbols = ();
+    %Insure_Symbols = ();
+    @Params = ();
+
+    return $self;
+}
+
+sub keyword {
+    # Callback from parser when a keyword occurs
+    my ($parser, $token) = @_;
+    my $since = $parser->unreadback();
+
+    $Last_Keyword = $token;
+    @Last_Symbols = ();
+    @Last_Number_Ops = ();
+
+    if ($Opt_Vericov && (($token eq "case") || ($token eq "casex"))) {
+	$Sendout .= $since;
+	sendout ("\n/*summit implicit off*/\n") if $Vericov_Enabled;
+	$Sendout .= $token;
+    }
+    elsif ($Opt_Vericov && ($token eq "endcase")) {
+	$Sendout .= $since;
+	$Sendout .= $token;
+	sendout ("\n/*summit implicit on*/\n") if $Vericov_Enabled;
+    }
+    else {
+	$Sendout .= $since . $token;
+    }
+}
+
+sub symbol {
+    # Callback from parser when a symbol occurs
+    my ($parser, $token) = @_;
+    my $since = $parser->unreadback();
+
+    if ($token eq "__LINE__") { $token = $.; }
+    if ($token eq "__FILE__") { $token = $Last_Filename; }
+
+    if ($In_Message) {
+	$Params[$Param_Num] .= $since . $token;
+    } else {
+	if ($Vpm_Conversions {$token}
+	    || ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token} && !$Vpm_Chiponly_Rename{$token})) {
+	    $Sendout .= $since;
+	    print "Callback SYMBOL $token\n"    if ($Debug);
+	    $In_Message = 1;
+	    $Param_Num = 1;
+	    @Params = ();
+	    $Params[0] = $token;
+	} elsif ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token}
+		 && $Vpm_Chiponly_Rename{$token}) {
+	    $Sendout .= $since . $Vpm_Chiponly_Rename{$token};
+	} else {
+	    # Actually a keyword; we check for that too
+	    $Sendout .= $since . $token;
+	}
+    }
+
+    if ($Last_Keyword eq "task") {
+	$Last_Task = $token;
+	$Last_Keyword = "";
+    }
+    if ($Last_Keyword eq "module") {
+	$Last_Module = $token;
+	$Last_Keyword = "";
+	$Need_Vpm_Symbols = 1;
+    }
+    push @Last_Symbols, $token;
+}
+
+sub number {
+    # Callback from parser when a number occurs
+    my ($parser, $token) = @_;
+    my $since = $parser->unreadback();
+
+    if ($In_Message) {
+	print "Callback NUMBER $token\n"    if ($Debug);
+	$Params[$Param_Num] .= $since . $token;
+    } else {
+	$Sendout .= $since . $token;
+    }
+    push @Last_Number_Ops, $token;
+}
+
+sub operator {
+    # Callback from parser when a operator occurs
+    my ($parser, $token) = @_;
+    my $since = $parser->unreadback();
+
+    if ($In_Message) {
+	print "Callback OPERATOR $token  ($Parens, $Param_Num)\n"    if ($Debug);
+	if (($token eq ',') && ($Parens==1)) {
+	    # Top level comma
+	    $Param_Num ++;
+	}
+	elsif (($token eq ';' && ($Parens==0))) {
+	    # Final statement close
+	    if ($In_Message) {
+		if (defined $Vpm_Conversions {$Params[0]}) {
+		    my $func = $Vpm_Conversions {$Params[0]};
+		    &$func (@Params);
+		} else {
+		    ::sendout ("");
+		}
+	    }
+	    $In_Message=0;
+	}
+	elsif (($token eq ')') && ($Parens==1)) {
+	    # Final paren
+	    $Parens--;
+	}
+	elsif ($token eq ')') {
+	    # Other paren
+	    $Parens--;
+	    $Params[$Param_Num] .= $since . $token;
+	}
+	elsif ($token eq '(') {
+	    if ($Parens!=0) {
+		$Params[$Param_Num] .= $since . $token;
+	    }
+	    $Parens++;
+	}
+	else {
+	    $Params[$Param_Num] .= $since . $token;
+	}
+    }
+    elsif ($Need_Vpm_Symbols && ($token eq ';')) {
+	$Need_Vpm_Symbols = 0;
+	# Squeeze it after module (..);
+	$Sendout .= $since . $token . '/*vpm symbols ' . $Last_Module . '*/';
+    }
+    else {
+	$Sendout .= $since . $token;
+    }
+    push @Last_Number_Ops, $token;
+}
+
+sub string {
+    # Callback from parser when a string occurs
+    my ($parser, $token) = @_;
+
+    my $since = $parser->unreadback();
+
+    if ($In_Message) {
+	print "Callback STRING $token\n"    if ($Debug);
+	$Params[$Param_Num] .= $since . $token;
+    } else {
+	$Sendout .= $since . $token;
+	if (($Last_Keyword eq "`include")
+	    && ($token =~ /\//)) {
+	    print STDERR "%Warning: $Last_Filename:$.: `include has directory,"
+		. " remove and add +incdir+ to input.vc\n";
+	}
+    }
+}
+
+sub comment {
+    # Callback from parser when a comment
+    # *** For speeding things up, this is only invoked when doing vericov
+    my ($parser, $token) = @_;
+    if (!$Opt_Vericov) {
+	$parser->{unreadback} .= $token;
+	return;
+    }
+
+    my $since = $parser->unreadback();
+
+    if ($Opt_Vericov
+	&& (($token =~ /summit\s+modcovon/
+	     || $token =~ /simtech\s+modcovon/))) {
+	$Vericov_Enabled = 1;
+    } elsif ($token =~ /summit\s+modcovoff/
+	     || $token =~ /simtech\s+modcovoff/) {
+	$Vericov_Enabled = 0;
+    }
+
+    $Sendout .= $since . $token;
+}
+
+package main;
+
+######################################################################
+######################################################################
+######################################################################
+__END__
+
+=pod
+
+=head1 NAME
+
+vpm - Preprocess verilog code
+
+=head1 SYNOPSIS
+
+B<vpm>
+[ B<--help> ]
+[ B<--date> ]
+[ B<--quiet> ]
+[ B<directories...> ]
+
+=head1 DESCRIPTION
+
+Vpm will read the verilog file specified and preprocess it.  The output
+will be named .vpm unless another name is given with B<-o>.
+
+If a directory is passed, all files in that directory will be preprocessed
+recursively.  Typicall usage in this case is to use a B<-o> with another output
+directory.
+
+=head1 ARGUMENTS
+
+=over 4
+
+=item --allfiles
+
+Preprocess and write out files that do not have any macros that need
+expanding.  By default, files that do not need processing are not written
+out.
+
+=item --chiponly
+
+Special standalone chip compile
+
+=item --date
+
+Check file dates versus the last run of VPM and don\'t process if the given
+source file has not changed.
+
+=item --help
+
+Displays this message and program version and exits.
+
+=item --quiet
+
+Suppress messages about what files are being preprocessed.
+
+=item --vericov
+
+Special vericov enable/disables added.
+
+=item --o I<file>
+
+Use the given filename for output instead of the input name .vpm.  If the
+name ends in a / it is used as a output directory with the default name.
+
+=back
+
+=head1 FUNCTIONS
+
+These verilog pseudo-pli calls are expanded:
+
+=over 4
+
+=item $assert (I<case>, "message", [I<vars>...] )
+
+Report a $error if the given case is FALSE.  (Like assert() in C.)
+
+=item $assert_amhot (I<sig>, [I<sig>...], "message", [I<vars>...] )
+
+Report a $error if more then one signal is asserted.  (None asserted is ok.)
+
+=item $assert_info (I<case>, "message", [I<vars>...] )
+
+Report a $info if the given case is FALSE.  (Like assert() in C.)
+
+=item $assert_onehot (I<sig>, [I<sig>...], "message", [I<vars>...] )
+
+Report a $error if other then one signal is asserted.
+
+=item $check_ilevel (I<level> )
+
+Return true if the __message level is greater or equal to the given
+level, and that global messages are turned on.
+
+=item $coverage (I<signal>, [I<signal>...] )
+
+Add code to perform coverage analysis on all possible values of the given
+signals, or with $expand around a signal, the value of each bit
+independently.
+
+=item $info (I<level>, "message", [I<vars>...] )
+
+Report a informational message in standard form.
+
+=item $error (I<level>, "message", [I<vars>...] )
+
+Report a error message in standard form.
+
+=item $warn (I<level>, "message", [I<vars>...] )
+
+Report a warning message in standard form.
+
+=back
+
+
+=head1 SEE ALSO
+
+C<Verilog::Parse>, C<Verilog::Pli>
+
+=head1 DISTRIBUTION
+
+The latest version is available from CPAN C<http://www.perl.org/CPAN/> as
+part of Verilog-Perl or
+C<http://www.ultranet.com/~wsnyder/veripool/verilog-perl.html>.
+
+=head1 AUTHORS
+
+Wilson Snyder <wsnyder@world.std.com>,
+Duane Galbi <duane.galbi@conexant.com>
+
+=cut
+######################################################################

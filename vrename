@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename,v 1.7 2000/04/12 12:17:33 wsnyder Exp $
+# $Id: vrename,v 1.8 2000/09/07 17:03:26 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ################ Introduction ################
 #
@@ -23,7 +23,7 @@
 ######################################################################
 
 require 5.005;
-use English;
+use English;	#INPUT_RECORD_SEPARATOR
 use Getopt::Long;
 use IO::File;
 use Pod::Text;
@@ -122,7 +122,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename,v 1.7 2000/04/12 12:17:33 wsnyder Exp $ ', "\n";
+    print 'Id: $Id: vrename,v 1.8 2000/09/07 17:03:26 wsnyder Exp $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -130,7 +130,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename,v 1.7 2000/04/12 12:17:33 wsnyder Exp $ ', "\n";
+    print '$Id: vrename,v 1.8 2000/09/07 17:03:26 wsnyder Exp $ ', "\n";
     exit (1);
 }
 

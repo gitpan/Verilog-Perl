@@ -1,6 +1,7 @@
 COPYING
 Language.pm
 MANIFEST
+MANIFEST.SKIP
 Makefile.PL
 NEWS
 Parse.pm
@@ -8,8 +9,11 @@ Parser.pm
 README
 SigParser.pm
 configure
+readme.texi
 test.pl
-test.v
-test.vrename
+verilog/test.v
+verilog/test.vrename
+verilog/example.v
+verilog/pli.v
+vpm
 vrename
-

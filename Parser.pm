@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm,v 1.5 2000/05/18 14:34:33 wsnyder Exp $
+# $Id: Parser.pm,v 1.7 2000/09/07 17:12:03 wsnyder Exp $
 # Author: Wilson Snyder <wsnyder@world.std.com>
 ######################################################################
 #
@@ -192,7 +192,6 @@ require Exporter;
 
 use strict;
 use vars qw($VERSION $Debug);
-use English;
 use Carp;
 use FileHandle;
 use Verilog::Language;
@@ -203,7 +202,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '1.4';
+$VERSION = '1.6';
 
 #######################################################################
 
@@ -215,7 +214,7 @@ sub new {
     print "$class->new()\n" if $Debug;
 
     my $self = {unreadback => "",	# Text since last callback
-		line => 0,
+		line => 1,
 		incomment => 0,
 		inquote => 0,
 		preprocess => 0,
@@ -301,105 +300,100 @@ sub number {
 
 sub parse {
     # Parse a string
+    # This currently presumes the input is 1 line or longer, but isn't called on a sub-line
     @_ == 2 or croak 'usage: $parser->parse($string)';
     my $self = shift;
     my $text = shift;
 
-    my $line;
-    $self->{line} ++ if ($text eq "\n");	# Foreach will find nothing
-    foreach $line (split /\n/, $text) {
-	# Keep parsing whatever is on this line
-	$self->{line} ++;
-	while ($line) {
-	    print "Lnc $line\n" if ($Debug);
-	    if ($self->{incomment}) {
-		if ($line =~ /\*\//) {
-		    $self->{token_string} .= $PREMATCH . $MATCH;
-		    $line = $POSTMATCH;
+    while ($text ne "") {
+	print "Lnc $text" if ($Debug);
+	if ($text =~ s/^\n//) {
+	    $self->{line}++;
+	    if ($self->{incomment}
+		|| $self->{inquote}) {
+		$self->{token_string} .= "\n";
+	    } else {
+		$self->{unreadback} .= "\n";
+	    }
+	}
+	elsif ($self->{incomment}) {
+	    if ($text =~ s/^( [^\n]*? \*\/ )//x) {
+		$self->{token_string} .= $1;
+		my $token = $self->{token_string};
+		print "GotaCOMMENT $token\n"    if ($Debug);
+		$self->comment ($token);
+		$self->{incomment} = 0;
+	    }
+	    elsif ($text =~ s/^([^\n]*)// ) {
+		$self->{token_string} .= $1;
+	    }
+	}
+	elsif ($self->{inquote}) {
+	    # Check for strings
+	    if ($text =~ s/^([^\n]*?\")//) {
+		$self->{token_string} .= $1;
+		if ($self->{token_string} !~ /\\\"$/) {	# \"
 		    my $token = $self->{token_string};
-		    print "GotaCOMMENT $token\n"    if ($Debug);
-		    $self->comment ($token);
-		    $self->{incomment} = 0;
+		    print "GotaSTRING $token\n"    if ($Debug);
+		    $self->string ($token);
+		    $self->{inquote} = 0;
 		}
-		else {
-		    $self->{token_string} .= $line;
-		    $line = "";
-		}
+	    } elsif ($text =~ s/^([^\n]*)//) {
+		$self->{token_string} .= $1;
 	    }
-	    elsif ($self->{inquote}) {
-		# Check for strings
-		if ($line =~ /\"/) {
-		    $self->{token_string} .= $PREMATCH . $MATCH;
-		    $line = $POSTMATCH;
-		    if ($PREMATCH !~ /\\$/) {
-			my $token = $self->{token_string};
-			print "GotaSTRING $token\n"    if ($Debug);
-			$self->string ($token);
-			$self->{inquote} = 0;
-		    }
-		} else {
-		    $self->{token_string} .= $line;
-		}
+	}
+	else {
+	    # not in comment
+	    # Strip leading whitespace
+	    if ($text =~ s/^(\s+)//) {
+		$self->{unreadback} .= $1;
 	    }
-	    else {
-		# not in comment
-		# Strip leading whitespace
-		if ($line =~ s/^(\s+)//) {
-		    $self->{unreadback} .= $MATCH;
-		}
-		next if ($line eq "");
-		if ($line =~ /^\"/) {
-		    $line = $POSTMATCH;
-		    $self->{token_string} = $MATCH;
-		    $self->{inquote} = 1;
-		}
-		elsif (($line =~ /^[a-zA-Z_\`\$][a-zA-Z0-9_\`\$]*/)
-                       || ($line =~ /^\\\S+\s+/)) { #cseddon - escaped identifiers
-		    my $token = $MATCH;
-		    $line = $POSTMATCH;
-		    if (!$self->{inquote}) {
-			if (Verilog::Language::is_keyword($token)) {
-			    print "GotaKEYWORD $token\n"    if ($Debug);
-			    $self->keyword ($token);
+	    if ($text =~ /^\\n/) {
+		#Fall though
+	    }
+	    elsif ($text =~ s/^\"//) {
+		$self->{token_string} = "\"";
+		$self->{inquote} = 1;
+	    }
+	    elsif (($text =~ s/^([a-zA-Z_\`\$][a-zA-Z0-9_\`\$]*)//)
+		   || ($text =~ s/^(\\\S+\s+)//)) { #cseddon - escaped identifiers
+		my $token = $1;
+		if (!$self->{inquote}) {
+		    if (Verilog::Language::is_keyword($token)) {
+			print "GotaKEYWORD $token\n"    if ($Debug);
+			$self->keyword ($token);
 			} else {
 			    print "GotaSYMBOL $token\n"    if ($Debug);
 			    $self->symbol ($token);
 			}
 		    }
-		}
-		elsif ($line =~ /^\/\*/) {
-		    $self->{token_string} = $MATCH;
-		    $line = $POSTMATCH;
-		    $self->{incomment} = 1;
-		}
-		elsif ($line =~ /^\/\//) {
-		    my $token = $line;
-		    print "GotaCOMMENT $token\n"    if ($Debug);
-		    $self->comment ($token);
-		    $line = "";
-		}
-		elsif (($line =~ /^(&& | \|\| | == | != | <= | >= | << | >> )/x)
-		       || ($line =~ /^([][:;@\(\),.%!=<>?|&{}~^+---\/*\#])/)) {  #]
-		    my $token = $MATCH;
-		    $line = $POSTMATCH;
-		    print "GotaOPERATOR $token\n"    if ($Debug);
-		    $self->operator ($token);
-		}
-		elsif (($line =~ /^([0-9]*'[bhod]\ *[0-9A-FXZa-fxz_?]+)/)    #'
-		    || ($line =~ /^([0-9]+[0-9a-fA-F_]*)/ )) {
-		    my $token = $MATCH;
-		    $line = $POSTMATCH;
-		    print "GotaNUMBER $token\n"    if ($Debug);
-		    $self->number ($token);
-		}
-		else {
-		    if ($line ne "") {
-			$self->{unreadback} .= $line;
-		        carp $self->{line} . ":Unknown symbol, ignoring to eol: $line\n";
-	                $line = "";
-                    }
-		}
-            }
+	    }
+	    elsif ($text =~ s/^\/\*//) {
+		$self->{token_string} = "\/\*";
+		$self->{incomment} = 1;
+	    }
+	    elsif ($text =~ s/^(\/\/[^\n]+)//) {
+		my $token = $1;
+		print "GotaCOMMENT $token\n"    if ($Debug);
+		$self->comment ($token);
+	    }
+	    elsif (($text =~ s/^(&& | \|\| | == | != | <= | >= | << | >> )//x)
+		   || ($text =~ s/^( [][:;@\(\),.%!=<>?|&{}~^+---\/*\#] )//x)) {  #]
+		my $token = $1;
+		print "GotaOPERATOR $token\n"    if ($Debug);
+		$self->operator ($token);
+	    }
+	    elsif (($text =~ s/^([0-9]*'[bhod]\ *[0-9A-FXZa-fxz_?]+)//)    #'
+				 || ($text =~ s/^([0-9]+[0-9a-fA-F_]*)// )) {
+		my $token = $1;
+		print "GotaNUMBER $token\n"    if ($Debug);
+		$self->number ($token);
+	    }
+	    elsif ($text =~ s/^([^\n]+)//) {
+		my $token = $1;
+		$self->{unreadback} .= $token;
+		carp $self->{line} . ":Unknown symbol, ignoring to eol: $token\n";
+	    }
         }
     }
     return $self;

@@ -22,8 +22,24 @@ Description
 the Verilog language.  See `man Verilog::Language' and `man vrename'
 after installation.
 
-   Also included is `vrename', a program for renaming signals, modules,
-and parameters across many verilog files at once.
+   Included is `vrename', a program for renaming signals, modules, and
+parameters across many verilog files at once.
+
+   Also included is `vpm' to convert macros that look like pli calls,
+such as $info, into different Verilog code.  This enables programs like
+Verilint and Synopsys dc_shell to ignore the macros (as they ignore pli
+calls), but have the simulator do something special with them.
+
+   For example:
+
+           $info (0, "Welcome to a VPMed file\n");
+
+   becomes
+
+           ... $write ("[%0t] -I:example.v:0012: Welcome to a VPMed file\n",$time); ...
+
+   where the filename and line number of the message have been added
+along with the timestamp.
 
 Obtaining Distribution
 ======================
@@ -42,6 +58,8 @@ Supported Systems
 
    * sparc-sun-sunos4.1.4
 
+   * i386-linux
+
    It should run on any system with perl.
 
 Installation
@@ -59,5 +77,8 @@ Installation
      documentation.
 
   6. Type `rehash' to make the new `vrename' command visible.
+
+  7. Look at `test.pl' to see how to use `vpm' in your build
+     methodology.
 
 
