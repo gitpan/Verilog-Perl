@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Revision: 1.19 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+#* $Revision: 1.19 $$Date: 2005-05-23 11:24:02 -0400 (Mon, 23 May 2005) $$Author: wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
@@ -38,7 +38,7 @@ extern "C" {
 }
 
 #ifdef open
-# undef open	// Perl 64 bit on solaris has a nasty hack that redefines open
+# undef open	/* Perl 64 bit on solaris has a nasty hack that redefines open */
 #endif
 
 #//**********************************************************************
@@ -195,7 +195,7 @@ int pedantic
 PROTOTYPE: $$$$$
 CODE:
 {
-    if (CLASS) {}  // Prevent unused warning
+    if (CLASS) {}  /* Prevent unused warning */
     VFileLineXs* filelinep = new VFileLineXs(1/*ok,for initial*/);
     VPreprocXs* preprocp = new VPreprocXs(filelinep);
     filelinep->setPreproc(preprocp);
@@ -278,7 +278,7 @@ CODE:
     static string holdline;
     if (!THIS || THIS->isEof()) XSRETURN_UNDEF;
     string lastline = THIS->getline();
-    holdline = lastline;	// Stash it so c_str() doesn't disappear immediately
+    holdline = lastline;	/* Stash it so c_str() doesn't disappear immediately */
     RETVAL = lastline.c_str();
 }
 OUTPUT: RETVAL

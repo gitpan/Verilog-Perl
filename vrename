@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Revision: 1.51 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $
+# $Revision: 1.51 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -36,7 +36,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '2.315';
+$VERSION = '2.316';
 
 ######################################################################
 
@@ -134,7 +134,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Revision: 1.51 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $ ', "\n";
+    print 'Id: $Revision: 1.51 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -142,7 +142,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Revision: 1.51 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $ ', "\n";
+    print '$Revision: 1.51 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $ ', "\n";
     exit (1);
 }
 
@@ -314,7 +314,7 @@ sub crypt_string {
     $filestrg =~ s/(\/[*\/]\s*)[Vv]erilint\s*([0-9]+)\s*off/$magicb Verilint $2 off $magice$1/g;
     $filestrg =~ s/(\/[*\/]\s*)([Ss]ynopsys\s*\S+)/$magicb $2 $magice$1/g;
     $filestrg =~ s/\/\*[\000-\377]*?\*\///g;        # block comments
-    $filestrg =~ s/^\s*\/\/.*\n//g;                 # lines begining with '//'
+    $filestrg =~ s/^\s*\/\/.*\n//g;                 # lines beginning with '//'
     $filestrg =~ s/\/\/[^\"\n]*\n//g;               # inline comments with no '"' chars, saves '"////stuf"'
     $filestrg =~ s/\/\/[^\"\n]*\"[^\"\n]*\".*\n//g; # inline comments with 2 '"' chars, kills '// "stuff"'
     $filestrg =~ s/[ \t]+/ /g;

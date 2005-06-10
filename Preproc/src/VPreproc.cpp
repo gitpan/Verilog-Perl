@@ -1,4 +1,4 @@
-// $Revision: 1.28 $$Date: 2005-02-21 10:11:49 -0500 (Mon, 21 Feb 2005) $$Author: wsnyder $  -*- C++ -*-
+// $Revision: 1.28 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -58,7 +58,7 @@ struct VPreprocImp : public VPreprocOpaque {
     // For defines
     string	m_defName;	///< Define last name being defined
     string	m_defParams;	///< Define parameter list for next expansion
-    stack<bool> m_ifdefStack;	///< Stack of true/false emmiting evaluations
+    stack<bool> m_ifdefStack;	///< Stack of true/false emitting evaluations
     vector<string> m_defArgs;	///< List of define arguments
     unsigned	m_defDepth;	///< How many `defines deep
 
@@ -256,6 +256,10 @@ string VPreprocImp::defineSubst() {
 		    string subst = iter->second;
 		    out += subst;
 		} else {
+		    if (prev == "`") {
+			out += prev;
+			prev = "";
+		    }
 		    out += argName;
 		}
 		argName = "";

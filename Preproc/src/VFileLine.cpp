@@ -1,4 +1,4 @@
-// $Revision: 1.13 $$Date: 2005-02-21 10:11:49 -0500 (Mon, 21 Feb 2005) $$Author: wsnyder $  -*- C++ -*-
+// $Revision: 1.13 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -67,7 +67,7 @@ void VFileLine::error(const string msg) {
     if (msg[msg.length()-1] != '\n') {
 	fprintf (stderr, "%%Error: %s", msg.c_str());
     } else {
-	fprintf (stderr, "%%Error: %s\n", msg.c_str());	// Append newline, as user ommitted it.
+	fprintf (stderr, "%%Error: %s\n", msg.c_str());	// Append newline, as user omitted it.
     }
 }
 

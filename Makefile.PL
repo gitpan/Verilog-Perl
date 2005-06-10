@@ -1,4 +1,4 @@
-# $Revision: 1.34 $$Date: 2005-02-07 07:34:31 -0500 (Mon, 07 Feb 2005) $$Author: wsnyder $
+# $Revision: 1.34 $$Date: 2005-05-26 11:25:04 -0400 (Thu, 26 May 2005) $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -11,7 +11,10 @@ use Carp;
 
 $DOLLAR = '$$';	# Quoted properly for make
 sub MY::postamble {
-"
+    my $out="";
+    $out .= "CCFLAGS += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
+    $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
+    $out .= "
 README: readme.texi
 	-rm -rf \$@
 	makeinfo \$< --output \$@ --no-headers --no-validate
@@ -41,6 +44,7 @@ maintainer-clean: distclean
 	-rm -rf README Makefile
 
 ";
+    return $out;
 }
 
 local $! = undef;

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Revision: 1.74 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $
+# $Revision: 1.74 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $
 ######################################################################
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.315';
+$VERSION = '2.316';
 
 ######################################################################
 # configuration
@@ -146,7 +146,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Revision: 1.74 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $ ';
+    print 'Version: $Revision: 1.74 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -1096,7 +1096,7 @@ sub string {
 
 sub comment {
     # Callback from parser when a comment
-    # *** For speeding things up, this is only invoked when doing vericov
+    # *** To speed things up, this is only invoked when doing vericov
     my ($parser, $token) = @_;
     if (!$Opt_Vericov) {
 	$parser->{unreadback} .= $token;

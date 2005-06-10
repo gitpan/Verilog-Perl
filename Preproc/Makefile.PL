@@ -1,4 +1,4 @@
-# $Revision: 1.11 $$Date: 2005-01-24 10:18:02 -0500 (Mon, 24 Jan 2005) $$Author: wsnyder $
+# $Revision: 1.11 $$Date: 2005-05-26 11:25:04 -0400 (Thu, 26 May 2005) $$Author: wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -19,6 +19,7 @@ sub MY::postamble {
 	$out .= "LD = g++\n";
     }
     $out .= "CCFLAGS += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
+    $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
     $out .= '
 CC = g++
 LEX = flex

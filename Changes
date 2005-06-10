@@ -2,6 +2,12 @@ Revision history for Perl extension Verilog::Language.
 
 The contributors that suggested a given feature are shown in [].
 
+* Verilog::Language 2.316 2005/06/10
+
+****	Fix define substitution with incomplete defines.  [by Ronald Dean Smith]
+
+****	Fix C++ Comments causing Perl compile problems. [Merijn Brand]
+
 * Verilog::Language 2.315 2005/03/16
 
 ****	Support for latest SystemC::Netlist version.
@@ -293,7 +299,7 @@ The contributors that suggested a given feature are shown in [].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: 1.3 $$Date: 2005-03-16 16:33:45 -0500 (Wed, 16 Mar 2005) $$Author: wsnyder $
+$Revision: 1.3 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $
 ----------------------------------------------------------------------
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
