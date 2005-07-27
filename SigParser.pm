@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: 1.55 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $
+# $Revision: 1.55 $$Date: 2005-07-27 09:41:16 -0400 (Wed, 27 Jul 2005) $$Author: wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -136,7 +136,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.316';
+$VERSION = '2.320';
 
 #######################################################################
 
@@ -547,7 +547,7 @@ sub operator {
 sub _non_pp_line {
     my $self = $_[0];
     return ($self->{in_preproc_line} != $self->line()
-	    || $self->{in_preproc_file} != $self->filename());
+	    || $self->{in_preproc_file} ne $self->filename());
 }
 
 ######################################################################

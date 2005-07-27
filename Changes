@@ -2,6 +2,15 @@ Revision history for Perl extension Verilog::Language.
 
 The contributors that suggested a given feature are shown in [].
 
+* Verilog::Language 2.320 2005/07/27
+
+***     Add vrename --cryptall option.
+
+***     Fix Language is_keywords to match V2K language spec. [Mark Grossman]
+	Deleted extern, makefile, supply.  Added ifnone, strength, unsigned.
+
+****	Fix core dump when missing newline in `define.  [David van der bokke]
+
 * Verilog::Language 2.316 2005/06/10
 
 ****	Fix define substitution with incomplete defines.  [by Ronald Dean Smith]
@@ -299,7 +308,7 @@ The contributors that suggested a given feature are shown in [].
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Revision: 1.3 $$Date: 2005-06-10 08:02:01 -0400 (Fri, 10 Jun 2005) $$Author: wsnyder $
+$Revision: 1.3 $$Date: 2005-07-27 09:41:16 -0400 (Wed, 27 Jul 2005) $$Author: wsnyder $
 ----------------------------------------------------------------------
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
