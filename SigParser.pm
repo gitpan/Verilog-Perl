@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Revision: 1.55 $$Date: 2005-07-27 09:41:16 -0400 (Wed, 27 Jul 2005) $$Author: wsnyder $
+# $Id: SigParser.pm 4374 2005-08-03 15:35:42Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -136,7 +136,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.320';
+$VERSION = '2.321';
 
 #######################################################################
 
@@ -251,6 +251,7 @@ sub reset {
     $self->{in_vector} = 0;
     $self->{in_param_assign} = 0;
     $self->{in_ports} = 0;
+    $self->{in_generate} = 0;
     $self->{possibly_in_param_assign} = 0;
     $self->{pin_name} = undef;
 
@@ -288,6 +289,9 @@ sub keyword {
 	@{$self->{last_symbols}} = ();
 	$self->{last_vectors} = "";
     }
+    if ($token eq "generate") {
+        $self->{in_generate}=1;
+    }
     if ($token =~ /^end/) {
 	# Prepare for next command
 	$self->{last_keyword} = $self->{attr_keyword} = "";
@@ -305,6 +309,8 @@ sub keyword {
 	$self->{last_module} = undef;
     } elsif ($token eq "endfunction") {
 	$self->{last_function} = undef;
+    } elsif ($token eq "endgenerate") {
+	$self->{in_generate} = 0;
     }
 }
 
@@ -349,6 +355,13 @@ sub symbol {
 	    @{$self->{last_symbols}} = ();
 	    $self->{last_vectors} = "";
 	}
+    }
+    if ($self->{in_generate} == 1 &&
+	$self->{last_keyword} eq "begin" && 
+        $self->{last_operator} eq ":") {
+      $self->{last_keyword}="";
+      $self->{last_symbols}=();
+      $self->{is_inst_ok} = 1;
     }
 }
 
@@ -530,6 +543,12 @@ sub operator {
 	    $self->{possibly_in_param_assign} = 0;
 	    $self->{param_pre_symbols} = [@{$self->{last_symbols}}];
 	    $self->{last_param} = $self->{last_param} . $token;
+	}
+	elsif ($token eq ")" && 
+	       $self->{in_generate} && 
+	       !$self->{paren_level}) {	 
+          $self->{last_symbols}=();
+	  $self->{is_inst_ok} = 1;
 	}
 	else {
 	    $self->{is_inst_ok} = 0;

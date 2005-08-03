@@ -1,4 +1,4 @@
-// $Revision: 1.3 $$Date: 2005-01-27 11:08:59 -0500 (Thu, 27 Jan 2005) $$Author: wsnyder $
+// $Id: pinorder.v 4305 2005-08-02 13:21:57Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2003 by Wilson Snyder.

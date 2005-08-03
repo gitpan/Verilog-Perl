@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Revision: #11 $$Date: 2005-02-16 08:37:19 -0500 (Wed, 16 Feb 2005) $$Author: wsnyder $
+# $Id: 35_sigparser.t 4305 2005-08-02 13:21:57Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
