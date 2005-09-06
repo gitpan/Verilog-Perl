@@ -3,6 +3,15 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.330 2005/09/06
+
+***	vpm now aliases $error to $uerror, etc, to avoid conflict
+	with SystemVerilog $error function.  [Tad Truex]
+
+***	$uassert_info now uses __message_on. [Vasu Arasanipalai]
+
+****	Fix preprocessor substitution of quoted parameterized defines.
+
 * Verilog::Language 2.321 2005/08/03
 
 ***	Verilog::SigParser now sees cells inside generates.  [by Thomas Ziller]
@@ -313,7 +322,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 4373 2005-08-03 15:33:48Z wsnyder $
+$Id: Changes 5867 2005-09-06 20:30:00Z wsnyder $
 ----------------------------------------------------------------------
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].

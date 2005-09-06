@@ -1,4 +1,4 @@
-// $Id: VPreproc.cpp 4305 2005-08-02 13:21:57Z wsnyder $  -*- C++ -*-
+// $Id: VPreproc.cpp 5846 2005-09-06 18:11:49Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -256,40 +256,35 @@ string VPreprocImp::defineSubst() {
 		    string subst = iter->second;
 		    out += subst;
 		} else {
-		    if (prev == "`") {
-			out += prev;
-			prev = "";
-		    }
 		    out += argName;
 		}
 		argName = "";
 	    }
 	    if (!quote) {
 		// Check for `` only after we've detected end-of-argname
-		if (*cp=='`' && prev=="`") {
-		    prev = "";   // `` means to suppress the ``
+		if (cp[0]=='`' && cp[1]=='`') {
+		    //out += "";   // `` means to suppress the ``
+		    cp++;
 		    continue;
 		}
-		else if (*cp=='"' && prev=="`") {
-		    prev = "";   // `" means to put out a " without enabling quote mode (sort of)
-		    out += '"';
+		else if (cp[0]=='`' && cp[1]=='"') {
+		    out += '"';   // `" means to put out a " without enabling quote mode (sort of)
+		    cp++;
 		    continue;
 		}
-		else if (*cp=='\\' && prev=="`") {
-		    prev = "";   // `\ means to put out a backslash
-		    out += '\\';
+		else if (cp[0]=='`' && cp[1]=='\\') {
+		    out += '\\';   // `\ means to put out a backslash
+		    cp++;
 		    continue;
 		}
-		else if (*cp=='`') {
-		    prev = *cp;
-		    continue;
-		}
+	    }
+	    if (cp[0]=='\\' && cp[1]) {
+		out += cp[0]; // \{any} Put out literal next character
+		out += cp[1];
+		cp++;
+		continue;
 	    }
 	    if (*cp=='"') quote=!quote;
-	    if (prev!="") {
-		out += prev;
-		prev="";
-	    }
 	    if (*cp) out += *cp;
 	}
     }

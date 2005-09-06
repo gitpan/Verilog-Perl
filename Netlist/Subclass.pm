@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Subclass.pm 4374 2005-08-03 15:35:42Z wsnyder $
+# $Id: Subclass.pm 5867 2005-09-06 20:30:00Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -17,7 +17,7 @@
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '2.321';
+$VERSION = '2.330';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;

@@ -36,7 +36,7 @@ calls), but have the simulator do something special with them.
 
    For example:
 
-           $info (0, "Welcome to a VPMed file\n");
+           $uinfo (0, "Welcome to a VPMed file\n");
 
    becomes
 
