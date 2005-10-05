@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Net.pm 5867 2005-09-06 20:30:00Z wsnyder $
+# $Id: Net.pm 7020 2005-10-05 15:52:08Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.330';
+$VERSION = '2.331';
 use strict;
 
 ######################################################################
@@ -43,6 +43,7 @@ structs('new',
 	   port		=> '$', #'	# Reference to port connected to
 	   msb		=> '$', #'	# MSB of signal (if known)
 	   lsb		=> '$', #'	# LSB of signal (if known)
+	   stored_lsb	=> '$', #'	# Bit number of signal stored in bit 0  (generally lsb)
 	   _used_in	=> '$', #'	# Driver count onto signal
 	   _used_out	=> '$', #'	# Receiver count on signal
 	   _used_inout	=> '$', #'	# Bidirect count on signal
@@ -57,6 +58,8 @@ structs('new',
 sub _used_in_inc { $_[0]->_used_in(1+($_[0]->_used_in()||0)); }
 sub _used_out_inc { $_[0]->_used_out(1+($_[0]->_used_out()||0)); }
 sub _used_inout_inc { $_[0]->_used_inout(1+($_[0]->_used_inout()||0)); }
+sub stored_lsb { $_[0]->SUPER::stored_lsb || $_[0]->lsb; }
+
 sub width {
     my $self = shift;
     # Return bit width (if known)

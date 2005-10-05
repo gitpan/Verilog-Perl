@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Subclass.pm 5867 2005-09-06 20:30:00Z wsnyder $
+# $Id: Subclass.pm 7020 2005-10-05 15:52:08Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -17,7 +17,7 @@
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '2.330';
+$VERSION = '2.331';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;
@@ -35,6 +35,11 @@ $Warnings = $Errors = 0;
 
 ######################################################################
 #### Member functions
+
+sub fileline {
+    my $self = shift;
+    return ($self->filename||"").":".($self->lineno||"");
+}
 
 ######################################################################
 #### Error Handling

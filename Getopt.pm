@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm 5867 2005-09-06 20:30:00Z wsnyder $
+# $Id: Getopt.pm 7020 2005-10-05 15:52:08Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.330';
+$VERSION = '2.331';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance

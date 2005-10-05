@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm 5867 2005-09-06 20:30:00Z wsnyder $
+# $Id: vpm 7020 2005-10-05 15:52:08Z wsnyder $
 ######################################################################
 #
 # Copyright 2000-2005 by Wilson Snyder.  This program is free software;
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.330';
+$VERSION = '2.331';
 
 ######################################################################
 # configuration
@@ -157,7 +157,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm 5867 2005-09-06 20:30:00Z wsnyder $ ';
+    print 'Version: $Id: vpm 7020 2005-10-05 15:52:08Z wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -410,8 +410,9 @@ sub message {
 
     $params[1] = convert_concat_string($params[1]);
     unless ($char =~ /^-I/i) {
-	if ($params[1] =~ s/\"\s*$/ /) {
+	if ($params[1] =~ s/\s*\"\s*$//) {
 	    # For a well-formed message, $params[1] now ends in "\\n".
+	    $params[1] .= "\\n" if $params[1] !~ /\\n$/;
 	    $params[1] = $params[1]."${char}: In %m\\n\"";
 	}
     }

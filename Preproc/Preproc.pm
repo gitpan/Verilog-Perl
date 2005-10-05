@@ -1,4 +1,4 @@
-#$Id: Preproc.pm 4305 2005-08-02 13:21:57Z wsnyder $
+#$Id: Preproc.pm 6589 2005-09-23 13:39:00Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2005 by Wilson Snyder.  This program is free software;
@@ -98,6 +98,11 @@ sub remove_defines {
 	$sym = $val if defined $val;
     }
     return $sym;
+}
+
+sub fileline {
+    my $self = shift;
+    return ($self->filename||"").":".($self->lineno||"");
 }
 
 ######################################################################

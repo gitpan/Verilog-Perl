@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm 5867 2005-09-06 20:30:00Z wsnyder $
+# $Id: Parser.pm 7020 2005-10-05 15:52:08Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -218,7 +218,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.330';
+$VERSION = '2.331';
 
 #######################################################################
 
@@ -273,6 +273,11 @@ sub filename {
 	$self->{filename} = shift;
     }
     return $self->{filename};
+}
+
+sub fileline {
+    my $self = shift;
+    return ($self->filename||"").":".($self->lineno||"");
 }
 
 sub reset {
@@ -438,6 +443,10 @@ sub parse {
 		my $token = $1;
 		print "GotaNUMBER $token\n"    if ($Debug);
 		$self->number ($token);
+	    }
+	    elsif ($text =~ s/^(\\)$//) {
+		my $token = $1;
+		$self->{unreadback} .= $token;
 	    }
 	    elsif ($text =~ s/^([^\n]+)//) {
 		my $token = $1;

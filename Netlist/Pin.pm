@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Pin.pm 5867 2005-09-06 20:30:00Z wsnyder $
+# $Id: Pin.pm 7020 2005-10-05 15:52:08Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.330';
+$VERSION = '2.331';
 use strict;
 
 structs('new',
@@ -99,6 +99,11 @@ sub _link {
     }
 }
 
+sub type_match {
+    my $self = shift;
+    return $self->net->type eq $self->port->type;
+}
+
 sub lint {
     my $self = shift;
     if (!$self->net && !$self->netlist->{implicit_wires_ok}) {
@@ -110,7 +115,7 @@ sub lint {
     if ($self->port && $self->net) {
 	my $nettype = $self->net->type;
 	my $porttype = $self->port->type;
-	if ($nettype ne $porttype) {
+	if (!$self->type_match) {
 	    $self->error("Port pin type $porttype != Net type $nettype: "
 			 ,$self->name,"\n");
 	}

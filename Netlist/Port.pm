@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Port.pm 5867 2005-09-06 20:30:00Z wsnyder $
+# $Id: Port.pm 7020 2005-10-05 15:52:08Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.330';
+$VERSION = '2.331';
 use strict;
 
 structs('new',
@@ -42,6 +42,8 @@ structs('new',
 	   # below only after autos()
 	   sp_autocreated	=> '$', #'	# Created by /*AUTOINOUT*/
 	   ]);
+
+sub netlist { return $_[0]->module->netlist; }
 
 sub _link {
     my $self = shift;

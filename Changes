@@ -3,6 +3,10 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.331 2005/10/05
+
+***     Added vhier example program. [Vasu Arasanipalai]
+
 * Verilog::Language 2.330 2005/09/06
 
 ***	vpm now aliases $error to $uerror, etc, to avoid conflict
@@ -322,7 +326,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 5867 2005-09-06 20:30:00Z wsnyder $
+$Id: Changes 7020 2005-10-05 15:52:08Z wsnyder $
 ----------------------------------------------------------------------
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
