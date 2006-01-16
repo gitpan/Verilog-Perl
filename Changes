@@ -3,6 +3,17 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.340 2006/01/16
+
+***     Added vpm --minimum switch.
+
+****	Added Verilog::Language::language_standard to allow setting
+	which language standard (1995,2001,SystemVerilog) is used for keywords.
+
+****	Fix vhier -o option. [Sean Nazareth]
+
+****	Add vhier --modules and --missing-modules options. [Sean Nazareth]
+
 * Verilog::Language 2.331 2005/10/05
 
 ***     Added vhier example program. [Vasu Arasanipalai]
@@ -326,12 +337,12 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 7020 2005-10-05 15:52:08Z wsnyder $
+$Id: Changes 11992 2006-01-16 18:59:58Z wsnyder $
 ----------------------------------------------------------------------
 
 This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
-Copyright 2001-2005 by Wilson Snyder.  This program is free software;
+Copyright 2001-2006 by Wilson Snyder.  This program is free software;
 you can redistribute it and/or modify it under the terms of either the GNU
 General Public License or the Perl Artistic License.
 

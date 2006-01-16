@@ -1,7 +1,7 @@
-# $Id: Makefile.PL 6617 2005-09-23 20:55:51Z wsnyder $
+# $Id: Makefile.PL 11992 2006-01-16 18:59:58Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
-# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 

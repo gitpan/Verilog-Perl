@@ -1,6 +1,6 @@
 // DESCRIPTION: vpm: Example top verilog file for vpm program
 // This file ONLY is placed into the Public Domain, for any use,
-// without warranty, 2000-2005 by Wilson Snyder.
+// without warranty, 2000-2006 by Wilson Snyder.
 
 `timescale 1ns/1ns
 
@@ -12,6 +12,10 @@ module example;
 
    initial begin
       $uinfo (0, "Welcome to a VPMed file\n");
+      //
+      $uinfo (1, "Printed only at debug level %0d\n",1);
+      $uinfo (9, "Printed only at debug level %0d\n",9);
+      //
       i=0;
       $uassert (1==1, "Why doesn't 1==1??\n");
       $uassert (/*comm

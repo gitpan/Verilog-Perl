@@ -1,15 +1,15 @@
 #!/usr/bin/perl -w
-# $Id: 10_keywords.t 4305 2005-08-02 13:21:57Z wsnyder $
+# $Id: 10_keywords.t 11992 2006-01-16 18:59:58Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
 use strict;
 use Test;
 
-BEGIN { plan tests => 19 }
+BEGIN { plan tests => 25 }
 BEGIN { require "t/test_utils.pl"; }
 
 use Verilog::Language;
@@ -18,6 +18,13 @@ ok(1);
 ok (Verilog::Language::is_keyword("input"));
 ok (!Verilog::Language::is_keyword("not_input"));
 ok (Verilog::Language::is_compdirect("`define"));
+
+ok (Verilog::Language::language_standard() eq 'sv31');
+ok (Verilog::Language::is_keyword("do"));
+ok (Verilog::Language::language_standard(2001) eq 2001);
+ok (Verilog::Language::is_keyword("generate"));
+ok (Verilog::Language::language_standard(1995) eq 1995);
+ok (!Verilog::Language::is_keyword("generate"));
 
 ok (Verilog::Language::number_value("5'h13")==19);
 ok (Verilog::Language::number_value("5'd13")==13);

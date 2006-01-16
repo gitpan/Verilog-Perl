@@ -1,7 +1,7 @@
-// $Id: VPreproc.cpp 6025 2005-09-09 14:58:21Z wsnyder $  -*- C++ -*-
+// $Id: VPreproc.cpp 11992 2006-01-16 18:59:58Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2005 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2006 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // General Public License or the Perl Artistic License.
 //

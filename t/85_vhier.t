@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
-# $Id: 85_vhier.t 7019 2005-10-05 15:50:47Z wsnyder $
+# $Id: 85_vhier.t 11992 2006-01-16 18:59:58Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2005 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
@@ -24,7 +24,7 @@ sub vhier {
     my $flags = shift;
 
     my $out = "test_dir/vhier.v";
-    run_system ("${PERL} vhier ${flags} --nomissing -y verilog v_hier_top.v > $out");
+    run_system ("${PERL} vhier ${flags} --nomissing -y verilog v_hier_top.v -o $out");
     ok(-r $out);
     #run_system ("/bin/cp $out $checkname");
     ok(files_identical ($checkname, $out));
