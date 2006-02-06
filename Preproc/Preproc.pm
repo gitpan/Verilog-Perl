@@ -1,4 +1,4 @@
-#$Id: Preproc.pm 11992 2006-01-16 18:59:58Z wsnyder $
+#$Id: Preproc.pm 13405 2006-02-06 16:48:10Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2006 by Wilson Snyder.  This program is free software;
@@ -42,6 +42,7 @@ sub new {
     bless $self, $class;
     # Sets $self->{_cthis}
     $self->{keep_comments} = 2 if ($self->{keep_comments} eq 'sub');
+    $self->{keep_comments} = 3 if ($self->{keep_comments} eq 'expand'); #TBD
     $self->_new(
 		$self,
 		$self->{keep_comments},

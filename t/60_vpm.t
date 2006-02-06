@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 60_vpm.t 11992 2006-01-16 18:59:58Z wsnyder $
+# $Id: 60_vpm.t 12136 2006-01-18 14:22:38Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -32,7 +32,7 @@ chdir 'test_dir';
 if ($ENV{VCS_HOME} && -r "$ENV{VCS_HOME}/bin/vcs") {
     run_system (# We use VCS, insert your simulator here
 		"$ENV{VCS_HOME}/bin/vcs"
-		# vpm uses `pli to point to the hiearchy of the pli module
+		# vpm uses `pli to point to the hierarchy of the pli module
 		." +define+pli=pli"
 		# vpm uses `__message_on to point to the message on variable
 		." +define+__message_on=pli.message_on"
@@ -51,7 +51,7 @@ if ($ENV{VCS_HOME} && -r "$ENV{VCS_HOME}/bin/vcs") {
 elsif ($ENV{NC_ROOT} && -d "$ENV{NC_ROOT}/tools") {
     run_system ("ncverilog"
 		." -q"
-		# vpm uses `pli to point to the hiearchy of the pli module
+		# vpm uses `pli to point to the hierarchy of the pli module
 		." +define+pli=pli"
 		# vpm uses `__message_on to point to the message on variable
 		." +define+__message_on=pli.message_on"

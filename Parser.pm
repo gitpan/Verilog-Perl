@@ -1,5 +1,5 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm 11992 2006-01-16 18:59:58Z wsnyder $
+# $Id: Parser.pm 13414 2006-02-06 18:19:45Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -218,7 +218,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.340';
+$VERSION = '2.341';
 
 #######################################################################
 
@@ -439,7 +439,8 @@ sub parse {
 		$self->operator ($token);
 	    }
 	    elsif (($text =~ s/^([0-9]*'\ *[Ss]?\ *[BHODbhod]\ *[0-9A-FXZa-fxz_?]+)//)    #'
-				 || ($text =~ s/^([0-9]+[0-9a-fA-F_]*)// )) {
+		   || ($text =~ s/^([0-9]+[0-9a-fA-F_]*)// )
+		   || ($text =~ s/^('\ *[01xXzZ])//) ) { #' SystemVerilog
 		my $token = $1;
 		print "GotaNUMBER $token\n"    if ($Debug);
 		$self->number ($token);

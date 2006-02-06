@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: vhier 11992 2006-01-16 18:59:58Z wsnyder $
+# $Id: vhier 12136 2006-01-18 14:22:38Z wsnyder $
 ######################################################################
 #
 # Copyright 2005-2006 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -83,7 +83,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vhier 11992 2006-01-16 18:59:58Z wsnyder $ '."\n";
+    print 'Version: $Id: vhier 12136 2006-01-18 14:22:38Z wsnyder $ '."\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -246,7 +246,7 @@ __END__
 
 =head1 NAME
 
-vhier - Return all files in a verilog hiearchy using Verilog::Netlist
+vhier - Return all files in a verilog hierarchy using Verilog::Netlist
 
 =head1 SYNOPSIS
 

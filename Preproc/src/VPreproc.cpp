@@ -1,4 +1,4 @@
-// $Id: VPreproc.cpp 11992 2006-01-16 18:59:58Z wsnyder $  -*- C++ -*-
+// $Id: VPreproc.cpp 13405 2006-02-06 16:48:10Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -194,7 +194,7 @@ string VPreprocImp::defineSubst() {
     // and would make recursive definitions and parameter handling nasty.
     //
     // Note we parse the definition parameters and value here.  If a
-    // parameterized define is used many, many times, we could cache the
+    // parametrized define is used many, many times, we could cache the
     // parsed result.
     if (debug()) {
 	cout<<"defineSubstIn  `"<<m_defName<<" "<<m_defParams<<endl;
@@ -414,7 +414,8 @@ int VPreprocImp::getToken() {
 	if (tok==VP_WHITE) return (tok);
 	if (tok==VP_COMMENT) {
 	    if (!m_off && m_lexp->m_keepComments) {
-		if (m_lexp->m_keepComments == KEEPCMT_SUB) {
+		if (m_lexp->m_keepComments == KEEPCMT_SUB
+		    || m_lexp->m_keepComments == KEEPCMT_EXP) {
 		    string rtn; rtn.assign(yytext,yyleng);
 		    m_preprocp->comment(rtn);
 		} else {
@@ -653,7 +654,7 @@ int VPreprocImp::getToken() {
 		    goto next_tok;
 		}
 		else {  // Found, with parameters
-		    if (debug()) cout<<"Defref `"<<name<<" => parameterized"<<endl;
+		    if (debug()) cout<<"Defref `"<<name<<" => parametrized"<<endl;
 		    m_defName = name;
 		    m_defParams = params;
 		    m_state = ps_DEFPAREN;  m_stateFor = tok;

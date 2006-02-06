@@ -1,4 +1,4 @@
-// $Id: VPreprocLex.h 11992 2006-01-16 18:59:58Z wsnyder $  -*- C++ -*-
+// $Id: VPreprocLex.h 13405 2006-02-06 16:48:10Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -92,6 +92,7 @@ void yy_delete_buffer( YY_BUFFER_STATE b );
 //======================================================================
 
 #define KEEPCMT_SUB 2
+#define KEEPCMT_EXP 3
 
 //======================================================================
 /// Class entry for each per-lexter state
