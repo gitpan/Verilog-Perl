@@ -1,4 +1,0 @@
-#!/bin/sh
-# $Id: configure 4305 2005-08-02 13:21:57Z wsnyder $
-# DESCRIPTION: Perl ExtUtils: Invoke 'perl Makefile.PL' for those more familiar with GNU tools
-perl Makefile.PL

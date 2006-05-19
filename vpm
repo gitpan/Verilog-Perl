@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm 13414 2006-02-06 18:19:45Z wsnyder $
+# $Id: vpm 20445 2006-05-19 13:50:59Z wsnyder $
 ######################################################################
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.341';
+$VERSION = '2.350';
 
 ######################################################################
 # configuration
@@ -101,13 +101,15 @@ my $Last_Vericov = 0;	# Last run's Opt_Vericov
 my $Last_Chiponly = 0;	# Last run's Opt_Chiponly
 my $Opt_Minimum;	# Include `__message_minimum
 my @Opt_Exclude;
+my $Opt_Timeformat_Units = undef;
+my $Opt_Timeformat_Precision = 0;
 
 my $Total_Files = 0;
 my @files = ();
 my @instance_tests_list = ();
 
 my $Prog_Mtime = 0;	# Time program last changed, so we bag cache on change
-(-r "$RealBin/vpm") or die "Where'd my source code go?";
+(-r "$RealBin/vpm") or die "%Error: Where'd the vpm source code go?";
 $Prog_Mtime = (stat("$RealBin/vpm"))[9];
 
 autoflush STDOUT 1;
@@ -116,19 +118,21 @@ $Opt = new Verilog::Getopt();
 @ARGV = $Opt->parameter(@ARGV);	# Strip -y, +incdir+, etc
 
 if (! GetOptions (
-		  "help"	=> \&usage,
-		  "debug"	=> \&debug,
+		  "-o=s"	=> \$output_dirname,
 		  "allfiles!"	=> \$Opt_AllFiles,
-		  "quiet!"	=> \$Opt_Quiet,
+		  "chiponly!"	=> \$Opt_Chiponly,	# For makeesim only
 		  "date!"	=> \$Opt_Date,
+		  "debug"	=> \&debug,
+		  "exclude=s"	=> sub {shift; push @Opt_Exclude, shift;},
+		  "help"	=> \&usage,
+		  "minimum!"	=> \$Opt_Minimum,
+		  "nopli!"	=> \$Opt_NoPli,
+		  "quiet!"	=> \$Opt_Quiet,
+		  "stop!"	=> \$Opt_Stop,
+		  "timeformat-precision=s" => \$Opt_Timeformat_Precision,
+		  "timeformat-units=s"	=> \$Opt_Timeformat_Units,
 		  "vericov!"	=> \$Opt_Vericov,
 		  "verilator!"	=> \$Opt_Verilator,
-		  "stop!"	=> \$Opt_Stop,
-		  "chiponly!"	=> \$Opt_Chiponly,	# For makeesim only
-		  "-o=s"	=> \$output_dirname,
-		  "exclude=s"	=> sub {shift; push @Opt_Exclude, shift;},
-		  "nopli!"	=> \$Opt_NoPli,
-		  "minimum!"	=> \$Opt_Minimum,
 		  "<>"		=> \&parameter,
 		  )) {
     usage();
@@ -159,7 +163,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm 13414 2006-02-06 18:19:45Z wsnyder $ ';
+    print 'Version: $Id: vpm 20445 2006-05-19 13:50:59Z wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -248,7 +252,7 @@ sub assert_req_ack {
     
     # Output it
     message_header();
-    sendout("if (`__message_on) begin ");
+    sendout("if (`__message_on) begin ");  # Need to wait till after reset, so FSM doesn't start
     sendout("casez({($busy),($req),($ack)}) ");
     sendout(" 3'b000: ;");
     sendout(" 3'b010: $busy<=1'b1;");
@@ -271,7 +275,7 @@ sub assert_req_ack {
 	for (my $n=0; $n<=$#params; $n++) {
 	    sendout(" $dholds[$n] <= ^($params[$n]);");
 	}
-	sendout(" end");
+	sendout(" end ");
     }
     sendout(" end ");
 
@@ -376,11 +380,14 @@ sub message_write {
 	$task = ($Opt_Stop ? '$stop;' : "`pli.errors = `pli.errors+1;");
     } elsif ($char eq "%%W") {
 	$task = ($Opt_Stop ? '$stop;' : "`pli.warnings = `pli.warnings+1;");
-    } else { die "Unknown message character class '$char'\n"; }
+    } else { die "%Error: Unknown message character class '$char'\n"; }
 
     my $ids = "";
     my $idm = "";
-    sendout ("begin \$write (\"[%0t] ${char}:$ids${lineinfo} ");
+    sendout ("begin");
+    sendout (" \$timeformat($Opt_Timeformat_Units, $Opt_Timeformat_Precision,\"\",20);")
+	if defined $Opt_Timeformat_Units;
+    sendout (" \$write (\"[%0t] ${char}:$ids${lineinfo} ");
     my $par = $params[2];
     $par =~ s/^\s*\"//;
     sendout ("$par,\$time$idm$otherargs");
@@ -649,7 +656,7 @@ sub vpm_process {
 	    $insert .= "$type $sym; initial $sym = $value;";
 	}
 	if ($insert) {
-	    $Sendout =~ s%/\*vpm symbols $mod\*/%/*vpm*/$insert/*vpm*/%
+	    $Sendout =~ s%/\*vpm symbols $mod\*/%/*vpm*/$insert/*vpm*/%g
 		or die "vpm %Error: $filename: Couldn't find symbol insertion point in $mod\n";
 	}
     }
@@ -1229,6 +1236,17 @@ Suppress messages about what files are being preprocessed.
 By default, $error and $warn insert a $stop statement.  With --nostop, this
 is replaced by incrementing a variable, which may then be used to
 conditionally halt simulation.
+
+=item timeformat-units I<units>
+
+If specified, include Verilog $timeformat calls before all messages.  Use
+the provided argument as the units.  Units is in powers of 10, so -9
+indicates to use nanoseconds.
+
+=item timeformat-precision I<prec>
+
+When using --timeformat-units, use this as the precision value, the number
+of digits after the decimal point.  Defaults to zero.
 
 =item --vericov
 

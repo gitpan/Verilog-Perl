@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 13414 2006-02-06 18:19:45Z wsnyder $
+# $Id: SigParser.pm 20445 2006-05-19 13:50:59Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -136,7 +136,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.341';
+$VERSION = '2.350';
 
 #######################################################################
 
@@ -494,7 +494,9 @@ sub operator {
 			    || $lkw eq "tri0" || $lkw eq "tri1"
 			    || $lkw eq "supply0" || $lkw eq "supply1")
 			)
-		       && $self->{is_signal_ok}) {
+		       && $self->{is_signal_ok}
+		       && !$self->{last_task}
+		       && !$self->{last_function}) {
 		    my $sig;
 		    foreach $sig (@{$self->{last_symbols}}) {
 			my $vec = "";

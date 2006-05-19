@@ -65,6 +65,9 @@ The latest version is available at `http://www.perl.org/CPAN/'
    Download the latest package from that site, and decompress.  `gunzip
 Verilog-Perl_version.tar.gz ; tar xvf Verilog-Perl_version.tar'
 
+   You may also want to try the AUTO features present in
+L<http://www.veripool.com/verilog-mode.html>Verilog-Mode.
+
 1.5 Supported Systems
 =====================
 

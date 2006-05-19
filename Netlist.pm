@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm 13414 2006-02-06 18:19:45Z wsnyder $
+# $Id: Netlist.pm 20445 2006-05-19 13:50:59Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.341';
+$VERSION = '2.350';
 
 ######################################################################
 #### Error Handling
@@ -486,5 +486,7 @@ L<Verilog::Netlist::Net>,
 L<Verilog::Netlist::Pin>,
 L<Verilog::Netlist::Port>,
 L<Verilog::Netlist::Subclass>
+
+And the L<http://www.veripool.com/verilog-mode.html>Verilog-Mode package for Emacs.
 
 =cut

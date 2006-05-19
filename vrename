@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename 13414 2006-02-06 18:19:45Z wsnyder $
+# $Id: vrename 20445 2006-05-19 13:50:59Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -36,7 +36,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Crypt_All $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '2.341';
+$VERSION = '2.350';
 
 ######################################################################
 
@@ -137,7 +137,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename 13414 2006-02-06 18:19:45Z wsnyder $ ', "\n";
+    print 'Id: $Id: vrename 20445 2006-05-19 13:50:59Z wsnyder $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -145,7 +145,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename 13414 2006-02-06 18:19:45Z wsnyder $ ', "\n";
+    print '$Id: vrename 20445 2006-05-19 13:50:59Z wsnyder $ ', "\n";
     exit (1);
 }
 
@@ -157,7 +157,7 @@ sub debug {
 sub parameter {
     my $param = shift;
     push @Files, $param;
-    (-r $param) or die "Can't open $param";
+    (-r $param) or die "%Error: Can't open $param";
 }
 
 ######################################################################
@@ -304,7 +304,7 @@ sub changes_read {
 	    # ignore
 	}
 	else {
-	    die "$filename $.: Can't parse \"$line\"\n";
+	    die "%Error: $filename $.: Can't parse \"$line\"\n";
 	}
     }
 
@@ -423,7 +423,7 @@ sub verilog_change_sig {
 
     # Read in the whole file in a swath
     local $/ = undef;
-    open (VFILE, "<$filename") or die "Can't read $filename.";
+    open (VFILE, "<$filename") or die "%Error: Can't read $filename.";
     my $filestrg = <VFILE>;
     close VFILE;
 

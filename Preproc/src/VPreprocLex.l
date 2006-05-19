@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Id: VPreprocLex.l 11992 2006-01-16 18:59:58Z wsnyder $
+/* $Id: VPreprocLex.l 15247 2006-03-04 17:33:38Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 
@@ -109,7 +109,7 @@ symb		[a-zA-Z_][a-zA-Z0-9_$]*
 <DEFMODE>[^\/\*\n\m\\]+	|
 <DEFMODE>[\\][^\n]	|
 <DEFMODE>.		{ appendDefValue(yytext,yyleng); }
-<DEFMODE>[\\]\n		{ linenoInc(); appendDefValue(" ",1); }
+<DEFMODE>[\\]\n		{ linenoInc(); appendDefValue("\n",1); }
 
 	/* Define arguments */
 <ARGMODE>"/*"		{ yy_push_state(CMTMODE); yymore(); }

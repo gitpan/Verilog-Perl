@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 13414 2006-02-06 18:19:45Z wsnyder $
+# $Id: Language.pm 20445 2006-05-19 13:50:59Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -109,6 +109,8 @@ L<Verilog::Parser>,
 L<Verilog::ParseSig>, 
 L<Verilog::Getopt>
 
+And the L<http://www.veripool.com/verilog-mode.html>Verilog-Mode package for Emacs.
+
 =cut
 ######################################################################
 
@@ -123,7 +125,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.341';
+$VERSION = '2.350';
 
 ######################################################################
 #### Internal Variables
