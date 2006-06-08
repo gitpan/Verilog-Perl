@@ -1,4 +1,4 @@
-#$Id: Preproc.pm 13405 2006-02-06 16:48:10Z wsnyder $
+#$Id: Preproc.pm 21533 2006-06-08 14:57:34Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2006 by Wilson Snyder.  This program is free software;
@@ -335,7 +335,8 @@ These are useful for error macros, similar to assert() in C++.
 
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
 Copyright 2000-2006 by Wilson Snyder.  This package is free software; you

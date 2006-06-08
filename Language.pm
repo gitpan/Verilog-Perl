@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 20445 2006-05-19 13:50:59Z wsnyder $
+# $Id: Language.pm 21534 2006-06-08 15:02:06Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -92,7 +92,8 @@ strings.  Newlines will be preserved in this process.
 
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
 Copyright 2000-2006 by Wilson Snyder.  This package is free software; you
@@ -125,7 +126,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.350';
+$VERSION = '2.351';
 
 ######################################################################
 #### Internal Variables

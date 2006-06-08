@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm 20445 2006-05-19 13:50:59Z wsnyder $
+# $Id: Getopt.pm 21534 2006-06-08 15:02:06Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.350';
+$VERSION = '2.351';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance
@@ -356,14 +356,15 @@ sub file_path {
     # Check each search path
     # We use both the incdir and moduledir.  This isn't strictly correct,
     # but it's fairly silly to have to specify both all of the time.
-    my %checked = ();
+    my %checked_dir = ();
+    my %checked_file = ();
     foreach my $dir (@{$self->incdir()}, @{$self->module_dir()}) {
-	next if $checked{$dir}; $checked{$dir}=1;  # -r can be quite slow
+	next if $checked_dir{$dir}; $checked_dir{$dir}=1;  # -r can be quite slow
 	# Check each postfix added to the file
 	foreach my $postfix ("", @{$self->{libext}}) {
 	    my $found = "$dir/$filename$postfix";
-	    next if $checked{$found}; $checked{$found}=1;  # -r can be quite slow
-	    if (-r $found && !-d $filename) {
+	    next if $checked_file{$found}; $checked_file{$found}=1;  # -r can be quite slow
+	    if (-r $found && !-d $found) {
 		$self->{_file_path_cache}{$filename} = $found;
 		$self->depend_files($found);
 		return $found;
@@ -631,7 +632,8 @@ function may also be called outside parsing to erase a predefined value.
 
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
 Copyright 2000-2006 by Wilson Snyder.  This package is free software; you

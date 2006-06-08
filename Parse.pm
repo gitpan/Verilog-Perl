@@ -1,5 +1,5 @@
 # Verilog::Parse.pm -- Verilog preprocessing
-# $Id: Parse.pm 20445 2006-05-19 13:50:59Z wsnyder $
+# $Id: Parse.pm 21534 2006-06-08 15:02:06Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -118,7 +118,8 @@ that aren't covered.
 
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
 Copyright 2000-2006 by Wilson Snyder.  This package is free software; you
@@ -157,7 +158,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Verilog::Parse::debug = 0;		# for debugging
 
-$VERSION = '2.350';
+$VERSION = '2.351';
 
 #######################################################################
 

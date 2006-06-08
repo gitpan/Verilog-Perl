@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm 20445 2006-05-19 13:50:59Z wsnyder $
+# $Id: vpm 21534 2006-06-08 15:02:06Z wsnyder $
 ######################################################################
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.350';
+$VERSION = '2.351';
 
 ######################################################################
 # configuration
@@ -163,7 +163,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm 20445 2006-05-19 13:50:59Z wsnyder $ ';
+    print 'Version: $Id: vpm 21534 2006-06-08 15:02:06Z wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -1322,7 +1322,8 @@ Report a warning message in standard form.
 
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
 Copyright 2000-2006 by Wilson Snyder.  This package is free software; you

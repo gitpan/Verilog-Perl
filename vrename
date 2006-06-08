@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename 20445 2006-05-19 13:50:59Z wsnyder $
+# $Id: vrename 21534 2006-06-08 15:02:06Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -36,7 +36,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Crypt_All $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '2.350';
+$VERSION = '2.351';
 
 ######################################################################
 
@@ -137,7 +137,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename 20445 2006-05-19 13:50:59Z wsnyder $ ', "\n";
+    print 'Id: $Id: vrename 21534 2006-06-08 15:02:06Z wsnyder $ ', "\n";
     $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
     pod2text($0);
     exit (1);
@@ -145,7 +145,7 @@ sub usage {
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename 20445 2006-05-19 13:50:59Z wsnyder $ ', "\n";
+    print '$Id: vrename 21534 2006-06-08 15:02:06Z wsnyder $ ', "\n";
     exit (1);
 }
 
@@ -684,7 +684,8 @@ Include a cross reference of where the signals are used.
 
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
 Copyright 2000-2006 by Wilson Snyder.  This package is free software; you

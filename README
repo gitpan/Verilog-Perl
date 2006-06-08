@@ -60,7 +60,10 @@ that is part of Verilator.  See
 1.4 Obtaining Distribution
 ==========================
 
-The latest version is available at `http://www.perl.org/CPAN/'
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog
+EDA software tool suite.  The latest version is available from
+`http://www.perl.org/CPAN/', and from
+`http://www.veripool.com/verilog-perl.html'.
 
    Download the latest package from that site, and decompress.  `gunzip
 Verilog-Perl_version.tar.gz ; tar xvf Verilog-Perl_version.tar'

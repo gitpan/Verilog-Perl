@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Module.pm 20445 2006-05-19 13:50:59Z wsnyder $
+# $Id: Module.pm 21534 2006-06-08 15:02:06Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.350';
+$VERSION = '2.351';
 use strict;
 
 structs('new',
@@ -372,7 +372,8 @@ that must be joined together to form the final text string.
 
 =head1 DISTRIBUTION
 
-The latest version is available from CPAN and from
+Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
 Copyright 2000-2006 by Wilson Snyder.  This package is free software; you
