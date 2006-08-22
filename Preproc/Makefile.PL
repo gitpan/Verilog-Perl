@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 11992 2006-01-16 18:59:58Z wsnyder $
+# $Id: Makefile.PL 24425 2006-08-21 20:34:46Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -17,6 +17,11 @@ sub MY::postamble {
 	# Sun: Requires g++ LD
 	# Linux: Either way
 	$out .= "LD = g++\n";
+    }
+    if ($Config{osname} =~ /cygwin/i || $Config{archname} =~ /cygwin/i) {
+	# Cygwin ExtUtils::MakeMaker ignores our LIBS declaration and says
+	# "No library found for -lstdc++".  Force it.
+	$out .= "LDLOADLIBS += -lstdc++\n";
     }
     $out .= "CCFLAGS += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall

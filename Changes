@@ -3,6 +3,10 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.352 2006/08/22
+
+***	Fix compile errors under Cygwin.  [Mattan Tsachi]
+
 * Verilog::Language 2.351 2006/06/08
 
 ***     Add vhier --language option.  [Sean Nazareth]
@@ -361,7 +365,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 21534 2006-06-08 15:02:06Z wsnyder $
+$Id: Changes 24437 2006-08-22 12:58:58Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 
