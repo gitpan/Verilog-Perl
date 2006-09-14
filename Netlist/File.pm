@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm 24437 2006-08-22 12:58:58Z wsnyder $
+# $Id: File.pm 25404 2006-09-14 17:20:14Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.352';
+$VERSION = '2.360';
 use strict;
 
 structs('new',
@@ -71,6 +71,7 @@ sub new {
     } else {
 	push @opt, keep_comments=>0;
     }
+    push @opt, keep_whitespace=>0;
     my $preproc = Verilog::Preproc->new(@opt);
     $preproc->open($params{filename});
     $parser->parse_preproc_file ($preproc);
@@ -265,12 +266,13 @@ package Verilog::Netlist::File;
 #### Functions
 
 sub read {
-    my %params = (@_);	# netlist=>, filename=>, per-file options
+    my %params = (lookup_type=>'module',
+		  @_);	# netlist=>, filename=>, per-file options
 
     my $filename = $params{filename} or croak "%Error: ".__PACKAGE__."::read_file (filename=>) parameter required, stopped";
     my $netlist = $params{netlist} or croak ("Call Verilog::Netlist::read_file instead,");
 
-    my $filepath = $netlist->resolve_filename($filename);
+    my $filepath = $netlist->resolve_filename($filename, $params{lookup_type});
     if (!$filepath) {
 	if ($params{error_self}) { $params{error_self}->error("Cannot find $filename\n"); }
 	elsif (!defined $params{error_self}) { die "%Error: Cannot find $filename\n"; }  # 0=suppress error

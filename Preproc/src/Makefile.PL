@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 11992 2006-01-16 18:59:58Z wsnyder $
+# $Id: Makefile.PL 25396 2006-09-14 14:47:39Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -22,6 +22,8 @@ LEX = flex
 #LEXFLAGS += -d -L
 
 VPATH += src
+
+all:: example
 
 example: example.o VPreproc.o VFileLine.o VPreprocLex.o
 	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)

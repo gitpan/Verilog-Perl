@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 30_preproc.t 13405 2006-02-06 16:48:10Z wsnyder $
+# $Id: 30_preproc.t 25169 2006-09-08 13:54:04Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -10,7 +10,7 @@ use IO::File;
 use strict;
 use Test;
 
-BEGIN { plan tests => 10 }
+BEGIN { plan tests => 12 }
 BEGIN { require "t/test_utils.pl"; }
 
 #######################################################################
@@ -63,6 +63,7 @@ ok(1);
 
 test ('_sub', keep_comments=>'sub',);
 test ('_on',  keep_comments=>1,);
+test ('_nows', keep_comments=>0, keep_whitespace=>0,);
 
 sub test {
     my $id = shift;

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm 24437 2006-08-22 12:58:58Z wsnyder $
+# $Id: Netlist.pm 25404 2006-09-14 17:20:14Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.352';
+$VERSION = '2.360';
 
 ######################################################################
 #### Error Handling
@@ -166,10 +166,10 @@ sub top_modules_sorted {
 sub resolve_filename {
     my $self = shift;
     my $filename = shift;
-    my $from = shift;
+    my $lookup_type = shift;
     if ($self->{options}) {
 	$filename = $self->remove_defines($filename);
-	$filename = $self->{options}->file_path($filename);
+	$filename = $self->{options}->file_path($filename, $lookup_type);
     }
     if (!-r $filename || -d $filename) {
 	return undef;
@@ -246,7 +246,7 @@ sub dependency_write {
     my $self = shift;
     my $filename = shift;
 
-    my $fh = IO::File->new(">$filename") or die "%Error: $! $filename\n";
+    my $fh = IO::File->new(">$filename") or die "%Error: $! writing $filename\n";
     print $fh "$filename";
     foreach my $dout (sort (keys %{$self->{_depend_out}})) {
 	print $fh " $dout";
@@ -447,9 +447,11 @@ a module that wasn't found, and thus might be inside the libraries.
 Expand any `defines in the string and return the results.  Undefined
 defines will remain in the returned string.
 
-=item $netlist->resolve_filename (I<string>)
+=item $netlist->resolve_filename (I<string>, [I<lookup-type>])
 
-Convert a module name to a filename.  Return undef if not found.
+Convert a module name to a filename.  Optional lookup-type is
+'module','include', or 'all', to use only module_dirs, incdirs, or both for
+the lookup.  Return undef if not found.
 
 =item $self->verilog_text
 

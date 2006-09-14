@@ -1,4 +1,4 @@
-// $Id: VPreprocLex.h 13405 2006-02-06 16:48:10Z wsnyder $  -*- C++ -*-
+// $Id: VPreprocLex.h 25169 2006-09-08 13:54:04Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -107,7 +107,8 @@ class VPreprocLex {
 
     // State to lexer
     static VPreprocLex* s_currentLexp;	///< Current lexing point
-    int		m_keepComments;	///< Emit comments in output text
+    int		m_keepComments;		///< Emit comments in output text
+    int		m_keepWhitespace;	///< Emit all whitespace in output text
     bool	m_pedantic;	///< Obey standard; don't Substitute `__FILE__ and `__LINE__
 
     // State from lexer
@@ -119,6 +120,7 @@ class VPreprocLex {
 	m_fp = fp;
 	m_yyState = yy_create_buffer (fp, YY_BUF_SIZE);
 	m_keepComments = 0;
+	m_keepWhitespace = 1;
 	m_pedantic = false;
 	m_parenLevel = 0;
     }

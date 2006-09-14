@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm 24437 2006-08-22 12:58:58Z wsnyder $
+# $Id: vpm 25404 2006-09-14 17:20:14Z wsnyder $
 ######################################################################
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.352';
+$VERSION = '2.360';
 
 ######################################################################
 # configuration
@@ -163,7 +163,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm 24437 2006-08-22 12:58:58Z wsnyder $ ';
+    print 'Version: $Id: vpm 25404 2006-09-14 17:20:14Z wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
@@ -802,8 +802,8 @@ sub vpm_recursive {
 	my $dh = new IO::Dir $srcdir or die "%Error: Could not directory $srcdir.\n";
 	while (defined (my $basefile = $dh->read)) {
 	    my $srcfile = $srcdir . $basefile;
-	    next if -d $srcfile;
 	    if ($Opt->libext_matches($srcfile)) {
+		next if -d $srcfile;
 		vpm_process_one($srcfile, $destdir);
 	    }
 	}

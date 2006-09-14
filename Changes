@@ -3,6 +3,19 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.360 2006/09/14
+
+***	Added Preproc keep_whitespace=>0 option to delete whitespace.
+
+***	Preprocessor now strips all DOS carrage returns.
+
+***	Allow Verilog::Getopt::file_path to resolve module_dir and/or incdirs.
+	Use only module_dir to resolve Netlist modules.  [by John Tseng]
+
+****    Vrename --crypt now uses lower case random identifiers for readability.
+
+****	Fix DOS carrage returns in multiline defines.  [Ralf Karge]
+
 * Verilog::Language 2.352 2006/08/22
 
 ***	Fix compile errors under Cygwin.  [Mattan Tsachi]
@@ -365,7 +378,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 24437 2006-08-22 12:58:58Z wsnyder $
+$Id: Changes 25404 2006-09-14 17:20:14Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 
