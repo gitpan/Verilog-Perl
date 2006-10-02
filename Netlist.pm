@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm 25404 2006-09-14 17:20:14Z wsnyder $
+# $Id: Netlist.pm 25882 2006-10-02 13:22:45Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.360';
+$VERSION = '2.361';
 
 ######################################################################
 #### Error Handling
@@ -44,6 +44,7 @@ sub new {
 		options => undef,	# Usually pointer to Verilog::Getopt
 		implicit_wires_ok => 1,
 		link_read => 1,
+		#keep_comments => 0,
 		_libraries_done => {},
 		@_};
     bless $self, $class;
@@ -283,7 +284,7 @@ Verilog::Netlist - Verilog Netlist
 
     # Prepare netlist
     my $nl = new Verilog::Netlist (options => $opt,);
-    foreach my $file ('testnetlist.sp') {
+    foreach my $file ('testnetlist.v') {
 	$nl->read_file (filename=>$file);
     }
     # Read in any sub-modules
@@ -292,7 +293,7 @@ Verilog::Netlist - Verilog Netlist
     $nl->exit_if_error();
 
     foreach my $mod ($nl->top_modules_sorted) {
-        show_hier ($mod, "  ", "", "");
+	show_hier ($mod, "  ", "", "");
     }
 
     sub show_hier {
@@ -350,11 +351,16 @@ Error checks the entire netlist structure.
 
 =item $netlist->link()
 
-Resolves references between the different modules.  If link_read=>1 is
-passed when netlist->new is called (it is by default), undefined modules
-will be searched for using the Verilog::Getopt package, passed by a
-reference in the creation of the netlist.  To suppress errors in any
-missing references, set link_read_nonfatal=>1 also.
+Resolves references between the different modules.
+
+If link_read=>1 is passed when netlist->new is called (it is by default),
+undefined modules will be searched for using the Verilog::Getopt package,
+passed by a reference in the creation of the netlist.  To suppress errors
+in any missing references, set link_read_nonfatal=>1 also.
+
+If keep_comments=>1 is passed, comment fields will be entered on net
+declarations into the Vtest::Netlist::Net structures.  Otherwise all
+comments are stripped for speed.
 
 =item $netlist->new
 

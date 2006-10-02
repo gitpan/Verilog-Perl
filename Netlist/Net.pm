@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Net.pm 25404 2006-09-14 17:20:14Z wsnyder $
+# $Id: Net.pm 25882 2006-10-02 13:22:45Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.360';
+$VERSION = '2.361';
 use strict;
 
 ######################################################################
@@ -198,7 +198,8 @@ signals, for the width of a signal, use msb/lsb/width.
 
 =item $self->comment
 
-Any comment the user placed on the same line as the net.
+Returns any comments following the definition.  keep_comments=>1 must be
+passed to Verilog::Netlist::new for comments to be retained.
 
 =item $self->module
 

@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 40_netlist.t 11992 2006-01-16 18:59:58Z wsnyder $
+# $Id: 40_netlist.t 25882 2006-10-02 13:22:45Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -18,7 +18,7 @@ ok(1);
 {
     print "Checking example in Netlist.pm\n";
 
-  use Verilog::Netlist;
+    use Verilog::Netlist;
 
     # Setup options so files can be found
     use Verilog::Getopt;
@@ -40,7 +40,7 @@ ok(1);
     $nl->exit_if_error();
 
     foreach my $mod ($nl->top_modules_sorted) {
-	show_hier ($mod, "  ", "","");
+	show_hier ($mod, "  ", "", "");
     }
 
     sub show_hier {

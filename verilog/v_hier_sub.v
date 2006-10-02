@@ -1,12 +1,12 @@
-// $Id: v_hier_sub.v 14021 2006-02-15 18:27:33Z wsnyder $
+// $Id: v_hier_sub.v 25881 2006-10-02 13:11:20Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2000-2006 by Wilson Snyder.
 
 module v_hier_sub (/*AUTOARG*/
    input clk,
-   input [3:0] avec,
-   output [3:0] qvec
+   input [3:0] avec,	// Comment for v_hier_sub, avec
+   output [3:0] qvec	/* Comment for v_hier_sub, qvec */
    );
 
    v_hier_subsub #(

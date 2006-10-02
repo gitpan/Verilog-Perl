@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Module.pm 25404 2006-09-14 17:20:14Z wsnyder $
+# $Id: Module.pm 25882 2006-10-02 13:22:45Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.360';
+$VERSION = '2.361';
 use strict;
 
 structs('new',
@@ -38,6 +38,7 @@ structs('new',
 	   attributes	=> '%', #'	# Misc attributes for systemperl or other processors
 	   #
 	   attrs	=> '@',		# list of "category name[ =](.*)" strings
+	   comment	=> '$', #'	# Comment provided by user
 	   _ports	=> '%',		# hash of Verilog::Netlist::Ports
 	   _portsordered=> '@',		# list of Verilog::Netlist::Ports as ordered in list of ports   
 	   _nets	=> '%',		# hash of Verilog::Netlist::Nets
@@ -272,6 +273,11 @@ Returns list of references to Verilog::Netlist::Cell in the module.
 =item $self->cells_sorted
 
 Returns list of name sorted references to Verilog::Netlist::Cell in the module.
+
+=item $self->comment
+
+Returns any comments following the definition.  keep_comments=>1 must be
+passed to Verilog::Netlist::new for comments to be retained.
 
 =item $self->find_port_by_index
 

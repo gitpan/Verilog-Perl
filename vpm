@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vpm - Preprocess Verilog signals
-# $Id: vpm 25404 2006-09-14 17:20:14Z wsnyder $
+# $Id: vpm 25882 2006-10-02 13:22:45Z wsnyder $
 ######################################################################
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -42,7 +42,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     );
-$VERSION = '2.360';
+$VERSION = '2.361';
 
 ######################################################################
 # configuration
@@ -163,7 +163,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vpm 25404 2006-09-14 17:20:14Z wsnyder $ ';
+    print 'Version: $Id: vpm 25882 2006-10-02 13:22:45Z wsnyder $ ';
     print "\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);

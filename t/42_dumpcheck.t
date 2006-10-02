@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 42_dumpcheck.t 13413 2006-02-06 18:17:54Z wsnyder $
+# $Id: 42_dumpcheck.t 25881 2006-10-02 13:11:20Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2006 by Wilson Snyder.  This program is free software;
@@ -12,7 +12,7 @@ use Test;
 BEGIN { plan tests => 10 }
 BEGIN { require "t/test_utils.pl"; }
 
-#$Verilog::SigParser::Debug = 1;
+#$Verilog::SigParser::Debug = $Verilog::Parser::Debug = 1;
 use Verilog::Netlist;
 ok(1);
 
@@ -47,6 +47,7 @@ sub check {
 		     );
     my $nl = new Verilog::Netlist (options => $opt,
 				   link_read_nonfatal=>1,
+				   keep_comments => 1,
 				   );
     foreach my $file (@files) {
 	$nl->read_file (filename=>$file);

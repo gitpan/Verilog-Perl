@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Pin.pm 25404 2006-09-14 17:20:14Z wsnyder $
+# $Id: Pin.pm 25882 2006-10-02 13:22:45Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.360';
+$VERSION = '2.361';
 use strict;
 
 structs('new',
@@ -37,6 +37,7 @@ structs('new',
 	   userdata	=> '%',		# User information
 	   attributes	=> '%', #'	# Misc attributes for systemperl or other processors
 	   #
+	   comment	=> '$', #'	# Comment provided by user
 	   netname	=> '$', #'	# Net connection
 	   portname 	=> '$', #'	# Port connection name
 	   portnumber   => '$', #'	# Position of name in call
@@ -190,6 +191,11 @@ See also Verilog::Netlist::Subclass for additional accessors and methods.
 =item $self->cell
 
 Reference to the Verilog::Netlist::Cell the pin is under.
+
+=item $self->comment
+
+Returns any comments following the definition.  keep_comments=>1 must be
+passed to Verilog::Netlist::new for comments to be retained.
 
 =item $self->delete
 

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Cell.pm 25404 2006-09-14 17:20:14Z wsnyder $
+# $Id: Cell.pm 25882 2006-10-02 13:22:45Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.360';
+$VERSION = '2.361';
 use strict;
 
 structs('new',
@@ -32,8 +32,10 @@ structs('new',
 	   userdata	=> '%',		# User information
 	   attributes	=> '%', #'	# Misc attributes for systemperl or other processors
 	   #
+	   comment	=> '$', #'	# Comment provided by user
 	   submodname	=> '$', #'	# Which module it instantiates
 	   module	=> '$', #'	# Module reference
+	   params	=> '$', #'	# Textual description of parameters
 	   _pins	=> '%',		# List of Verilog::Netlist::Pins
 	   byorder 	=> '$',		# True if Cell call uses order based pins
 	   # after link():
@@ -131,7 +133,9 @@ sub dump {
     my $self = shift;
     my $indent = shift||0;
     my $norecurse = shift;
-    print " "x$indent,"Cell:",$self->name(),"  is-a:",$self->submodname(),"\n";
+    print " "x$indent,"Cell:",$self->name(),"  is-a:",$self->submodname();
+    print " ".$self->params if (($self->params||"") ne "");
+    print "\n";
     if ($self->submod()) {
 	$self->submod->dump($indent+10, 'norecurse');
     }
@@ -198,6 +202,11 @@ module.
 See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
+
+=item $self->comment
+
+Returns any comments following the definition.  keep_comments=>1 must be
+passed to Verilog::Netlist::new for comments to be retained.
 
 =item $self->delete
 

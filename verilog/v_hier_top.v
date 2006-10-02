@@ -1,4 +1,4 @@
-// $Id: v_hier_top.v 11992 2006-01-16 18:59:58Z wsnyder $
+// $Id: v_hier_top.v 25881 2006-10-02 13:11:20Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2000-2006 by Wilson Snyder.
@@ -9,7 +9,7 @@ module v_hier_top (/*AUTOARG*/
    // Inputs
    clk
    );
-   input clk;
+   input clk;	/* pragma jsc_clk */
    `hsub sub (/*AUTOINST*/
 	      // Outputs
 	      .qvec			(qvec[3:0]),

@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 25404 2006-09-14 17:20:14Z wsnyder $
+# $Id: SigParser.pm 25882 2006-10-02 13:22:45Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -69,11 +69,12 @@ $keyword is ('input', 'output', etc), the second argument is the name of
 the signal.  The third argument is the vector bits or "".  The fourth
 argument is the memory bits or "".
 
-=item $self->instant ( $module, $cell )
+=item $self->instant ( $module, $cell, $parameters )
 
 This method is called when a instantiation is defined.  The first
 parameter is the name of the module being instantiated, and the second
-parameter is the name of the cell.
+parameter is the name of the cell.  The third is the textual list of
+parameters, otherwise unparsed.
 
 =item $self->pin ( $name, $connection, $index )
 
@@ -137,7 +138,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.360';
+$VERSION = '2.361';
 
 #######################################################################
 
@@ -195,6 +196,7 @@ sub instant {
     my $self = shift;
     my $module = shift;
     my $cell = shift;
+    my $params = shift;
 }
 
 sub pin {
@@ -379,6 +381,9 @@ sub number {
     my $token = shift;	# What token was parsed
 
     if ($self->_non_pp_line()) {
+	if ($self->{in_param_assign}) {
+	    $self->{last_param} = $self->{last_param} . $token;
+	}
 	$self->{last_vectors} = $self->{last_vectors} . $token;
     } else {
 	push @{$self->{last_ppitem}}, $token;
@@ -426,10 +431,11 @@ sub operator {
 	    @{$self->{last_symbols}} = ();
 	    $self->{last_vectors} = "";
 	    print "Gotainst $mod $inst\n"    if ($Debug);
-	    $self->instant ($mod, $inst);
+	    $self->instant ($mod, $inst, $self->{last_param});
 	    $self->{last_inst_mod} = $mod;
 	    $self->{is_inst_ok} = 0;
 	    $self->{is_pin_ok} = 1;
+	    $self->{last_param} = "";
 	}
 	elsif ((($token eq "(" && !$self->{possibly_in_param_assign})
 		|| $token eq ";")
@@ -522,6 +528,7 @@ sub operator {
 		if ($token eq ";") {
 		    $self->{last_keyword} = "";  # Keep {attr_keyword}
 		    @{$self->{last_symbols}} = ();
+		    $self->{last_param} = "";
 		    $self->{is_inst_ok} = 1;
 		    $self->{is_signal_ok} = 1;
 		    $self->{is_pin_ok} = 0;

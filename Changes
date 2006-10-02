@@ -3,6 +3,12 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.361 2006/10/02
+
+**	Attach Verilog comments to Netlist objects.  [Monte Becker]
+
+***	Add parameters to Verilog::Parser instant callback.  [Monte Becker]
+
 * Verilog::Language 2.360 2006/09/14
 
 ***	Added Preproc keep_whitespace=>0 option to delete whitespace.
@@ -378,7 +384,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 25404 2006-09-14 17:20:14Z wsnyder $
+$Id: Changes 25882 2006-10-02 13:22:45Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 
