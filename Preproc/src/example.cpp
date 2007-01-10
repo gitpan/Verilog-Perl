@@ -1,7 +1,7 @@
-// $Id: example.cpp 11992 2006-01-16 18:59:58Z wsnyder $  -*- C++ -*-
+// $Id: example.cpp 29806 2007-01-10 13:04:28Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // General Public License or the Perl Artistic License.
 //
@@ -36,7 +36,9 @@ int main() {
 
     // We don't have a directory search path in this trivial parser, so
     // we CD to the right place so everything is local.
-    chdir("../../verilog");
+    if (chdir("../../verilog")) {
+	filelinep->fatal("Can't chdir ../../verilog.  Exiting\n");
+    }
 
     // Tokens will come from this file
     pp->open("inc1.v");

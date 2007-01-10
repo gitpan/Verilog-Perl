@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
-# $Id: 42_dumpcheck.t 25881 2006-10-02 13:11:20Z wsnyder $
+# $Id: 42_dumpcheck.t 29806 2007-01-10 13:04:28Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
@@ -16,14 +16,14 @@ BEGIN { require "t/test_utils.pl"; }
 use Verilog::Netlist;
 ok(1);
 
-check ('test_dir/42.dmp', 'verilog/v_hier_top.v', 'verilog/v_hier_top2.v');
+check ('test_dir/42.dmp', 'verilog/v_hier_top.v', 'verilog/v_hier_top2.v', 'verilog/v_comments.v');
 ok(1);
 ok(files_identical("test_dir/42.dmp", "t/42_dumpcheck_1.out"));
 
-my $n2 = check ('test_dir/42.dmp', 'verilog/pinorder.v');
+my $n2 = check ('test_dir/42_n2.dmp', 'verilog/pinorder.v');
 ok(1);
-ok(files_identical("test_dir/42.dmp", "t/42_dumpcheck_2.out"));
-ok(files_identical("test_dir/42.dmp.v", "t/42_dumpcheck_2v.out"));
+ok(files_identical("test_dir/42_n2.dmp", "t/42_dumpcheck_2.out"));
+ok(files_identical("test_dir/42_n2.dmp.v", "t/42_dumpcheck_2v.out"));
 
 check ('test_dir/42_v2k.dmp', 'verilog/v_v2k.v', );
 ok(1);

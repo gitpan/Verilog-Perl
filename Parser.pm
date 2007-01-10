@@ -1,9 +1,9 @@
 # Verilog::Parser.pm -- Verilog parsing
-# $Id: Parser.pm 25882 2006-10-02 13:22:45Z wsnyder $
+# $Id: Parser.pm 29806 2007-01-10 13:04:28Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -179,7 +179,7 @@ Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2006 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2007 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 
@@ -219,7 +219,7 @@ use Verilog::Language;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.361';
+$VERSION = '2.370';
 
 #######################################################################
 
@@ -405,8 +405,7 @@ sub parse {
 		$self->{token_string} = "\"";
 		$self->{inquote} = 1;
 	    }
-	    elsif (($text =~ s/^([a-zA-Z_\`\$][a-zA-Z0-9_\`\$]*)//)
-		   || ($text =~ s/^(\\\S+\s+)//)) { #cseddon - escaped identifiers
+	    elsif ($text =~ s/^([a-zA-Z_\`\$][a-zA-Z0-9_\`\$]*)//) {
 		my $token = $1;
 		if (!$self->{inquote}) {
 		    if (Verilog::Language::is_keyword($token)) {
@@ -421,6 +420,15 @@ sub parse {
 			print "GotaSYMBOL $token\n"    if ($Debug);
 			$self->symbol ($token);
 		    }
+		}
+	    }
+	    elsif ($text =~ s/^(\\\S+\s)//) { # Escaped identifiers
+		my $token = $1;
+		if (!$self->{inquote}) {
+		    print "GotaSYMBOL $token\n"    if ($Debug);
+		    # If it's a simple "\foo " that didn't need quoting, remove quotes
+		    $token = $1 if $token =~ /^\\([a-zA-Z_][a-zA-Z0-9_]*)\s*$/;
+		    $self->symbol ($token);
 		}
 	    }
 	    elsif ($text =~ s/^\/\*//) {

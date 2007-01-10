@@ -1,9 +1,9 @@
 # Verilog - Verilog Perl Interface
-# $Id: Pin.pm 25882 2006-10-02 13:22:45Z wsnyder $
+# $Id: Pin.pm 29806 2007-01-10 13:04:28Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -26,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.361';
+$VERSION = '2.370';
 use strict;
 
 structs('new',
@@ -255,7 +255,7 @@ Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2006 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2007 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

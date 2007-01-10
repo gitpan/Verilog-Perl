@@ -1,7 +1,7 @@
-// $Id: VPreprocLex.h 25169 2006-09-08 13:54:04Z wsnyder $  -*- C++ -*-
+// $Id: VPreprocLex.h 29806 2007-01-10 13:04:28Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // General Public License or the Perl Artistic License.
 //

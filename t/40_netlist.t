@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
-# $Id: 40_netlist.t 25882 2006-10-02 13:22:45Z wsnyder $
+# $Id: 40_netlist.t 29806 2007-01-10 13:04:28Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 

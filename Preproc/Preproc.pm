@@ -1,7 +1,7 @@
-#$Id: Preproc.pm 25169 2006-09-08 13:54:04Z wsnyder $
+#$Id: Preproc.pm 29806 2007-01-10 13:04:28Z wsnyder $
 ######################################################################
 #
-# Copyright 2001-2006 by Wilson Snyder.  This program is free software;
+# Copyright 2001-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -347,7 +347,7 @@ Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2006 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2007 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

@@ -1,9 +1,9 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm 25882 2006-10-02 13:22:45Z wsnyder $
+# $Id: Getopt.pm 29806 2007-01-10 13:04:28Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.361';
+$VERSION = '2.370';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance
@@ -648,7 +648,7 @@ Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2006 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2007 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

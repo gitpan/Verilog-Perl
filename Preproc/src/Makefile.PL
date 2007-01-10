@@ -1,7 +1,7 @@
-# $Id: Makefile.PL 25396 2006-09-14 14:47:39Z wsnyder $
+# $Id: Makefile.PL 29806 2007-01-10 13:04:28Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
-# Copyright 2000-2006 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
@@ -32,11 +32,14 @@ VPreprocLex.o:	VPreprocLex.h VPreproc.h VFileLine.h
 VPreproc.o:	VPreprocLex.h VPreproc.h VFileLine.h
 VFileLine.o:	VPreprocLex.h VPreproc.h VFileLine.h
 
-VPreprocLex.cpp: VPreprocLex.l
+VPreprocLex_prefix.cpp: VPreprocLex.l
 	$(LEX) $(LEXFLAGS) -o$@ $<
 
+VPreprocLex.cpp: VPreprocLex_prefix.cpp
+	sed "s/(void) *fwrite(\(.*\))/if (fwrite(\1)) {}/" < $< > $@    # GCC 4.1.0 warn_unused_result
+
 clean::
-	-rm -rf test *.d *.o VPreprocLex.cpp *.output example example.exe
+	-rm -rf test *.d *.o VPreprocLex*.cpp *.output example example.exe
 ';
     return $out;
 }

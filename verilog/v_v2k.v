@@ -1,7 +1,7 @@
-// $Id: v_v2k.v 13413 2006-02-06 18:17:54Z wsnyder $
+// $Id: v_v2k.v 29806 2007-01-10 13:04:28Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
-// without warranty, 2006-2006 by Wilson Snyder.
+// without warranty, 2006-2007 by Wilson Snyder.
 
 module v_v2k
   #(parameter WIDTH = 16) (
