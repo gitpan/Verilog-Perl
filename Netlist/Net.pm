@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Net.pm 29806 2007-01-10 13:04:28Z wsnyder $
+# $Id: Net.pm 30571 2007-01-23 18:43:04Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.370';
+$VERSION = '2.371';
 use strict;
 
 ######################################################################

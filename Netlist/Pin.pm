@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Pin.pm 29806 2007-01-10 13:04:28Z wsnyder $
+# $Id: Pin.pm 30571 2007-01-23 18:43:04Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.370';
+$VERSION = '2.371';
 use strict;
 
 structs('new',
@@ -102,7 +102,11 @@ sub _link {
 
 sub type_match {
     my $self = shift;
-    return $self->net->type eq $self->port->type;
+    # We could check for specific types being OK, but nearly every thing,
+    # reg/trireg/wire/wand etc/tri/ supply0|1 etc
+    # is allowed to connect with everything else, and we're not a lint tool...
+    # So, not: return $self->net->type eq $self->port->type;
+    return 1;
 }
 
 sub lint {
