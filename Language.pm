@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 30571 2007-01-23 18:43:04Z wsnyder $
+# $Id: Language.pm 32863 2007-02-28 14:14:18Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -126,7 +126,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.371';
+$VERSION = '2.372';
 
 ######################################################################
 #### Internal Variables

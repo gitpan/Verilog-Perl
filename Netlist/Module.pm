@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Module.pm 30571 2007-01-23 18:43:04Z wsnyder $
+# $Id: Module.pm 32863 2007-02-28 14:14:18Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.371';
+$VERSION = '2.372';
 use strict;
 
 structs('new',
@@ -133,7 +133,9 @@ sub new_net {
     my $self = shift;
     # @_ params
     # Create a new net under this module
-    my $netref = new Verilog::Netlist::Net (direction=>'net', @_, module=>$self, );
+    my $netref = new Verilog::Netlist::Net (direction=>'net', type=>'wire',
+					    @_,
+					    module=>$self, );
     $self->_nets ($netref->name(), $netref);
     return $netref;
 }
