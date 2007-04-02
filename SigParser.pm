@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 32863 2007-02-28 14:14:18Z wsnyder $
+# $Id: SigParser.pm 35112 2007-04-02 13:44:27Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -138,7 +138,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.372';
+$VERSION = '2.373';
 
 #######################################################################
 
@@ -448,7 +448,17 @@ sub operator {
 	    $self->module ($lkw, $mod, undef, $self->{in_celldefine});
 	    $self->{last_keyword} = ""; $lkw="";
 	    $self->{in_ports} = 1;
-	    # Fallthru, more ; prep for next command is below
+	    if ($token eq ";") {  # "module foo;"
+		$self->{last_keyword} = "";  # Keep {attr_keyword}
+		@{$self->{last_symbols}} = ();
+		$self->{last_param} = "";
+		$self->{is_inst_ok} = 1;
+		$self->{is_signal_ok} = 1;
+		$self->{is_pin_ok} = 0;
+		$self->{in_ports} = 0;
+		$self->{got_preproc} = 0;
+		$self->{possibly_in_param_assign} = 0;
+	    }
 	}
 	elsif ((($token eq ",") || ($token eq "}")) &&
 	       $self->{in_list} && !$self->{in_vector}) {
@@ -562,7 +572,7 @@ sub operator {
 		    $self->{got_preproc} = 0;
 		    $self->{possibly_in_param_assign} = 0;
 		}
-		elsif ( $token eq "=") {
+		elsif ( $token eq "=") {  # Dead code
 		    $self->{is_signal_ok} = 0;
 		    $self->{is_inst_ok} = 0;
 		}

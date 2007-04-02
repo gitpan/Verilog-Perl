@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vppp - Preprocess Verilog
-# $Id: vppp 29806 2007-01-10 13:04:28Z wsnyder $
+# $Id: vppp 34908 2007-03-29 17:26:43Z wsnyder $
 ######################################################################
 #
 # Copyright 2000-2007 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -44,16 +44,16 @@ autoflush STDERR 1;
 # Option parsing
 my $Opt = new Verilog::Getopt();
 @ARGV = $Opt->parameter(@ARGV);
-Getopt::Long::config ("no_auto_abbrev","pass_through");
+Getopt::Long::config ("no_auto_abbrev");
 if (! GetOptions (
 		  "help"	=> \&usage,
 		  "debug"	=> \&debug,
 		  "o=s"		=> \$opt_output_filename,
 		  "blank!"	=> \$opt_blank,
-		  "comment!"	=> sub { shift; push @opt_pp_flags, (keep_comments=>shift); },
-		  "line!"	=> sub { shift; push @opt_pp_flags, (line_directives=>shift); },
-		  "pedantic!"	=> sub { shift; push @opt_pp_flags, (pedantic=>shift); },
-		  "simple!"	=> sub { if ($_[0]) {
+		  "comment!"	=> sub { push @opt_pp_flags, (keep_comments=>$_[1]); },
+		  "line!"	=> sub { push @opt_pp_flags, (line_directives=>$_[1]); },
+		  "pedantic!"	=> sub { push @opt_pp_flags, (pedantic=>$_[1]); },
+		  "simple!"	=> sub { if ($_[1]) {
 		      push @opt_pp_flags, (keep_comments=>0,
 					   line_directives=>0,
 					   );
@@ -92,7 +92,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vppp 29806 2007-01-10 13:04:28Z wsnyder $ '."\n";
+    print 'Version: $Id: vppp 34908 2007-03-29 17:26:43Z wsnyder $ '."\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
     exit (1);

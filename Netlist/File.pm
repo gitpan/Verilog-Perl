@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm 32863 2007-02-28 14:14:18Z wsnyder $
+# $Id: File.pm 35112 2007-04-02 13:44:27Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.372';
+$VERSION = '2.373';
 use strict;
 
 structs('new',

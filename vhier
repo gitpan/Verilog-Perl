@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: vhier 29806 2007-01-10 13:04:28Z wsnyder $
+# $Id: vhier 34908 2007-03-29 17:26:43Z wsnyder $
 ######################################################################
 #
 # Copyright 2005-2007 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -48,7 +48,7 @@ my $Opt_Missing = 1;
 my $Opt_Missing_Modules;
 my $Opt_Xml;
 @ARGV = $Opt->parameter(@ARGV);
-Getopt::Long::config ("no_auto_abbrev","pass_through");
+Getopt::Long::config ("no_auto_abbrev");
 if (! GetOptions (
 		  "help"	=> \&usage,
 		  "debug"	=> \&debug,
@@ -84,7 +84,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vhier 29806 2007-01-10 13:04:28Z wsnyder $ '."\n";
+    print 'Version: $Id: vhier 34908 2007-03-29 17:26:43Z wsnyder $ '."\n";
     $SIG{__WARN__} = sub{};	#pod2text isn't clean.
     pod2text($0);
     exit (1);

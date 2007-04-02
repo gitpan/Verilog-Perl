@@ -3,6 +3,12 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.373 2007/04/02
+
+***     Fix vppp breaking with Getopt::Long 2.36.  [Andreas J. König]
+
+****	Fix modules without any ports causing lost declarations.  [Mark Nodine]
+
 * Verilog::Language 2.372 2007/02/28
 
 ***	Add include_open_nonfatal option to Preproc and Netlist.  [Eric Miller]
@@ -406,7 +412,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 32863 2007-02-28 14:14:18Z wsnyder $
+$Id: Changes 35112 2007-04-02 13:44:27Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 
