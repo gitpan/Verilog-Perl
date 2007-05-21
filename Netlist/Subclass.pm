@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Subclass.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: Subclass.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -17,7 +17,7 @@
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '2.373';
+$VERSION = '2.380';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;
@@ -150,9 +150,9 @@ Verilog::Netlist::Subclass - Common routines for all classes
 
 =head1 DESCRIPTION
 
-Verilog::Netlist::Subclass is used as a base class for all structures.
-It is mainly used so that $self->warn() and $self->error() will produce
-consistent results.
+The Verilog::Netlist::Subclass is used as a base class for all
+Verilog::Netlist::* structures.  It is mainly used so that $self->warn()
+and $self->error() will produce consistent results.
 
 =head1 MEMBER FUNCTIONS
 
@@ -211,6 +211,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Netlist>
 
 =cut

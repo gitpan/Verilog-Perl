@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: Language.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -35,16 +35,66 @@ Verilog::Language - Verilog language utilities
 
 =head1 DESCRIPTION
 
-This package provides useful utilities for general use with the
-Verilog Language.  General functions will be added as needed.
+Verilog::Language provides general utilities for using the Verilog
+Language, such as parsing numbers or determing what keywords exist.
+General functions will be added as needed.
+
+=head1 WHICH PACKAGE
+
+If you are starting a new application which needs to parse the Verilog
+language you have several tools available to you.  Which you pick depends
+on how low level and complete the information you need is.
+
+=over 4
+
+=item Verilog::Preproc
+
+Verilog::Preproc is useful when you need only text out, or a list of
+defines, etc.  It can preprocess a file, or be used to provide the Verilog
+macro language on top of synthesis scripts.  It understands the full
+SystemVerilog 2005 preprocessor syntax.
+
+=item Verilog::Parser
+
+Verilog::Parser is useful when you need to tokenize or write source filters
+(where you need everything including whitespace).  It can take raw files,
+or preprocessed input.  It understands all SystemVerilog 2005 keywords.
+
+=item Verilog::SigParser
+
+Verilog::SigParser is useful when you need a list of modules, signals,
+ports, functions, etc.  It requires a preprocessed file, and can parse most
+Verilog 2005 files, but only provides callbacks on certain interesting
+things.
+
+=item Verilog::Netlist
+
+Verilog::Netlist is useful for when you need the hierarchy, and a list of
+signals per module, pins per cell, etc.  It builds upon the output of
+Verilog::SigParser, so requires preprocessed files.
+
+This is probably the most popular choice.
+
+=item VPI
+
+Using the VPI is the best way to access the behavior of the design.  It is
+not part of this package as it requires a compliant simulator and C++ code
+to call the VPI, and understands as much of the language as the simulator
+supports.  This allows writing lint checks and full knowledge of all parts
+of the code, but generally requires the most work (short of writing a
+parser from scratch.)
+
+=back
+
+=head1 FUNCTIONS
 
 =over 4
 
 =item Verilog::Language::is_keyword ($symbol_string)
 
 Return true if the given symbol string is a Verilog reserved keyword.
-Value indicates the language standard, 1995, 2001, or sv31 for
-SystemVerilog 3.1.
+Value indicates the language standard as per the `begin_keywords macro,
+'1364-1995', '1364-2001', '1364-2005', or '1800-2005'.
 
 =item Verilog::Language::is_compdirect ($symbol_string)
 
@@ -53,13 +103,29 @@ Return true if the given symbol string is a Verilog compiler directive.
 =item Verilog::Language::language_standard ($year)
 
 Sets the language standard to indicate what are keywords.  If undef, all
-standards apply.  1995 sets only Verilog 1995, 2001 sets Verilog 2001, and
-'sv31' sets SystemVerilog 3.1.
+standards apply.  The year is indicates the language standard as per the
+`begin_keywords macro, '1364-1995', '1364-2001', '1364-2005', or
+'1800-2005'.
+
+=item Verilog::Language::number_bigint ($number_string)
+
+Return the numeric value of a Verilog value stored as a Math::BigInt, or
+undef if incorrectly formed.  You must 'use Math::BigInt' yourself before
+calling this function.  Note bigints do not have an exact size, so NOT of a
+Math::BigInt may return a different value then verilog.  See also
+number_value and number_bitvector.
 
 =item Verilog::Language::number_bits ($number_string)
 
 Return the number of bits in a value string, or undef if incorrectly
 formed, _or_ not specified.
+
+=item Verilog::Language::number_bitvector ($number_string)
+
+Return the numeric value of a Verilog value stored as a Bit::Vector, or
+undef if incorrectly formed.  You must 'use Bit::Vector' yourself before
+calling this function.  The size of the Vector will be that returned by
+number_bits.
 
 =item Verilog::Language::number_signed ($number_string)
 
@@ -69,7 +135,8 @@ Return true if the Verilog value is signed, else undef.
 
 Return the numeric value of a Verilog value, or undef if incorrectly
 formed.  It ignores any signed Verilog attributes, but is is returned as a
-perl signed integer, so it may fail for over 31 bit values.
+perl signed integer, so it may fail for over 31 bit values.  See also
+number_bigint and number_bitvector.
 
 =item Verilog::Language::split_bus ($bus)
 
@@ -106,6 +173,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Parser>, 
 L<Verilog::ParseSig>, 
 L<Verilog::Getopt>
@@ -126,7 +194,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.373';
+$VERSION = '2.380';
 
 ######################################################################
 #### Internal Variables
@@ -143,34 +211,38 @@ foreach my $kwd (qw(
 		    pmos posedge primitive pull0 pull1 pulldown
 		    pullup rcmos real realtime reg release repeat
 		    rnmos rpmos rtran rtranif0 rtranif1 scalared
-		    signed small specify strength strong0 strong1
+		    small specify strength strong0 strong1
 		    supply0 supply1 table task time tran tranif0
 		    tranif1 tri tri0 tri1 triand trior trireg
 		    vectored wait wand weak0 weak1 while wire wor
 		    xnor xor
-		    )) { $Keywords{1995}{$kwd} = 1995; }
+		    )) { $Keywords{'1364-1995'}{$kwd} = '1364-1995'; }
 
 foreach my $kwd (qw(
 		    automatic cell config design edge endconfig endgenerate
-		    generate genvar ifnone instance liblist localparam
+		    generate genvar ifnone incdir include instance liblist
+		    library localparam
 		    noshowcancelled pulsestyle_ondetect pulsestyle_onevent
 		    showcancelled signed specparam unsigned use
-		    )) { $Keywords{2001}{$kwd} = 2001; }
+		    )) { $Keywords{'1364-2001'}{$kwd} = '1364-2001'; }
 
 foreach my $kwd (qw(
-		    alias always_comb always_ff always_latch assert
-		    assert_strobe before bind bit break byte chandle class
-		    clocking const constraint context continue cover dist
-		    do endcass endclocking endinterface endprogram
-		    endproperty endsequence enum export extends extern
-		    final first_match forkjoin iff import inside int
-		    interface intersect join_any join_none local logic
-		    longint modport new null packed priority program
-		    property protexted pure rand randc ref sequence
-		    shortint shortreal solve static string struct super
-		    this throughout timeprecision timeunit type typedef
-		    union unique var virtual void wait_order with within
-		    )) { $Keywords{sv31}{$kwd} = 'sv31'; }
+		    alias always_comb always_ff always_latch assert assume
+		    before bind bins binsof bit break byte chandle class
+		    clocking const constraint context continue cover
+		    covergroup coverpoint cross dist do endcass endclocking
+		    endgroup endinterface endpackage endprogram endproperty
+		    endsequence enum expect export extends extern final
+		    first_match foreach forkjoin iff ignore_bins
+		    illegal_bins import inside int interface intersect
+		    join_any join_none local logic longint matches modport
+		    new null package packed priority program property
+		    protected pure rand randc randcase randsequence ref
+		    return sequence shortint shortreal solve static string
+		    struct super tagged this throughout timeprecision
+		    timeunit type typedef union unique var virtual void
+		    wait_order wildcard with within
+		    )) { $Keywords{'1800-2005'}{$kwd} = '1800-2005'; }
 
 foreach my $kwd (
 		 "`celldefine", "`default_nettype", "`define", "`else",
@@ -179,14 +251,14 @@ foreach my $kwd (
 		 "`unconnected_drive", "`undef",
 		 # Commercial Extensions
 		 "`protected", "`endprotected",
-		 ) { $Keywords{$kwd}{1995} = $Compdirect{$kwd} = 1995; }
+		 ) { $Keywords{$kwd}{'1364-1995'} = $Compdirect{$kwd} = '1364-1995'; }
 
 foreach my $kwd (
 		 "`default_nettype", "`elsif", "`undef", "`ifndef",
 		 "`file", "`line",
-		 ) { $Keywords{$kwd}{2001} = $Compdirect{$kwd} = 2001; }
+		 ) { $Keywords{$kwd}{'1364-2001'} = $Compdirect{$kwd} = '1364-2001'; }
 
-language_standard ('sv31');  # Default standard
+language_standard ('1800-2005');  # Default standard
 
 ######################################################################
 #### Keyword utilities
@@ -195,15 +267,19 @@ sub language_standard {
     my $standard = shift;
     if (defined $standard) {
 	my @subsets;
-	if ($standard eq '1995') {
-	    $Standard = $standard;
-	    @subsets = qw(1995);
-	} elsif ($standard eq '2001') {
-	    $Standard = $standard;
-	    @subsets = qw(1995 2001);
-	} elsif ($standard eq 'sv31') {
-	    $Standard = $standard;
-	    @subsets = qw(1995 2001 sv31);
+	if ($standard eq '1995' || $standard eq '1364-1995') {
+	    $Standard = '1364-1995';
+	    @subsets = ('1364-1995');
+	} elsif ($standard eq '2001' || $standard eq '1364-2001' || $standard eq '1364-2001-noconfig'
+		 || $standard eq '1364-2005') {
+	    $Standard = '1364-2001';
+	    @subsets = ('1364-2001', '1364-1995');
+	} elsif ($standard eq '1364-2005') {
+	    $Standard = '1364-2005';
+	    @subsets = ('1364-2005', '1364-2001', '1364-1995');
+	} elsif ($standard eq 'sv31' || $standard eq '1800-2005') {
+	    $Standard = '1800-2005';
+	    @subsets = ('1800-2005', '1364-2005', '1364-2001', '1364-1995');
 	} else {
 	    croak "%Error: Verilog::Language::language_standard passed bad value: $standard,";
 	}
@@ -300,6 +376,65 @@ sub number_value {
     elsif ($number =~ /\'s?d?([0-9]+)$/i
 	   || $number =~ /^([0-9]+)$/i) {
 	return ($1);
+    }
+    return undef;
+}
+
+sub number_bigint {
+    my $number = shift;
+    $number =~ s/[_ ]//g;
+    if ($number =~ /\'s?h([0-9a-f]+)$/i) {
+	return (Math::BigInt->new("0x".$1));
+    }
+    elsif ($number =~ /\'s?o([0-9a-f]+)$/i) {
+	my $digits = $1;
+	my $vec = Math::BigInt->new();
+	my $len = length($digits);
+	my $bit = 0;
+	for (my $index=$len-1; $index>=0; $index--, $bit+=3) {
+	    my $digit = substr($digits,$index,1);
+	    my $val = Math::BigInt->new($digit);
+	    $val = $val->blsft($bit,2);
+	    $vec->bior($val);
+	}
+	return ($vec);
+    }
+    elsif ($number =~ /\'s?b([0-1]+)$/i) {
+	return (Math::BigInt->new("0b".$1));
+    }
+    elsif ($number =~ /\'s?d?0*([0-9]+)$/i
+	   || $number =~ /^0*([0-9]+)$/i) {
+	return (Math::BigInt->new($1));
+    }
+    return undef;
+}
+
+sub number_bitvector {
+    my $number = shift;
+    $number =~ s/[_ ]//g;
+    my $bits = number_bits($number) || 32;
+    if ($number =~ /\'s?h([0-9a-f]+)$/i) {
+	return (Bit::Vector->new_Hex($bits,$1));
+    }
+    elsif ($number =~ /\'s?o([0-9a-f]+)$/i) {
+	my $digits = $1;
+	my $vec = Bit::Vector->new($bits);
+	my $len = length($digits);
+	my $bit = 0;
+	for (my $index=$len-1; $index>=0; $index--, $bit+=3) {
+	    my $digit = substr($digits,$index,1);
+	    $vec->Bit_On($bit+2) if ($digit & 4);
+	    $vec->Bit_On($bit+1) if ($digit & 2);
+	    $vec->Bit_On($bit+0) if ($digit & 1);
+	}
+	return ($vec);
+    }
+    elsif ($number =~ /\'s?b([0-1]+)$/i) {
+	return (Bit::Vector->new_Bin($bits,$1));
+    }
+    elsif ($number =~ /\'s?d?([0-9]+)$/i
+	   || $number =~ /^([0-9]+)$/i) {
+	return (Bit::Vector->new_Dec($bits,$1));
     }
     return undef;
 }

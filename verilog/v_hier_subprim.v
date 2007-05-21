@@ -1,4 +1,4 @@
-// $Id: v_hier_subprim.v 29806 2007-01-10 13:04:28Z wsnyder $
+// $Id: v_hier_subprim.v 38787 2007-05-16 18:54:10Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2000-2007 by Wilson Snyder.
@@ -20,3 +20,10 @@ primitive v_hier_prim (/*AUTOARG*/
    endtable
 
 endprimitive
+
+`celldefine
+module bug27070();
+  `define W 4
+  parameter TAP = `W'b1001;
+endmodule
+`endcelldefine

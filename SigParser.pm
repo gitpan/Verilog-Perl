@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: SigParser.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -31,9 +31,9 @@ Verilog::SigParser - Signal Parsing for Verilog language files
 
 =head1 DESCRIPTION
 
-The L<Verilog::SigParser> package builds upon the Verilog::Parse function
-to provide callbacks for when a signal is declared, a module instantiated,
-or a module defined.  For a higher level interface to this package, see
+Verilog::SigParser builds upon the Verilog::Parser module to provide
+callbacks for when a signal is declared, a module instantiated, or a module
+defined.  For a higher level interface to this package, see
 L<Verilog::Netlist>.
 
 The external interface to Verilog::SigParser is described in the
@@ -44,41 +44,9 @@ In order to make the parser do anything interesting, you must make a
 subclass where you override one or more of the following methods as
 appropriate:
 
+=head1 CALLBACKS
+
 =over 4
-
-=item $self->module ( $keyword, $name, ignored, $in_celldefine )
-
-This method is called when a module is defined.
-
-=item $self->port ( $name )
-
-This method is called when a module port is defined.
-
-=item $self->task ( $keyword, $name )
-
-This method is called when a module is defined.
-
-=item $self->function ( $keyword, $name )
-
-This method is called when a function is defined.
-
-=item $self->signal_decl ( $keyword, $signame, $vector, $mem, $signed )
-
-This method is called when a signal is declared.  The first argument,
-$keyword is ('input', 'output', etc), the second argument is the name of
-the signal.  The third argument is the vector bits or "".  The fourth
-argument is the memory bits or "".
-
-=item $self->instant ( $module, $cell, $parameters )
-
-This method is called when a instantiation is defined.  The first
-parameter is the name of the module being instantiated, and the second
-parameter is the name of the cell.  The third is the textual list of
-parameters, otherwise unparsed.
-
-=item $self->pin ( $name, $connection, $index )
-
-=item $self->ppdefine ( $defvar, $definition )
 
 =item $self->attribute ( $keyword, $text )
 
@@ -88,6 +56,44 @@ or comment block (C</*key rest */).  It calls
 C<$self->attribute( prev_keyword, meta_text )> if the first word has a true
 value in hash C<$self->metacomment>.
 
+=item $self->function ( $keyword, $name )
+
+This method is called when a function is defined.
+
+=item $self->instant ( $module, $cell, $parameters )
+
+This method is called when a instantiation is defined.  The first
+parameter is the name of the module being instantiated, and the second
+parameter is the name of the cell.  The third is the textual list of
+parameters, otherwise unparsed.
+
+=item $self->module ( $keyword, $name, ignored, $in_celldefine )
+
+This method is called when a module is defined.
+
+=item $self->pin ( $name, $connection, $index )
+
+This method is called when a pin on a instant is defined.
+
+=item $self->port ( $name )
+
+This method is called when a module port is defined.
+
+=item $self->ppdefine ( $defvar, $definition )
+
+This method is called when a preprocessor definition is encountered.
+
+=item $self->signal_decl ( $keyword, $signame, $vector, $mem, $signed )
+
+This method is called when a signal is declared.  The first argument,
+$keyword is ('input', 'output', etc), the second argument is the name of
+the signal.  The third argument is the vector bits or "".  The fourth
+argument is the memory bits or "".
+
+=item $self->task ( $keyword, $name )
+
+This method is called when a module is defined.
+
 =back
 
 =head1 BUGS
@@ -95,6 +101,10 @@ value in hash C<$self->metacomment>.
 This is being distributed as a baseline for future contributions.  Don't
 expect a lot, the Parser is still naive, and there are many awkward cases
 that aren't covered.
+
+Note the SigParser is focused on extracting signal information.  It does
+NOT extract enough information to derrive general interconnect; for example
+the contents of 'assign' statements are not parsed.
 
 =head1 DISTRIBUTION
 
@@ -112,6 +122,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Parser>, 
 L<Verilog::Language>, 
 L<Verilog::Netlist>, 
@@ -138,7 +149,7 @@ use Verilog::Parser;
 # Other configurable settings.
 $Debug = 0;		# for debugging
 
-$VERSION = '2.373';
+$VERSION = '2.380';
 
 #######################################################################
 
@@ -163,18 +174,11 @@ sub metacomment {
 
 # The my's aren't needed since we do nothing, but are useful if the
 # user copies them from here to their program.
-sub module {
-    my $self = shift;
-    my $keyword = shift;
-    my $name = shift;
-    shift;  # Ignored
-    my $in_celldefine = shift;
-}
 
-sub task {
+sub attribute {
     my $self = shift;
     my $keyword = shift;
-    my $name = shift;
+    my $text = shift;
 }
 
 sub function {
@@ -183,20 +187,19 @@ sub function {
     my $name = shift;
 }
 
-sub signal_decl {
-    my $self = shift;
-    my $keyword = shift;
-    my $name = shift;
-    my $vector = shift;
-    my $mem = shift;
-    my $signed = shift;
-}
-
 sub instant {
     my $self = shift;
     my $module = shift;
     my $cell = shift;
     my $params = shift;
+}
+
+sub module {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
+    shift;  # Ignored
+    my $in_celldefine = shift;
 }
 
 sub pin {
@@ -211,22 +214,25 @@ sub port {
     my $name = shift;
 }
 
-sub attribute {
-    my $self = shift;
-    my $keyword = shift;
-    my $text = shift;
-}
-
 sub ppdefine {
     my $self = shift;
     my $defvar = shift;
     my $definition = shift;
 }
 
-sub ppinclude {
+sub signal_decl {
     my $self = shift;
-    my $defvar = shift;
-    my $definition = shift;
+    my $keyword = shift;
+    my $name = shift;
+    my $vector = shift;
+    my $mem = shift;
+    my $signed = shift;
+}
+
+sub task {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
 }
 
 ######################################################################

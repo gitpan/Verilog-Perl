@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Id: VPreprocLex.l 29806 2007-01-10 13:04:28Z wsnyder $
+/* $Id: VPreprocLex.l 38883 2007-05-17 21:07:24Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 
@@ -49,6 +49,9 @@ void appendDefValue(char* t,int l) { VPreprocLex::s_currentLexp->appendDefValue(
 %x DEFMODE
 %x ARGMODE
 %x INCMODE
+%x PRTMODE
+
+/* drop: Drop Ctrl-Z - can't pass thru or may EOF the output too soon */
 
 ws		[ \t\f\r]
 wsn		[ \t\f]
@@ -56,6 +59,7 @@ crnl		[\r]*[\n]
 quote		[\"]
 backslash	[\\]
 symb		[a-zA-Z_][a-zA-Z0-9_$]*
+drop		[\032]
 
 	/**************************************************************/
 %%
@@ -94,6 +98,13 @@ symb		[a-zA-Z_][a-zA-Z0-9_$]*
 			  if (VPreprocLex::s_currentLexp->m_parenLevel) appendDefValue(yytext,yyleng);
 			  else return (VP_STRING); }
 
+	/* Protected blocks */
+<INITIAL>"`protected"	{ yy_push_state(PRTMODE); yymore(); }
+<PRTMODE><<EOF>>	{ linenoInc(); yyerror("EOF in `protected"); yyleng=0; yyterminate(); }
+<PRTMODE>{crnl}		{ linenoInc(); yymore(); }
+<PRTMODE>.	 	{ yymore(); }
+<PRTMODE>"`endprotected" { yy_pop_state(); return (VP_TEXT); }
+
 	/* Pass-through include <> filenames */
 <INCMODE><<EOF>>	{ linenoInc(); yyerror("EOF in unterminated include filename"); yyleng=0; yyterminate(); }
 <INCMODE>{crnl}		{ linenoInc(); yyerror("Unterminated include filename"); BEGIN(INITIAL); }
@@ -104,6 +115,7 @@ symb		[a-zA-Z_][a-zA-Z0-9_$]*
 	/* Reading definition */
 <DEFMODE>"/*"		{ yy_push_state(CMTMODE); yymore(); }
 <DEFMODE>"//"[^\n\r]*	{ return (VP_COMMENT);}
+<DEFMODE>{drop}		{ }
 <DEFMODE><<EOF>>	{ linenoInc(); yyerror("EOF (missing return?) in define value"); yyleng=0; yyterminate(); }
 <DEFMODE>{crnl}		{ linenoInc(); yy_pop_state(); yytext="\n"; yyleng=1; return (VP_DEFVALUE); }
 <DEFMODE>[\\]{crnl}	{ linenoInc(); appendDefValue("\n",1); } /* Include return so can maintain output line count */
@@ -114,6 +126,7 @@ symb		[a-zA-Z_][a-zA-Z0-9_$]*
 	/* Define arguments */
 <ARGMODE>"/*"		{ yy_push_state(CMTMODE); yymore(); }
 <ARGMODE>"//"[^\n\r]*	{ return (VP_COMMENT);}
+<ARGMODE>{drop}		{ }
 <ARGMODE><<EOF>>	{ yyerror("EOF in define argument list\n"); yyleng = 0; yyterminate(); }
 <ARGMODE>{crnl}		{ linenoInc(); yytext="\n"; yyleng=1; return(VP_WHITE); }
 <ARGMODE>{quote}	{ yy_push_state(STRMODE); yymore(); }
@@ -145,6 +158,7 @@ symb		[a-zA-Z_][a-zA-Z0-9_$]*
 <INITIAL>{symb}		{ return (VP_SYMBOL); }
 <INITIAL>[\r]		{ }
 <INITIAL>{wsn}+		{ if (!keepWhitespace()) { yytext=" "; yyleng=1; } return VP_WHITE; }
+<INITIAL>{drop}		{ }
 <INITIAL>.		{ return (VP_TEXT); }
 
 <*>.|\n			{ yymore(); }	/* Prevent hitting ECHO; */
@@ -182,28 +196,6 @@ void VPreprocLex::unputString(const char* textp) {
 void VPreprocLex::appendDefValue(const char* textp, int len) {
     // Append given text to current definition value being formed
     m_defValue.append(textp,len);
-}
-
-void VPreprocLex::lineDirective(const char* textp) {
-    while (*textp && isspace(*textp)) textp++;
-    if (0==strncmp(textp,"`line",strlen("`line"))) textp+=strlen("`line");
-    while (*textp && (isspace(*textp) || *textp=='"')) textp++;
-
-    // Grab linenumber
-    const char *ln = textp;
-    while (*textp && !isspace(*textp)) textp++;
-    if (isdigit(*ln)) {
-	m_curFilelinep = m_curFilelinep->create(atoi(ln));
-    }
-    while (*textp && (isspace(*textp) || *textp=='"')) textp++;
-
-    // Grab filename
-    const char *fn = textp;
-    while (*textp && !(isspace(*textp) || *textp=='"')) textp++;
-    if (textp != fn) {
-	string newfilename; newfilename.append(fn, (textp-fn));
-	m_curFilelinep = m_curFilelinep->create(newfilename, m_curFilelinep->lineno());
-    }
 }
 
 void VPreprocLex::unused() {

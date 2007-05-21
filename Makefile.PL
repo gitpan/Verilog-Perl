@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 29806 2007-01-10 13:04:28Z wsnyder $
+# $Id: Makefile.PL 39056 2007-05-21 14:28:04Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -15,12 +15,12 @@ sub MY::postamble {
     $out .= "CCFLAGS += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
     $out .= "
-README: readme.texi
+README: Verilog-Perl.pod
 	-rm -rf \$@
-	makeinfo \$< --output \$@ --no-headers --no-validate
+	pod2text --loose \$< > \$@
 
 clean::
-	-rm -rf simv .vpm test_dir
+	-rm -rf simv .vpm test_dir *.tmp
 
 dist: maintainer-copy distcheck README
 
@@ -41,8 +41,7 @@ maintainer-dist: preexist dist tag
 maintainer-copy:
 
 maintainer-clean: distclean
-	-rm -rf README Makefile
-
+	-rm -rf README Makefile MANIFEST.bak \$(MAKEFILE_OLD)
 ";
     return $out;
 }
@@ -59,6 +58,8 @@ WriteMakefile(
 	      VERSION_FROM  => 'Language.pm',
 	      NO_META	=> 1,
 	      #OPTIMIZE	=> '-ggdb',
+	      PREREQ_PM => {'Pod::Usage' => 0,
+			},
 	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
 	      EXE_FILES => [qw( vrename vpm vppp vhier )],
 	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpm simv ),},

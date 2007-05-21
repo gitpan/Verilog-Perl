@@ -1,4 +1,4 @@
-// $Id: VFileLine.h 29806 2007-01-10 13:04:28Z wsnyder $  -*- C++ -*-
+// $Id: VFileLine.h 38226 2007-05-08 17:38:56Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -60,6 +60,7 @@ public:
     // METHODS
     virtual void fatal(const string msg);	///< Report a fatal error at given location
     virtual void error(const string msg);	///< Report a error at given location
+    VFileLine* lineDirective(const char* textp);
     // STATIC METHODS
     static int numErrors() {return s_numErrors;}	///< Return total errors detected
 

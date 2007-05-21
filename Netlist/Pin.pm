@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Pin.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: Pin.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.373';
+$VERSION = '2.380';
 use strict;
 
 structs('new',
@@ -182,9 +182,9 @@ Verilog::Netlist::Pin - Pin on a Verilog Cell
 
 =head1 DESCRIPTION
 
-Verilog::Netlist creates a pin for every pin connection on a cell.  A Pin
-connects a net in the current design to a port on the instantiated cell's
-module.
+A Verilog::Netlist::Pin object is created by Verilog::Netlist::Cell for for
+each pin connection on a cell.  A Pin connects a net in the current design
+to a port on the instantiated cell's module.
 
 =head1 ACCESSORS
 
@@ -269,6 +269,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: Netlist.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '2.373';
+$VERSION = '2.380';
 
 ######################################################################
 #### Error Handling
@@ -319,11 +319,14 @@ Verilog::Netlist - Verilog Netlist
 
 =head1 DESCRIPTION
 
-Verilog::Netlist contains interconnect information about a whole design
-database.
+Verilog::Netlist reads and holds interconnect information about a whole
+design database.
 
-The database is composed of files, which contain the text read from each
-file.
+See the "Which Package" section of L<Verilog::Language> if you are unsure
+which parsing package to use for a new application.
+
+A Verilog::Netlist is composed of files, which contain the text read from
+each file.
 
 A file may contain modules, which are individual blocks that can be
 instantiated (designs, in Synopsys terminology.)
@@ -492,6 +495,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Netlist::Cell>,
 L<Verilog::Netlist::File>,
 L<Verilog::Netlist::Module>,

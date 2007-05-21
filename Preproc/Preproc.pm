@@ -1,4 +1,4 @@
-#$Id: Preproc.pm 32862 2007-02-28 14:13:07Z wsnyder $
+#$Id: Preproc.pm 39056 2007-05-21 14:28:04Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2007 by Wilson Snyder.  This program is free software;
@@ -29,6 +29,15 @@ $VERSION = '2.316';
 
 bootstrap Verilog::Preproc;
 
+#In Preproc.xs:
+# sub _new (class, keepcmt, linedir, pedantic)
+# sub _open (class)
+# sub getline (class)
+# sub eof (class)
+# sub filename (class)
+# sub lineno (class)
+# sub unreadback (class, text)
+
 ######################################################################
 #### Accessors
 
@@ -45,8 +54,7 @@ sub new {
     # Sets $self->{_cthis}
     $self->{keep_comments} = 2 if ($self->{keep_comments} eq 'sub');
     $self->{keep_comments} = 3 if ($self->{keep_comments} eq 'expand'); #TBD
-    $self->_new(
-		$self,
+    $self->_new($self,
 		$self->{keep_comments},
 		$self->{keep_whitespace},
 		$self->{line_directives},
@@ -90,15 +98,6 @@ sub debug {
     $self->{debug} = $level;
     $self->_debug($level);
 }
-
-#In Preproc.xs:
-# sub _new (class, keepcmt, linedir, pedantic)
-# sub _open (class)
-# sub getline (class)
-# sub eof (class)
-# sub filename (class)
-# sub lineno (class)
-# sub unreadback (class, text)
 
 ######################################################################
 #### Utilities
@@ -206,9 +205,13 @@ Verilog::Preproc - Preprocess Verilog files
 
 =head1 DESCRIPTION
 
-L<Verilog::Preproc> reads Verilog files, and preprocesses them according
-to the Verilog 2001 specification.  Programs can be easily converted from
-reading a IO::File into reading preprocessed output from Verilog::Preproc.
+Verilog::Preproc reads Verilog files, and preprocesses them according to
+the SystemVerilog 2005 specification.  Programs can be easily converted
+from reading a IO::File into reading preprocessed output from
+Verilog::Preproc.
+
+See the "Which Package" section of L<Verilog::Language> if you are unsure
+which parsing package to use for a new application.
 
 =head1 MEMBER FUNCTIONS
 
@@ -346,19 +349,25 @@ after resolving the filename with the options parameter.
 
 =head1 COMPLIANCE
 
-The preprocessor supports the constructs defined in the Verilog 2001 and
-SystemVerilog 3.1 standards.
+The preprocessor supports the constructs defined in the Verilog 2005 and
+SystemVerilog 2005 standards.
 
 Verilog::Preproc adds the following features (unless the pedantic parameter
 is set.):
 
 =over 4
 
-=item `__FILE__  will be replaced by the current filename. (Like C++ __FILE__.)
+=item `__FILE__
 
-=item `__LINE__  will be replaced by the current line number. (Like C++ __LINE__.)
+`__FILE__ will be replaced by the current filename. (Like C++ __FILE__.)
 
-=item `error I<"string"> will be reported whenever it is encountered. (Like C++ #error.)
+=item `__LINE__
+
+`__LINE__  will be replaced by the current line number. (Like C++ __LINE__.)
+
+=item `error I<"string">
+
+`error will be reported whenever it is encountered. (Like C++ #error.)
 
 These are useful for error macros, similar to assert() in C++.
 
@@ -380,6 +389,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Language>, L<Verilog::Getopt>
 
 L<IO::File> 

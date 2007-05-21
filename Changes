@@ -3,6 +3,27 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 2.380 2007/05/27
+
+***	Added new Verilog-Perl.pod documentation overview.
+
+***	Verilog::Parser and Verilog::SigParser objects must call the eof method
+	to insure forward compatibility.
+
+***	Vpm $info etc have been removed, now only $uinfo, etc are supported.
+	This avoids conflict with SystemVerilog $error function.  [Tad Truex]
+
+***	Verilog::Language keywords now uses the `begin_keywords standard names.
+
+***	Added Verilog::Language::number_bitvector and number_bigint for returning
+	Bit::Vector and Math::BigInt objects.  bug26967.  [Mark Nodine]
+
+****	Fix --help to use Pod::Usage instead of depreciated pod2text.
+
+****	Ignore quotes inside `protected/`endprotected blocks.
+
+****	Drop end-of-file ctrl-Z's when preprocessing input.
+
 * Verilog::Language 2.373 2007/04/02
 
 ***     Fix vppp breaking with Getopt::Long 2.36.  [Andreas J. König]
@@ -412,7 +433,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 35112 2007-04-02 13:44:27Z wsnyder $
+$Id: Changes 39061 2007-05-21 14:49:55Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

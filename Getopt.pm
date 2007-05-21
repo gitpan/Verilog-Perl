@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: Getopt.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '2.373';
+$VERSION = '2.380';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance
@@ -469,8 +469,9 @@ sub undef {
     my $self = shift;
     my $token = shift;
     my $oldval = $self->{defines}{$token};
-    (defined $oldval or !$self->{define_warnings})
-	or carp "%Warning: ".$self->fileline().": No definition to undef for $token,";
+    # We no longer warn about undefing something that doesn't exist, as other compilers don't
+    #(defined $oldval or !$self->{define_warnings})
+    #	or carp "%Warning: ".$self->fileline().": No definition to undef for $token,";
     delete $self->{defines}{$token};
 }
 
@@ -511,8 +512,8 @@ Verilog::Getopt - Get Verilog command line options
 
 =head1 DESCRIPTION
 
-The L<Verilog::Getopt> package provides standardized handling of options similar
-to Verilog/VCS and cc/GCC.
+Verilog::Getopt provides standardized handling of options similar to
+Verilog/VCS and cc/GCC.
 
 =over 4
 
@@ -658,6 +659,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Language>
 
 =cut

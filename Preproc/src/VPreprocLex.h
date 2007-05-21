@@ -1,4 +1,4 @@
-// $Id: VPreprocLex.h 29806 2007-01-10 13:04:28Z wsnyder $  -*- C++ -*-
+// $Id: VPreprocLex.h 38226 2007-05-08 17:38:56Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -128,7 +128,7 @@ class VPreprocLex {
 
     /// Called by VPreprocLex.l from lexer
     void appendDefValue(const char* text, int len);
-    void lineDirective(const char* text);
+    void lineDirective(const char* text) { m_curFilelinep = m_curFilelinep->lineDirective(text); }
     void linenoInc() { m_curFilelinep = m_curFilelinep->create(m_curFilelinep->lineno()+1); }
     /// Called by VPreproc.cpp to inform lexer
     void setStateDefArg();

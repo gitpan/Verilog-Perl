@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 29806 2007-01-10 13:04:28Z wsnyder $
+# $Id: Makefile.PL 38282 2007-05-09 14:50:24Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -17,6 +17,7 @@ sub MY::postamble {
     $out .= '
 CC = g++
 LEX = flex
+FLEXFIX = ./flexfix
 
 #CFLAGS += -DFLEX_DEBUG
 #LEXFLAGS += -d -L
@@ -30,13 +31,13 @@ example: example.o VPreproc.o VFileLine.o VPreprocLex.o
 
 VPreprocLex.o:	VPreprocLex.h VPreproc.h VFileLine.h
 VPreproc.o:	VPreprocLex.h VPreproc.h VFileLine.h
-VFileLine.o:	VPreprocLex.h VPreproc.h VFileLine.h
+VFileLine.o:	                         VFileLine.h
 
 VPreprocLex_prefix.cpp: VPreprocLex.l
 	$(LEX) $(LEXFLAGS) -o$@ $<
 
-VPreprocLex.cpp: VPreprocLex_prefix.cpp
-	sed "s/(void) *fwrite(\(.*\))/if (fwrite(\1)) {}/" < $< > $@    # GCC 4.1.0 warn_unused_result
+VPreprocLex.cpp: $(FLEXFIX) VPreprocLex_prefix.cpp
+	$(PERL) $(FLEXFIX) < VPreprocLex_prefix.cpp > $@
 
 clean::
 	-rm -rf test *.d *.o VPreprocLex*.cpp *.output example example.exe

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Module.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: Module.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.373';
+$VERSION = '2.380';
 use strict;
 
 structs('new',
@@ -260,7 +260,8 @@ Verilog::Netlist::Module - Module within a Verilog Netlist
 
 =head1 DESCRIPTION
 
-Verilog::Netlist creates a module for every file in the design.
+A Verilog::Netlist::Module object is created by Verilog::Netlist for every
+module in the design.
 
 =head1 ACCESSORS
 
@@ -399,6 +400,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 

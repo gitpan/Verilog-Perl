@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: vrename 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -24,7 +24,7 @@ use lib '.';
 use Getopt::Long;
 use IO::File;
 use IO::Dir;
-use Pod::Text;
+use Pod::Usage;
 
 use Verilog::Language;
 use Verilog::Getopt;
@@ -36,7 +36,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Crypt_All $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '2.373';
+$VERSION = '2.380';
 
 ######################################################################
 
@@ -93,7 +93,7 @@ if (! GetOptions (
 		  "xref!"	=> \$Opt_Xref,
 		  "<>"		=> \&parameter,
 		  )) {
-    usage();
+    die "%Error: Bad usage, try 'vrename --help'\n";
 }
 $Opt_Crypt = 1 if $Opt_Crypt_All;
 
@@ -138,15 +138,14 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename 35112 2007-04-02 13:44:27Z wsnyder $ ', "\n";
-    $SIG{__WARN__} = \&nop;	#pod2text isn't clean.
-    pod2text($0);
+    print 'Id: $Id: vrename 39061 2007-05-21 14:49:55Z wsnyder $ ', "\n";
+    pod2usage(-verbose=>2, -exitval => 2);
     exit (1);
 }
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename 35112 2007-04-02 13:44:27Z wsnyder $ ', "\n";
+    print '$Id: vrename 39061 2007-05-21 14:49:55Z wsnyder $ ', "\n";
     exit (1);
 }
 
@@ -589,11 +588,12 @@ vrename - change signal names across many Verilog files
 
 =head1 DESCRIPTION
 
-Vrename will allow a signal to be changed across all levels of the
-design hierarchy using a three step process.  (It actually includes
-module names, macros, and other definitions, so those can be changed too.)
+Vrename will allow a signal to be changed across all levels of the design
+hierarchy, or to create a cross reference of signal names.  (It actually
+includes module names, macros, and other definitions, so those can be
+changed too.)
 
-First, use
+Vpm uses a three step process.  First, use
 
     vrename --list  [<file.v>...]  [<directory>....]
 
@@ -699,6 +699,6 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
-L<Verilog::Parser>
+L<Verilog-Perl>, L<Verilog::Parser>
 
 =cut

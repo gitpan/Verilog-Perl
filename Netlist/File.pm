@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: File.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.373';
+$VERSION = '2.380';
 use strict;
 
 structs('new',
@@ -155,24 +155,7 @@ sub signal_decl {
 	return $self->error ("Signal declaration outside of module definition", $netname);
     }
 
-    if ($inout eq "reg" || $inout eq "trireg"
-	|| $inout eq "wire" || $inout eq "wand" || $inout eq "wor"
-	|| $inout eq "tri" || $inout eq "triand" || $inout eq "trior"
-	|| $inout eq "tri0" || $inout eq "tri1"
-	|| $inout eq "supply0" || $inout eq "supply1"
-	) {
-	my $net = $modref->find_net ($netname);
-	$net or $net = $modref->new_net
-	    (name=>$netname,
-	     filename=>$self->filename, lineno=>$self->lineno,
-	     simple_type=>1, type=>$inout, array=>$array,
-	     comment=>undef, msb=>$msb, lsb=>$lsb,
-	     signed=>$signed,
-	     );
-	$net->type($inout);  # If it's already declared as in/out etc, mark the type
-	$self->{_cmtref} = $net;
-    }
-    elsif ($inout =~ /(inout|in|out)(put|)$/) {
+    if ($inout =~ /(inout|in|out)(put|)$/) {
 	my $dir = $1;
 	##
 	my $net = $modref->find_net ($netname);
@@ -190,9 +173,17 @@ sub signal_decl {
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     direction=>$dir, type=>'wire',
 	     array=>$array, comment=>undef,);
-    }
-    else {
-	return $self->error ("Strange signal type: $inout", $inout);
+    } else {
+	my $net = $modref->find_net ($netname);
+	$net or $net = $modref->new_net
+	    (name=>$netname,
+	     filename=>$self->filename, lineno=>$self->lineno,
+	     simple_type=>1, type=>$inout, array=>$array,
+	     comment=>undef, msb=>$msb, lsb=>$lsb,
+	     signed=>$signed,
+	     );
+	$net->type($inout);  # If it's already declared as in/out etc, mark the type
+	$self->{_cmtref} = $net;
     }
 }
 
@@ -353,7 +344,8 @@ Verilog::Netlist::File - File containing Verilog code
 
 =head1 DESCRIPTION
 
-Verilog::Netlist::File allows Verilog files to be read and written.
+Verilog::Netlist::File allows Verilog::Netlist objects to be read and
+written in Verilog format.
 
 =head1 ACCESSORS
 
@@ -405,6 +397,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 

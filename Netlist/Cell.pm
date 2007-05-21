@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Cell.pm 35112 2007-04-02 13:44:27Z wsnyder $
+# $Id: Cell.pm 39061 2007-05-21 14:49:55Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.373';
+$VERSION = '2.380';
 use strict;
 
 structs('new',
@@ -194,8 +194,8 @@ Verilog::Netlist::Cell - Instantiated cell within a Verilog Netlist
 
 =head1 DESCRIPTION
 
-Verilog::Netlist creates a cell for every instantiation in the current
-module.
+A Verilog::Netlist::Cell object is created by Verilog::Netlist for every
+instantiation in the current module.
 
 =head1 ACCESSORS
 
@@ -283,6 +283,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Netlist::Subclass>
 L<Verilog::Netlist>
 

@@ -1,4 +1,4 @@
-// $Id: VFileLine.cpp 29806 2007-01-10 13:04:28Z wsnyder $  -*- C++ -*-
+// $Id: VFileLine.cpp 38226 2007-05-08 17:38:56Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -75,6 +75,34 @@ const char* VFileLine::itoa(int i) {
     static char buf[100];
     sprintf(buf,"%d",i);
     return buf;
+}
+
+VFileLine* VFileLine::lineDirective(const char* textp) {
+    // Handle `line directive
+    // Skip `line
+    while (*textp && isspace(*textp)) textp++;
+    while (*textp && !isspace(*textp)) textp++;
+    while (*textp && (isspace(*textp) || *textp=='"')) textp++;
+
+    // Grab linenumber
+    int lineno = this->lineno();
+    const char *ln = textp;
+    while (*textp && !isspace(*textp)) textp++;
+    if (isdigit(*ln)) {
+	lineno = atoi(ln);
+    }
+    while (*textp && (isspace(*textp) || *textp=='"')) textp++;
+
+    // Grab filename
+    string filename = this->filename();
+    const char* fn = textp;
+    while (*textp && !(isspace(*textp) || *textp=='"')) textp++;
+    if (textp != fn) {
+	string strfn = fn;
+	strfn = strfn.substr(0, textp-fn);
+	filename = strfn;
+    }
+    return create(filename,lineno);
 }
 
 //======================================================================

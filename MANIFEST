@@ -19,6 +19,7 @@ Preproc/Makefile.PL
 Preproc/Preproc.pm
 Preproc/Preproc.xs
 Preproc/src/example.cpp
+Preproc/src/flexfix
 Preproc/src/Makefile.PL
 Preproc/src/Makefile_without_perl
 Preproc/src/VFileLine.cpp
@@ -34,6 +35,7 @@ t/00_pod.t
 t/01_manifest.t
 t/10_keywords.t
 t/12_splitbus.t
+t/14_numbers.t
 t/20_getopt.opt
 t/20_getopt.t
 t/30_preproc.out
@@ -43,8 +45,11 @@ t/30_preproc_on.out
 t/30_preproc_sub.out
 t/32_noinc.t
 t/32_noinc.v
+t/34_parser.out
+t/34_parser.t
 t/35_sigparser.out
 t/35_sigparser.t
+t/36_sigmany.t
 t/40_netlist.t
 t/42_dumpcheck.t
 t/42_dumpcheck_1.out
@@ -52,6 +57,7 @@ t/42_dumpcheck_2.out
 t/42_dumpcheck_2e.out
 t/42_dumpcheck_2v.out
 t/42_dumpcheck_v2k.out
+t/44_create.t
 t/50_vrename.t
 t/60_vpm.t
 t/80_vppp.t
@@ -63,10 +69,12 @@ t/85_vhier_cells.out
 t/85_vhier_inpfiles.out
 t/85_vhier_modfiles.out
 t/test_utils.pl
+Verilog-Perl.pod
 verilog/example.v
 verilog/inc1.v
 verilog/inc2.v
 verilog/inc3.v
+verilog/parser_bugs.v
 verilog/pinorder.v
 verilog/pli.v
 verilog/test.v

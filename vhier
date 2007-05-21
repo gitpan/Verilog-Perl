@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: vhier 34908 2007-03-29 17:26:43Z wsnyder $
+# $Id: vhier 39056 2007-05-21 14:28:04Z wsnyder $
 ######################################################################
 #
 # Copyright 2005-2007 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -21,7 +21,7 @@ use lib '.';
 
 use Getopt::Long;
 use IO::File;
-use Pod::Text;
+use Pod::Usage;
 
 use Verilog::Netlist;
 use Verilog::Getopt;
@@ -63,7 +63,7 @@ if (! GetOptions (
 		  "xml!"	=> \$Opt_Xml,
 		  "<>"		=> \&parameter,
 		  )) {
-    usage();
+    die "%Error: Bad usage, try 'vhier --help'\n";
 }
 
 if (!@opt_files) {
@@ -84,9 +84,8 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vhier 34908 2007-03-29 17:26:43Z wsnyder $ '."\n";
-    $SIG{__WARN__} = sub{};	#pod2text isn't clean.
-    pod2text($0);
+    print 'Version: $Id: vhier 39056 2007-05-21 14:28:04Z wsnyder $ '."\n";
+    pod2usage(-verbose=>2, -exitval => 2);
     exit (1);
 }
 
@@ -256,8 +255,8 @@ vhier - Return all files in a verilog hierarchy using Verilog::Netlist
 
 =head1 DESCRIPTION
 
-Vhier reads the Verilog files passed on the command line and outputs
-a tree of all of the filenames referenced by that file.
+Vhier reads the Verilog files passed on the command line and outputs a tree
+of all of the filenames, modules, and cells referenced by that file.
 
 =head1 VERILOG ARGUMENTS
 
@@ -357,6 +356,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 =head1 SEE ALSO
 
+L<Verilog-Perl>,
 L<Verilog::Getopt>,
 L<Verilog::Preproc>,
 L<Verilog::Netlist>
