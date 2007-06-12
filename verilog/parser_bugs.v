@@ -146,6 +146,9 @@ module bugevent;
    always @ (e && e) $write("Legal\n");
 endmodule
 
+module bugio (input [31:0] a, a2, output [15:0] o, o2, input ibit);
+endmodule
+
 module buglocal;
    always #(cyclehalf) begin
       clk <= ~clk;
@@ -174,4 +177,12 @@ module buglocal;
    always val = @ eventid 1'h1;
 
    always dly = # (2:3:4) 5'h6 ;
+
+   wire     \33escapeneeded = 1'b1;
+   wire     \33escapenewlineend
+	    = 1'b1;
+   wire     \noescapenewlineend
+	    = 1'b1;
+   wire     \noescapespaceend = 1'b1;
+
 endmodule

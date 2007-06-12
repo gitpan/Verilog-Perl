@@ -1,11 +1,12 @@
 #!/usr/bin/perl -w
-# $Id: 36_sigmany.t 38949 2007-05-18 18:58:52Z wsnyder $
+# $Id: 36_sigmany.t 40278 2007-06-12 13:45:23Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 ######################################################################
+# VERILOG_TEST_FILES="$V4/test_regress/t/t_case*.v" VERILOG_TEST_DEBUGIF=1 t/36_sigmany.t
 #  (delete-matching-lines "^#\\|^ok \\|^1\\.\\.\\|^not ok")
 
 use strict;
@@ -72,7 +73,7 @@ sub check_series {
 sub read_test {
     my $filename = shift;
     my $parser = one_parse($filename, 0);
-    if ($ENV{VERILOG_TEST_DEBUG} && $parser->{_errored}) {
+    if ($ENV{VERILOG_TEST_DEBUGIF} && $parser->{_errored}) {
 	print "======== REPARSING w/debug\n";
 	one_parse($filename, 9);
     }
@@ -92,7 +93,7 @@ sub one_parse {
 				   options=>$opt);
 
     my $parser = new MyParser();
-    $parser->debug($debug);
+    $parser->debug($debug || $ENV{VERILOG_TEST_DEBUG});
     $pp->open($filename);
     if ($ENV{VERILOG_TEST_KEYWORDS}) {
 	$parser->parse("`begin_keywords \"1364-2001\" ");

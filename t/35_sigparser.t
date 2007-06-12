@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 35_sigparser.t 38949 2007-05-18 18:58:52Z wsnyder $
+# $Id: 35_sigparser.t 40258 2007-06-11 21:48:54Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -28,7 +28,6 @@ sub _common {
 
     my $args="";
     foreach (@args) { $args .= defined $_ ? " '$_'" : " undef"; }
-    my $urb = $self->unreadback;
     $self->{dump_fh}->printf("%s:%03d: %s %s\n",
 			     $self->filename, $self->lineno,
 			     uc $what,
@@ -42,9 +41,11 @@ sub error {
 }
 
 sub attribute {	$_[0]->_common('attribute', @_); }
+sub funcsignal { $_[0]->_common('funcsignal', @_); }
 sub function {	$_[0]->_common('function', @_); }
 sub instant {	$_[0]->_common('instant', @_); }
 sub module {	$_[0]->_common('module', @_); }
+sub parampin {	$_[0]->_common('parampin', @_); }
 sub pin {	$_[0]->_common('pin', @_); }
 sub port {	$_[0]->_common('port', @_); }
 sub signal_decl { $_[0]->_common('signal_decl', @_); }
@@ -65,6 +66,8 @@ my $dump_fh = new IO::File("test_dir/35.dmp","w")
 read_test("/dev/null", $dump_fh);  # Empty files should be ok
 read_test("verilog/v_hier_subprim.v", $dump_fh);
 read_test("verilog/v_hier_sub.v", $dump_fh);
+read_test("verilog/parser_bugs.v", $dump_fh);
+read_test("verilog/pinorder.v", $dump_fh);
 ok(1);
 $dump_fh->close();
 
@@ -77,9 +80,10 @@ sub read_test {
     my $filename = shift;
     my $dump_fh = shift;
 
-    my $pp = Verilog::Preproc->new(keep_comments=>0,);
+    my $pp = Verilog::Preproc->new(keep_comments=>1,);
 
-    my $parser = new MyParser (dump_fh => $dump_fh);
+    my $parser = new MyParser (dump_fh => $dump_fh,
+			       metacomment=>{synopsys=>1},);
     #$parser->debug(9);
 
     # Preprocess

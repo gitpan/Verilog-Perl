@@ -1,4 +1,4 @@
-// $Id: v_hier_sub.v 30570 2007-01-23 18:41:50Z wsnyder $
+// $Id: v_hier_sub.v 39125 2007-05-22 13:08:42Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2000-2007 by Wilson Snyder.
@@ -30,6 +30,8 @@ module v_hier_sub (/*AUTOARG*/
    endgenerate
 
    function foo;
+      (* attribute *)
+      /* synopsys metacommenttest */
       input not_part_of_pinlist;
       foo = not_part_of_pinlist;
    endfunction

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 39056 2007-05-21 14:28:04Z wsnyder $
+# $Id: Makefile.PL 39468 2007-05-25 15:11:23Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -9,11 +9,12 @@ require 5.005;
 use ExtUtils::MakeMaker;
 use Carp;
 
-$DOLLAR = '$$';	# Quoted properly for make
 sub MY::postamble {
     my $out="";
     $out .= "CCFLAGS += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
+    $out .= "CCFLAGS  += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
+    $out .= "OPTIMIZE += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= "
 README: Verilog-Perl.pod
 	-rm -rf \$@
@@ -48,6 +49,7 @@ maintainer-clean: distclean
 
 local $! = undef;
 `flex --version`; ($?==0) or die "\n%Error: 'flex' must be installed to build\n";
+`bison --version`; ($?==0) or die "\n%Error: 'bison' must be installed to build\n";
 `g++ --version`; ($?==0) or die "\n%Error: 'gcc/g++' must be installed to build\n";
 
 WriteMakefile(

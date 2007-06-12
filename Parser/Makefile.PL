@@ -24,41 +24,60 @@ sub MY::postamble {
 	$out .= "LDLOADLIBS += -lstdc++\n";
     }
     $out .= "CCFLAGS  += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
+    #$out .= "CCFLAGS += -O0 -ggdb\n" if $ENV{VERILATOR_AUTHOR_SITE};  print "%Warning: -O0 --gdb on, also FLEX -d on";
     $out .= "CCFLAGS  += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
     $out .= "OPTIMIZE += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= '
 CC = g++
 LEX = flex
+YACC = bison
+PPSRC = ../Preproc/src
+FLEXFIX = $(PPSRC)/flexfix
+YFLAGS = -d -v
 
+CCFLAGS += -I$(PPSRC)
 #CFLAGS += -DFLEX_DEBUG
-#LEXFLAGS += -d -L
+LEXFLAGS += -d
 
-VPATH += src
+VPATH += . $(PPSRC)
 
-.PHONY: src/VFileLine.o src/VPreproc.o src/VPreprocLex.o
-.PHONY: sources
+VParseLex.o:		VParseLex.cpp     VParseLex.h VParseGrammar.h VParse.h VFileLine.h VParseBison.h
+VParseGrammar.o:	VParseGrammar.cpp VParseLex.h VParseGrammar.h VParse.h VFileLine.h VParseBison.h
+VParse.o:		VParse.cpp        VParseLex.h VParseGrammar.h VParse.h VFileLine.h VParseBison.h
+VFileLine.o:	        VFileLine.cpp     VFileLine.h
 
-src/VFileLine.o src/VPreproc.o src/VPreprocLex.o: sources
+VFileLine.o: $(PPSRC)/VFileLine.cpp
+	$(CCCMD) $(CCCDLFLAGS) "-I$(PERL_INC)" $(PASTHRU_DEFINE) $(DEFINE) $<
 
-sources:
-	cd src && $(MAKE) $(PASSTHRU) example
+VParseLex_prefix.cpp: VParseLex.l
+	$(LEX) $(LEXFLAGS) -o$@ $<
+
+VParseLex.cpp: $(FLEXFIX) VParseLex_prefix.cpp
+	$(PERL) $(FLEXFIX) < VParseLex_prefix.cpp > $@
+
+VParseBison.h: VParseBison.cpp
+
+VParseBison.cpp:	VParseBison.y
+	-rm -rf VParseBison.c VParseBison.cpp
+	@echo "If the next command fails, you probably need to install Bison 1.875 or newer"
+	${YACC} ${YFLAGS} --debug --verbose -d -k $< -pVParseBison -o VParseBison.c
+	-(grep conflicts VParseBison.output || mv VParseBison.c VParseBison.cpp )
+	-rm -rf VParseBison.c
 
 clean::
-	-rm -rf test *.o VPreprocLex.cpp *.output
+	-rm -rf test *.d *.o *.output
+	-rm -rf VParseLex*.cpp VParseBison.h VParseBison.cpp
 ';
     return $out;
 }
 
 WriteMakefile(
-              NAME => "Verilog::Preproc",
+              NAME => "Verilog::Parser",
 	      LIBS => '-lstdc++',
-	      VERSION_FROM  => 'Preproc.pm',
+	      VERSION_FROM  => 'Parser.pm',
 	      XSOPT => '-C++',
-    	      OBJECT => '$(O_FILES)',
-	      # Included in .xs, as had problems
-	      #MYEXTLIB => 'src/PreprocSrc.o',
-	      MYEXTLIB => 'src/VFileLine.o src/VPreproc.o src/VPreprocLex.o',
-	      #MYEXTLIB => 'VFileLine.o VPreproc.o VPreprocLex.o',
+    	      OBJECT   => 'VFileLine.o VParseLex.o VParse.o VParseBison.o',
+	      MYEXTLIB => 'Parser.o',
 	      INC => (" -I. -Isrc"),
 	      );

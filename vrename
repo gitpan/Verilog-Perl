@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # vrename - Rename Verilog signals across multiple files
-# $Id: vrename 39061 2007-05-21 14:49:55Z wsnyder $
+# $Id: vrename 39239 2007-05-23 13:58:21Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ################ Introduction ################
 #
@@ -36,7 +36,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Crypt_All $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '2.380';
+$VERSION = '3.000';
 
 ######################################################################
 
@@ -138,14 +138,14 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    print 'Id: $Id: vrename 39061 2007-05-21 14:49:55Z wsnyder $ ', "\n";
+    print 'Id: $Id: vrename 39239 2007-05-23 13:58:21Z wsnyder $ ', "\n";
     pod2usage(-verbose=>2, -exitval => 2);
     exit (1);
 }
 
 sub version {
     print "Version: $VERSION\n";
-    print '$Id: vrename 39061 2007-05-21 14:49:55Z wsnyder $ ', "\n";
+    print '$Id: vrename 39239 2007-05-23 13:58:21Z wsnyder $ ', "\n";
     exit (1);
 }
 

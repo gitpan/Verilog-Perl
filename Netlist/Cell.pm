@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Cell.pm 39061 2007-05-21 14:49:55Z wsnyder $
+# $Id: Cell.pm 39239 2007-05-23 13:58:21Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '2.380';
+$VERSION = '3.000';
 use strict;
 
 structs('new',
@@ -154,7 +154,6 @@ sub new_pin {
     # @_ params
     # Create a new pin under this cell
     my $pinref = new Verilog::Netlist::Pin (cell=>$self, @_);
-    $self->portname($self->name) if !$self->name;	# Back Version 1.000 compatibility
     $self->_pins ($pinref->name(), $pinref);
     return $pinref;
 }
