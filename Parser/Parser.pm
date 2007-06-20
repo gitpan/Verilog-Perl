@@ -1,4 +1,4 @@
-#$Id: Parser.pm 39293 2007-05-23 19:39:17Z wsnyder $
+#$Id: Parser.pm 40722 2007-06-20 17:52:25Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2007 by Wilson Snyder.  This program is free software;
@@ -23,7 +23,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.000';
+$VERSION = '3.001';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 

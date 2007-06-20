@@ -1,5 +1,5 @@
 %{
-/* $Id: VParseBison.y 40278 2007-06-12 13:45:23Z wsnyder $
+/* $Id: VParseBison.y 40678 2007-06-19 23:49:06Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: SystemC bison parser
  *
@@ -756,11 +756,10 @@ taskRef:	idDotted		 		{ }
 funcRef:	idDotted '(' exprList ')'		{ }
 	;
 
-taskDecl: 	yTASK taskAutoE taskId ';'             stmtBlock yENDTASK	{ GRAMMARP->m_inFTask=false; }
-	| 	yTASK taskAutoE taskId ';' funcVarList stmtBlock yENDTASK	{ GRAMMARP->m_inFTask=false; }
+taskDecl: 	yTASK taskAutoE taskId funcGuts yENDTASK	{ GRAMMARP->m_inFTask=false; }
 	;
 
-funcDecl: 	yFUNCTION taskAutoE funcId ';' funcBody yENDFUNCTION 		{ GRAMMARP->m_inFTask=false; }
+funcDecl: 	yFUNCTION taskAutoE funcId funcGuts yENDFUNCTION 	{ GRAMMARP->m_inFTask=false; }
 	;
 
 taskAutoE:	/* empty */		 		{ }
@@ -774,8 +773,13 @@ funcId: 	funcTypeE yaID				{ GRAMMARP->m_inFTask=true; PARSEP->functionCb($<fl>2
 	|	ySIGNED funcTypeE yaID			{ GRAMMARP->m_inFTask=true; PARSEP->functionCb($<fl>3,"function",$3,"signed "+$2); }
 	;
 
-funcBody:	funcVarList stmtBlock			{ }
+funcGuts:	'(' {GRAMMARP->pinNum(1);} portV2kArgs ')' ';' funcBody	{ }
+	|	';' funcBody				{ }
 	;
+
+funcBody:	funcVarList stmtBlock			{ }
+	|	stmtBlock				{ }
+ 	;
 
 funcTypeE:	/* empty */				{ $$ = ""; }
 	|	varTypeKwds				{ $$ = $1; }

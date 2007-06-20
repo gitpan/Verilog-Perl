@@ -1,4 +1,4 @@
-// $Id: VPreproc.cpp 29806 2007-01-10 13:04:28Z wsnyder $  -*- C++ -*-
+// $Id: VPreproc.cpp 40354 2007-06-13 17:26:39Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -175,6 +175,7 @@ const char* VPreprocImp::tokenName(int tok) {
     case VP_DEFINE	: return("DEFINE");
     case VP_ELSE	: return("ELSE");	
     case VP_ELSIF	: return("ELSIF");	
+    case VP_LINE	: return("LINE");	
     case VP_SYMBOL	: return("SYMBOL");
     case VP_STRING	: return("STRING");
     case VP_DEFVALUE	: return("DEFVALUE");
@@ -429,6 +430,10 @@ int VPreprocImp::getToken() {
 	    // in it, we also return the newlines as TEXT so that the linenumber
 	    // count is maintained for downstream tools
 	    for (int len=0; len<yyleng; len++) { if (yytext[len]=='\n') m_lineAdd++; }
+	    goto next_tok;
+	}
+	if (tok==VP_LINE) {
+	    addLineComment(0);
 	    goto next_tok;
 	}
 	// Deal with some special parser states

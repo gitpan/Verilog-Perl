@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: vhier 39056 2007-05-21 14:28:04Z wsnyder $
+# $Id: vhier 40588 2007-06-18 19:03:20Z wsnyder $
 ######################################################################
 #
 # Copyright 2005-2007 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -84,7 +84,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vhier 39056 2007-05-21 14:28:04Z wsnyder $ '."\n";
+    print 'Version: $Id: vhier 40588 2007-06-18 19:03:20Z wsnyder $ '."\n";
     pod2usage(-verbose=>2, -exitval => 2);
     exit (1);
 }
@@ -165,7 +165,7 @@ sub show_missing_module_names {
     my %miss_names;
     foreach my $mod ($nl->modules) {
 	foreach my $cell ($mod->cells_sorted) {
-	    if (!$cell->submod) {
+	    if (!$cell->submod && !$cell->gateprim) {
 		$miss_names{$cell->submodname} = 1;
 	    }
 	}

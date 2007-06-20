@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Id: VPreprocLex.l 38883 2007-05-17 21:07:24Z wsnyder $
+/* $Id: VPreprocLex.l 40354 2007-06-13 17:26:39Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 
@@ -64,7 +64,8 @@ drop		[\032]
 	/**************************************************************/
 %%
 
-<INITIAL>^{ws}*"`line"{ws}+.*{crnl}	{ VPreprocLex::s_currentLexp->lineDirective(yytext); }
+<INITIAL>^{ws}*"`line"{ws}+.*{crnl}	{ VPreprocLex::s_currentLexp->lineDirective(yytext);
+					  return(VP_LINE); }
 
 	/* Special directives we recognise */
 <INITIAL>"`include"	{ return(VP_INCLUDE); }

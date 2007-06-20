@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 10_keywords.t 38974 2007-05-18 21:50:11Z wsnyder $
+# $Id: 10_keywords.t 40588 2007-06-18 19:03:20Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -9,7 +9,7 @@
 use strict;
 use Test;
 
-BEGIN { plan tests => 14 }
+BEGIN { plan tests => 16 }
 BEGIN { require "t/test_utils.pl"; }
 
 use Verilog::Language;
@@ -30,3 +30,6 @@ ok (Verilog::Language::strip_comments("he/**/l/**/lo") eq "hello");
 ok (Verilog::Language::strip_comments("he//xx/*\nllo") eq "he\nllo");
 ok (Verilog::Language::strip_comments("he/*xx//..*/llo") eq "hello");
 ok (Verilog::Language::strip_comments("he\"//llo\"") eq "he\"//llo\"");
+
+ok ( Verilog::Language::is_gateprim("buf"));
+ok (!Verilog::Language::is_gateprim("else"));

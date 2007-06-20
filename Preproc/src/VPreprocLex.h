@@ -1,4 +1,4 @@
-// $Id: VPreprocLex.h 38226 2007-05-08 17:38:56Z wsnyder $  -*- C++ -*-
+// $Id: VPreprocLex.h 40354 2007-06-13 17:26:39Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -41,6 +41,7 @@
 #define VP_DEFINE	261
 #define VP_ELSE		262
 #define VP_ELSIF	263
+#define VP_LINE		264
 
 #define VP_SYMBOL	300
 #define VP_STRING	301

@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 39534 2007-05-25 20:37:25Z wsnyder $
+# $Id: SigParser.pm 40722 2007-06-20 17:52:25Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use base qw(Verilog::Parser);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.000';
+$VERSION = '3.001';
 
 #######################################################################
 

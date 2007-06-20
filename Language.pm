@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 39239 2007-05-23 13:58:21Z wsnyder $
+# $Id: Language.pm 40722 2007-06-20 17:52:25Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -100,6 +100,11 @@ Value indicates the language standard as per the `begin_keywords macro,
 
 Return true if the given symbol string is a Verilog compiler directive.
 
+=item Verilog::Language::is_gateprim ($symbol_string)
+
+Return true if the given symbol is a built in gate primitive; for example
+"buf", "xor", etc.
+
 =item Verilog::Language::language_standard ($year)
 
 Sets the language standard to indicate what are keywords.  If undef, all
@@ -188,13 +193,13 @@ require 5.000;
 require Exporter;
 
 use strict;
-use vars qw($VERSION %Keyword %Keywords %Compdirect $Standard);
+use vars qw($VERSION %Keyword %Keywords %Compdirect $Standard %Gateprim);
 use Carp;
 
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.000';
+$VERSION = '3.001';
 
 ######################################################################
 #### Internal Variables
@@ -260,6 +265,12 @@ foreach my $kwd (
 
 language_standard ('1800-2005');  # Default standard
 
+foreach my $kwd (qw(
+		    and buf bufif0 bufif1 cmos nand nmos nor not notif0
+		    notif1 or pmos pulldown pullup rcmos rnmos rpmos rtran
+		    rtranif0 rtranif1 tran tranif0 tranif1 xnor xor
+		    )) { $Gateprim{$kwd} = '1364-1995'; }
+
 ######################################################################
 #### Keyword utilities
 
@@ -303,6 +314,11 @@ sub is_keyword {
 sub is_compdirect {
     my $symbol = shift;
     return ($Compdirect{$symbol});
+}
+
+sub is_gateprim {
+    my $symbol = shift;
+    return ($Gateprim{$symbol});
 }
 
 ######################################################################
