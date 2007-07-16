@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Id: Parser.xs 39534 2007-05-25 20:37:25Z wsnyder $
+#* $Id: Parser.xs 41875 2007-07-13 21:08:35Z wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Parser Perl XS interface
@@ -390,16 +390,17 @@ CODE:
 #//**********************************************************************
 #// self->unreadback()
 
-const char *
+SV*
 VParserXs::unreadback (const char* flagp="")
 PROTOTYPE: $;$
 CODE:
 {
     if (!THIS) XSRETURN_UNDEF;
+    // Set RETVAL to a SV before we replace with the new value, and c_str may change
+    RETVAL = newSVpv(THIS->unreadback().c_str(), THIS->unreadback().length());
     if (items > 1) {
 	THIS->unreadback(flagp);
     }
-    RETVAL = THIS->unreadback().c_str();
 }
 OUTPUT: RETVAL
 

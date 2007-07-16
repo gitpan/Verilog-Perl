@@ -3,6 +3,18 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.002 2007/07/16
+
+***	Find functions now search backslash escaped names.  [David Chinnery]
+
+***	Fix vrename breakage in 3.00* releases.  [David Price]
+
+****	Fix SigParser::comment to call Parser::Comment. [Mark Nodine]
+
+****	Fix Parser::unreadback to always return value. [Mark Nodine]
+
+****	Fix g++ bug giving "out of memory" on Cygwin.  [Pongstorn]
+
 * Verilog::Language 3.001 2007/06/20
 
 ****	Support V2K function/task argument lists.
@@ -488,7 +500,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 40722 2007-06-20 17:52:25Z wsnyder $
+$Id: Changes 41901 2007-07-16 14:07:31Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

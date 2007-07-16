@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Module.pm 40722 2007-06-20 17:52:25Z wsnyder $
+# $Id: Module.pm 41901 2007-07-16 14:07:31Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.001';
+$VERSION = '3.002';
 use strict;
 
 structs('new',
@@ -69,7 +69,7 @@ sub modulename_from_filename {
 sub find_port {
     my $self = shift;
     my $search = shift;
-    return $self->_ports->{$search};
+    return $self->_ports->{$search} || $self->_ports->{"\\".$search." "};
 }
 sub find_port_by_index {
     my $self = shift;
@@ -82,14 +82,14 @@ sub find_port_by_index {
 sub find_cell {
     my $self = shift;
     my $search = shift;
-    return $self->_cells->{$search};
+    return $self->_cells->{$search} || $self->_cells->{"\\".$search." "};
 }
 sub find_net {
     my $self = shift;
     my $search = shift;
     my $rtn = $self->_nets->{$search}||"";
     #print "FINDNET ",$self->name, " SS $search  $rtn\n";
-    return $self->_nets->{$search};
+    return $self->_nets->{$search} || $self->_nets->{"\\".$search." "};
 }
 
 sub attrs_sorted {

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Cell.pm 40722 2007-06-20 17:52:25Z wsnyder $
+# $Id: Cell.pm 41901 2007-07-16 14:07:31Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.001';
+$VERSION = '3.002';
 use strict;
 
 structs('new',
@@ -166,7 +166,7 @@ sub new_pin {
 sub find_pin {
     my $self = shift;
     my $name = shift;
-    return $self->_pins($name);
+    return $self->_pins($name) || $self->_pins("\\".$name." ");
 }
 
 sub pins {
