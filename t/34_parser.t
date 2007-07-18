@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 34_parser.t 39236 2007-05-23 13:52:17Z wsnyder $
+# $Id: 34_parser.t 41964 2007-07-18 13:47:50Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -39,6 +39,7 @@ sub _common {
 
 sub attribute {	$_[0]->_common('attribute', @_); }
 sub comment {	$_[0]->_common('comment', @_); }
+sub endparse {	$_[0]->_common('endparse', @_); }
 sub keyword {	$_[0]->_common('keyword', @_); }
 sub number {	$_[0]->_common('number', @_); }
 sub operator {	$_[0]->_common('operator', @_); }

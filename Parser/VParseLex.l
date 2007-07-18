@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VParseLex"
 %{
-/* $Id: VParseLex.l 40258 2007-06-11 21:48:54Z wsnyder $
+/* $Id: VParseLex.l 41964 2007-07-18 13:47:50Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Parser Lexer
  * 
@@ -459,7 +459,7 @@ escid	\\[^ \t\f\r\n]+
 <CMTMODE>"*"+"/"	{ FL; VALTEXT; CALLBACK(commentCb); yy_pop_state(); }
 <CMTMODE>. 		{ yymore(); }
 <CMTMODE><<EOF>>	{ yyerror("EOF in '/* ... */' block comment");
-			  yyleng = 0; }
+			  yyleng = 0; yy_pop_state(); }
 
   /************************************************************************/
   /* Protected */
@@ -467,7 +467,7 @@ escid	\\[^ \t\f\r\n]+
 <PROTMODE>"`endprotected"	{ FL; VALTEXT; CALLBACK(preprocCb); yy_pop_state(); } 
 <PROTMODE>. 		{ yymore(); }
 <PROTMODE><<EOF>>	{ yyerror("EOF in `protected");
-			  yyleng = 0; }
+			  yyleng = 0; yy_pop_state(); }
 
   /************************************************************************/
   /* Attributes */
@@ -475,7 +475,7 @@ escid	\\[^ \t\f\r\n]+
 <ATTRMODE>"*)"		{ FL; VALTEXT; CALLBACK(attributeCb); yy_pop_state(); }
 <ATTRMODE>. 		{ yymore(); }
 <ATTRMODE><<EOF>>	{ yyerror("EOF in (*");
-			  yyleng = 0; }
+			  yyleng = 0; yy_pop_state(); }
 
   /************************************************************************/
   /* Attributes */

@@ -1,4 +1,4 @@
-// $Id: VParse.h 39534 2007-05-25 20:37:25Z wsnyder $  -*- C++ -*-
+// $Id: VParse.h 41964 2007-07-18 13:47:50Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -97,6 +97,7 @@ public:
     // This probably will want to be overridden for given child users of this class.
     virtual void attributeCb(VFileLine* fl, const string& text) = 0;
     virtual void commentCb(VFileLine* fl, const string& text) = 0;
+    virtual void endparseCb(VFileLine* fl) = 0;
     virtual void keywordCb(VFileLine* fl, const string& text) = 0;
     virtual void numberCb(VFileLine* fl, const string& text) = 0;
     virtual void operatorCb(VFileLine* fl, const string& text) = 0;
@@ -105,7 +106,9 @@ public:
     virtual void symbolCb(VFileLine* fl, const string& text) = 0;
     virtual void sysfuncCb(VFileLine* fl, const string& text) = 0;
 
-    virtual void attributeCb(VFileLine* fl, const string& kwd, const string& text) = 0;
+    virtual void endcellCb(VFileLine* fl, const string& kwd) = 0;
+    virtual void endmoduleCb(VFileLine* fl, const string& kwd) = 0;
+    virtual void endtaskfuncCb(VFileLine* fl, const string& kwd) = 0;
     virtual void functionCb(VFileLine* fl, const string& kwd, const string& name, const string& type) = 0;
     virtual void instantCb(VFileLine* fl, const string& mod, const string& cell, const string& range) = 0;
     virtual void moduleCb(VFileLine* fl, const string& kwd, const string& name, bool celldefine) = 0;

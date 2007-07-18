@@ -1,4 +1,4 @@
-// $Id: v_hier_sub.v 39125 2007-05-22 13:08:42Z wsnyder $
+// $Id: v_hier_sub.v 41965 2007-07-18 13:58:24Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2000-2007 by Wilson Snyder.
@@ -18,7 +18,7 @@ module v_hier_sub (/*AUTOARG*/
 	      // Outputs
 	      .q		(qvec[0]),
 	      // Inputs
-	      .a		(a1));
+	      .a		(a1));  // Comment for subsub cell
 
 
    generate

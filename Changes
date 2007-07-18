@@ -3,6 +3,14 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.010 2007/07/18
+
+***	Added Parser::endparse callback. [Mark Nodine]
+
+***	Added SigParser::endmodule, endtaskfunc, and endcell callbacks.
+
+****	Fix attachment of comments to proceeding cells. [David Chinnery]
+
 * Verilog::Language 3.002 2007/07/16
 
 ***	Find functions now search backslash escaped names.  [David Chinnery]
@@ -500,7 +508,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 41901 2007-07-16 14:07:31Z wsnyder $
+$Id: Changes 41966 2007-07-18 13:59:44Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

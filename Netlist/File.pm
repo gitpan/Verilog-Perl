@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm 41901 2007-07-16 14:07:31Z wsnyder $
+# $Id: File.pm 41966 2007-07-18 13:59:44Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.002';
+$VERSION = '3.010';
 use strict;
 
 structs('new',
@@ -100,6 +100,11 @@ sub module {
 	  filename=>$self->filename, lineno=>$self->lineno);
     $fileref->_modules($module, $self->{modref});
     $self->{_cmtref} = $self->{modref};
+}
+
+sub endmodule {
+    my $self = shift;
+    $self->{_cmtref} = undef;  # Assume all module comments are inside the module, not after
 }
 
 sub port {
@@ -200,6 +205,11 @@ sub instant {
 	  filename=>$self->filename, lineno=>$self->lineno,
 	  submodname=>$submodname, params=>$params,);
     $self->{_cmtref} = $self->{cellref};
+}
+
+sub endcell {
+    my $self = shift;
+    $self->{_cmtref} = $self->{cellref};  # Comments after cell decl go to the cell
 }
 
 sub parampin {

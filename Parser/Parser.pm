@@ -1,4 +1,4 @@
-#$Id: Parser.pm 41901 2007-07-16 14:07:31Z wsnyder $
+#$Id: Parser.pm 41966 2007-07-18 13:59:44Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2007 by Wilson Snyder.  This program is free software;
@@ -23,7 +23,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.002';
+$VERSION = '3.010';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 
@@ -195,6 +195,13 @@ sub sysfunc {
     $self->symbol($token); # Do this for backward compatibility with Version 2.*
 }
 
+sub endparse {
+    # Default Internal callback
+    my $self = shift;	# Parser invoked
+    my $token = shift;	# What token was parsed
+    $self->unreadbackCat($token);
+}
+
 ######################################################################
 #### Package return
 1;
@@ -302,6 +309,12 @@ argument, $token, is the contents of the attribute including the delimiters.
 This method is called when any text in // or /**/ comments are recognized.
 The first argument, $token, is the contents of the comment including the
 comment delimiters.
+
+=item $self->endparse ( $token )
+
+This method is called when the file has been completely parsed, at the
+End-Of-File of the parsed file.  It is useful for writing clean up
+routines.
 
 =item $self->keyword ( $token )
 

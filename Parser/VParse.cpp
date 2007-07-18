@@ -1,4 +1,4 @@
-// $Id: VParse.cpp 39236 2007-05-23 13:52:17Z wsnyder $  -*- C++ -*-
+// $Id: VParse.cpp 41964 2007-07-18 13:47:50Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -84,6 +84,8 @@ void VParse::setEof() {
     } else {
 	fakeBison();
     }
+    // End of parsing callback
+    endparseCb(inFilelinep());
     if (debug()) { cout<<"VParse::setEof: DONE\n"; }
 }
 

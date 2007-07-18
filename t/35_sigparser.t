@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 35_sigparser.t 40258 2007-06-11 21:48:54Z wsnyder $
+# $Id: 35_sigparser.t 41964 2007-07-18 13:47:50Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -41,6 +41,9 @@ sub error {
 }
 
 sub attribute {	$_[0]->_common('attribute', @_); }
+sub endcell    { $_[0]->_common('endcell', @_); }
+sub endtaskfunc{ $_[0]->_common('endtaskfunc', @_); }
+sub endmodule  { $_[0]->_common('endmodule', @_); }
 sub funcsignal { $_[0]->_common('funcsignal', @_); }
 sub function {	$_[0]->_common('function', @_); }
 sub instant {	$_[0]->_common('instant', @_); }
