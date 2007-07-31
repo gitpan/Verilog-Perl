@@ -1,5 +1,5 @@
 %{
-/* $Id: VParseBison.y 41964 2007-07-18 13:47:50Z wsnyder $
+/* $Id: VParseBison.y 41977 2007-07-18 17:33:42Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: SystemC bison parser
  *
@@ -195,6 +195,7 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yP_PARSTRENGTH	"(-for-strength"
 %token<str>		yP_PLUSCOLON	"+:"
 %token<str>		yP_MINUSCOLON	"-:"
+%token<str>		yP_MINUSGT	"->"
 
 //********************
 // Verilog op precedence
@@ -206,7 +207,7 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %left<str>	'^'
 %left<str>	yP_XNOR
 %left<str>	'&' yP_NAND
-%left<str>	yP_EQUAL yP_NOTEQUAL yP_CASEEQUAL yP_CASENOTEQUAL
+%left<str>	yP_EQUAL yP_NOTEQUAL yP_CASEEQUAL yP_CASENOTEQUAL yP_WILDEQUAL yP_WILDNOTEQUAL
 %left<str>	'>' '<' yP_GTE yP_LTE
 %left<str>	yP_SLEFT yP_SRIGHT yP_SSRIGHT
 %left<str>	'+' '-'
@@ -275,7 +276,7 @@ file:		mod 					{ }
 //**********************************************************************
 // Module headers
 
-mod:		modHdr modParE modPortsE ';' modItemListE yENDMODULE
+mod:		modHdr modParE modPortsE ';' modItemListE yENDMODULE endLabelE
 			{ PARSEP->endmoduleCb($<fl>1,$6); }
 	;
 
@@ -442,8 +443,8 @@ genTopBlock:	genItemList				{ }
 
 genItemBegin:	yBEGIN genItemList yEND			{ }
 	|	yBEGIN yEND				{ }
-	|	yBEGIN ':' yaID genItemList yEND	{ }
-	|	yBEGIN ':' yaID yEND			{ }
+	|	yBEGIN ':' yaID genItemList yEND endLabelE	{ }
+	|	yBEGIN ':' yaID             yEND endLabelE	{ }
 	;
 
 genItemList:	genItem					{ }
@@ -661,12 +662,12 @@ senitemEdge:	yPOSEDGE expr				{ }
 stmtBlock:	stmt					{ }
 	|	yBEGIN stmtList yEND			{ }
 	|	yBEGIN yEND				{ }
-	|	beginNamed stmtList yEND		{ }
-	|	beginNamed yEND				{ }
-	|	yFORK stmtList yJOIN			{ }
-	|	yFORK yJOIN				{ }
-	|	forkNamed stmtList yJOIN		{ }
-	|	forkNamed yJOIN				{ }
+	|	beginNamed stmtList yEND endLabelE	{ }
+	|	beginNamed 	    yEND endLabelE	{ }
+	|	yFORK stmtList	   yJOIN		{ }
+	|	yFORK 		   yJOIN		{ }
+	|	forkNamed stmtList yJOIN endLabelE	{ }
+	|	forkNamed 	   yJOIN endLabelE	{ }
 	;
 
 beginNamed:	yBEGIN ':' yaID varDeclList		{ }
@@ -694,7 +695,7 @@ stmt:		';'					{ }
 
 	|	yFOREVER stmtBlock			{ }
 
-	|	'-' '>'	expr ';' 			{ }  /* event */
+	|	yP_MINUSGT expr ';' 			{ }  /* event trigger */
 	|	ygenSYSCALL '(' ')' ';'			{ }
 	|	ygenSYSCALL '(' exprList ')' ';'	{ }
 	|	ygenSYSCALL ';'				{ }
@@ -756,11 +757,11 @@ taskRef:	idDotted		 		{ }
 funcRef:	idDotted '(' exprList ')'		{ }
 	;
 
-taskDecl: 	yTASK taskAutoE taskId funcGuts yENDTASK
+taskDecl: 	yTASK taskAutoE taskId funcGuts yENDTASK endLabelE
 			{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>1,$5); }
 	;
 
-funcDecl: 	yFUNCTION taskAutoE funcId funcGuts yENDFUNCTION
+funcDecl: 	yFUNCTION taskAutoE funcId funcGuts yENDFUNCTION endLabelE
 		 	{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>1,$5); }
 	;
 
@@ -814,6 +815,8 @@ exprNoStr:	expr yP_OROR expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr yP_NOTEQUAL expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr yP_CASEEQUAL expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr yP_CASENOTEQUAL expr		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
+	|	expr yP_WILDEQUAL expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
+	|	expr yP_WILDNOTEQUAL expr		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr '>' expr				{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr '<' expr				{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr yP_GTE expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
@@ -942,11 +945,13 @@ specifyJunk:	dlyTerm 	{} /* ignored */
 	|	yP_ANDAND {} | yP_GTE {} | yP_LTE {}
 	|	yP_EQUAL {} | yP_NOTEQUAL {}
 	|	yP_CASEEQUAL {} | yP_CASENOTEQUAL {}
+	|	yP_WILDEQUAL {} | yP_WILDNOTEQUAL {}
 	|	yP_XNOR {} | yP_NOR {} | yP_NAND {}
 	|	yP_OROR {}
 	|	yP_SLEFT {} | yP_SRIGHT {} | yP_SSRIGHT {}
 	|	yP_PLUSCOLON {} | yP_MINUSCOLON {}
 	|	yP_POW {}
+	|	yP_MINUSGT {}
 
 	|	error {}
 	;
@@ -981,6 +986,10 @@ strAsInt:	yaSTRING				{ $<fl>$=$<fl>1; $$ = $1; }
 
 concIdList:	varRefDotBit				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	concIdList ',' varRefDotBit		{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
+	;
+
+endLabelE:	/* empty */				{ }
+	|	':' yaID				{ }
 	;
 
 //************************************************

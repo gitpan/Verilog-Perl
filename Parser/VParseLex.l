@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VParseLex"
 %{
-/* $Id: VParseLex.l 41964 2007-07-18 13:47:50Z wsnyder $
+/* $Id: VParseLex.l 42513 2007-07-30 14:59:58Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Parser Lexer
  * 
@@ -241,6 +241,8 @@ escid	\\[^ \t\f\r\n]+
   "assert"		{ FL; VALTEXT; CALLBACK(keywordCb); return yASSERT; }
   "do"			{ FL; VALTEXT; CALLBACK(keywordCb); return yDO; }
   "final"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFINAL; }
+  "join_any"		{ FL; VALTEXT; CALLBACK(keywordCb); return yJOIN; }
+  "join_none"		{ FL; VALTEXT; CALLBACK(keywordCb); return yJOIN; }
   /*     Generic unsupported keywords */
   "alias"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "assume"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -287,8 +289,6 @@ escid	\\[^ \t\f\r\n]+
   "int"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "interface"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "intersect"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "join_any"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "join_none"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "local"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "logic"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "longint"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -373,7 +373,7 @@ escid	\\[^ \t\f\r\n]+
 }
 
   /************************************************************************/
-  /* Operators */
+  /* Operators and multi-character symbols */
 <V95,V01,V05,S05>{
   "&&"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ANDAND; }
   "||"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_OROR; }
@@ -389,6 +389,7 @@ escid	\\[^ \t\f\r\n]+
   "~^"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_XNOR; }
   "~&"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_NAND; }
   "~|"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_NOR; }
+  "->"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MINUSGT; }
 }
 
   /* Verilog 2001 Operators */
@@ -398,6 +399,12 @@ escid	\\[^ \t\f\r\n]+
   "**"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_POW; }
   "+:"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_PLUSCOLON; }
   "-:"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MINUSCOLON; }
+}
+
+  /* SystemVerilog Operators */
+<S05>{
+  "==?"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_WILDEQUAL; }
+  "!=?"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_WILDNOTEQUAL; }
 }
 
   /* Identifiers and numbers */
@@ -490,7 +497,7 @@ escid	\\[^ \t\f\r\n]+
   "`endcelldefine"		{ FL; VALTEXT; CALLBACK(preprocCb); LEXP->m_inCellDefine=false; }
   "`endprotect"			{ FL; VALTEXT; CALLBACK(preprocCb); }
   "`inline"			{ FL; VALTEXT; CALLBACK(preprocCb); }
-  "`line"{ws}+.*\n		{ PARSEP->inLineDirective(yytext);
+  "`line"{ws}+[^\n]*\n		{ PARSEP->inLineDirective(yytext);
 			  	  FL; VALTEXT; CALLBACK(preprocCb); }
   "`portcoerce"			{ FL; VALTEXT; CALLBACK(preprocCb); }
   "`protect"			{ FL; VALTEXT; CALLBACK(preprocCb); }
@@ -503,7 +510,7 @@ escid	\\[^ \t\f\r\n]+
   "`begin_keywords"[ \t]*\"1364-2001-noconfig\"	{ yy_push_state(V01); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1364-2005\"		{ yy_push_state(V05); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1800-2005\"		{ yy_push_state(S05); CALLBACK(preprocCb); }
-  "`end_keywords"					{ yy_pop_state();     CALLBACK(preprocCb); }
+  "`end_keywords"				{ yy_pop_state();     CALLBACK(preprocCb); }
 }
 
   /************************************************************************/

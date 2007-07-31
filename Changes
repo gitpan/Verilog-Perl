@@ -3,6 +3,12 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.011 2007/07/31
+
+***	Added event trigger -> operator. [Mark Nodine]
+
+****	Remove preprocessor adding newlines before `line. [Mark Nodine]
+
 * Verilog::Language 3.010 2007/07/18
 
 ***	Added Parser::endparse callback. [Mark Nodine]
@@ -508,7 +514,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 41966 2007-07-18 13:59:44Z wsnyder $
+$Id: Changes 42580 2007-07-31 14:38:30Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

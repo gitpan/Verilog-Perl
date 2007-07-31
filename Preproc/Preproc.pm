@@ -1,4 +1,4 @@
-#$Id: Preproc.pm 41966 2007-07-18 13:59:44Z wsnyder $
+#$Id: Preproc.pm 42580 2007-07-31 14:38:30Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2007 by Wilson Snyder.  This program is free software;
@@ -22,7 +22,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '3.010';
+$VERSION = '3.011';
 
 ######################################################################
 #### Configuration Section
