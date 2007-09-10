@@ -193,8 +193,8 @@ SEE ALSO
 
     vhier, vpm, vppp, vrename
 
-    Verilog::Getopt, Verilog::Language, Verilog::Netlist, Verilog::Parser,
-    Verilog::Preproc, Verilog::SigParser
+    Verilog::EditFiles, Verilog::Getopt, Verilog::Language Verilog::Netlist,
+    Verilog::Parser, Verilog::Preproc, Verilog::SigParser
 
     Verilog::Netlist::Cell, Verilog::Netlist::File,
     Verilog::Netlist::Module, Verilog::Netlist::Net, Verilog::Netlist::Pin,

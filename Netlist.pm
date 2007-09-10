@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm 42580 2007-07-31 14:38:30Z wsnyder $
+# $Id: Netlist.pm 44375 2007-09-10 14:56:46Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.011';
+$VERSION = '3.012';
 
 ######################################################################
 #### Error Handling

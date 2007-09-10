@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 42580 2007-07-31 14:38:30Z wsnyder $
+# $Id: Language.pm 44375 2007-09-10 14:56:46Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -179,6 +179,7 @@ Wilson Snyder <wsnyder@wsnyder.org>
 =head1 SEE ALSO
 
 L<Verilog-Perl>,
+L<Verilog::EditFiles>
 L<Verilog::Parser>, 
 L<Verilog::ParseSig>, 
 L<Verilog::Getopt>
@@ -199,7 +200,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.011';
+$VERSION = '3.012';
 
 ######################################################################
 #### Internal Variables

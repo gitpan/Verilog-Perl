@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 41899 2007-07-16 13:44:59Z wsnyder $
+# $Id: Makefile.PL 43527 2007-08-20 22:40:26Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -72,7 +72,7 @@ WriteMakefile(
 	      PREREQ_PM => {'Pod::Usage' => 0,
 			},
 	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
-	      EXE_FILES => [qw( vrename vpm vppp vhier )],
+	      EXE_FILES => [qw( vrename vpm vppp vhier vsplitmodule )],
 	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpm simv ),},
 	      'dist'    => {COMPRESS => 'gzip -9f',
 			    SUFFIX   => '.gz', 

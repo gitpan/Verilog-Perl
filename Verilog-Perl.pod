@@ -1,4 +1,4 @@
-# $Id: Verilog-Perl.pod 39056 2007-05-21 14:28:04Z wsnyder $ -*- Perl -*-
+# $Id: Verilog-Perl.pod 43527 2007-08-20 22:40:26Z wsnyder $ -*- Perl -*-
 # See copyright, etc in below POD section.
 ######################################################################
 
@@ -247,8 +247,9 @@ L<vpm>,
 L<vppp>,
 L<vrename>
 
+L<Verilog::EditFiles>,
 L<Verilog::Getopt>,
-L<Verilog::Language>,
+L<Verilog::Language>
 L<Verilog::Netlist>,
 L<Verilog::Parser>,
 L<Verilog::Preproc>,

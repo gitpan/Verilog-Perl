@@ -3,6 +3,10 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.012 2007/09/10
+
+**	Added Verilog::EditFiles module and vsplitmodule example.
+
 * Verilog::Language 3.011 2007/07/31
 
 ***	Added event trigger -> operator. [Mark Nodine]
@@ -514,7 +518,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 42580 2007-07-31 14:38:30Z wsnyder $
+$Id: Changes 44375 2007-09-10 14:56:46Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

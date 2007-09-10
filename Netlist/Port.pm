@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Port.pm 42580 2007-07-31 14:38:30Z wsnyder $
+# $Id: Port.pm 44375 2007-09-10 14:56:46Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.011';
+$VERSION = '3.012';
 use strict;
 
 structs('new',
@@ -115,7 +115,11 @@ See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =item $self->array
 
-Any array declaration for the port.
+Any array declaration for the port.  This only applies to Verilog 1995
+style ports which can declare port bits independently from the signal
+declarations.  When using Verilog 2001 style ports, see the matching net
+declaration's lsb and msb methods instead, for example
+C<$module->find_net($port->name)->msb>.
 
 =item $self->comment
 
