@@ -1,5 +1,5 @@
 %{
-/* $Id: VParseBison.y 41977 2007-07-18 17:33:42Z wsnyder $
+/* $Id: VParseBison.y 44672 2007-09-17 17:47:56Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: SystemC bison parser
  *
@@ -285,12 +285,20 @@ modHdr:		yMODULE	yaID				{ PARSEP->moduleCb($<fl>1,$1,$2,PARSEP->inCellDefine())
 
 modParE:	/* empty */				{ }
 	|	'#' '(' ')'				{ }
-	|	'#' '(' modParList ')'			{ }
-	|	'#' '(' modParList ';' ')'		{ }
+	|	'#' '(' modParArgs ')'			{ }
 	;
 
-modParList:	modParDecl				{ }
-	|	modParList ';' modParDecl 		{ }
+modParArgs:	modParDecl				{ }
+	|	modParDecl ',' modParList		{ }
+	;
+
+modParList:	modParSecond				{ }
+	|	modParList ',' modParSecond 		{ }
+	;
+
+// Called only after a comma in a v2k list, to allow parsing "parameter a,b, parameter x"
+modParSecond:	modParDecl				{ }
+	|	param					{ }
 	;
 
 modPortsE:	/* empty */					{ }
@@ -350,7 +358,7 @@ varDecl:	varRESET varReg     varSignedE regrangeE  regsigList ';'	{ }
 	|	varRESET varGenVar  varSignedE                          regsigList ';'	{ }
 	;
 
-modParDecl:	varRESET varGParam  varSignedE regrangeE   paramList 	{ }  /* No semicolon*/
+modParDecl:	varRESET varGParam  varSignedE regrangeE   param 	{ }
 	;
 
 varRESET:	/* empty */ 				{ VARRESET(); }
@@ -849,6 +857,7 @@ exprNoStr:	expr yP_OROR expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	'{' constExpr '{' cateList '}' '}'	{ $<fl>$=$<fl>1; $$ = "{"+$2+"{"+$4+"}}"; }
 
 	|	ygenSYSCALL				{ $<fl>$=$<fl>1; $$ = $1; }
+	|	ygenSYSCALL '(' ')'			{ $<fl>$=$<fl>1; $$ = $1; }
 	|	ygenSYSCALL '(' exprList ')'		{ $<fl>$=$<fl>1; $$ = $1+"("+$3+")"; }
 
 	|	funcRef					{ $<fl>$=$<fl>1; $$ = $1; }

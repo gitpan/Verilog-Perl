@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 36_sigmany.t 40278 2007-06-12 13:45:23Z wsnyder $
+# $Id: 36_sigmany.t 45006 2007-09-25 18:09:53Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -86,7 +86,7 @@ sub one_parse {
     print "="x70,"\n";
     print "read $filename\n";
     my $opt = new Verilog::Getopt;
-    $opt->define('__message_on',"1'b0");
+    $opt->define('__message_on',"1'b0");  # So we can read pre-vpm'ed files
 
     my $pp = Verilog::Preproc->new(keep_comments=>0,
 				   include_open_nonfatal=>1,

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm 44375 2007-09-10 14:56:46Z wsnyder $
+# $Id: File.pm 46100 2007-10-18 13:21:22Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -22,7 +22,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.012';
+$VERSION = '3.013';
 use strict;
 
 structs('new',
@@ -75,7 +75,7 @@ sub new {
     } else {
 	push @opt, keep_comments=>0;
     }
-    push @opt, keep_whitespace=>0;
+    push @opt, keep_whitespace=>1;  # So we don't loose newlines
     push @opt, include_open_nonfatal=>1 if $params{netlist}{include_open_nonfatal};
     my $preproc = Verilog::Preproc->new(@opt);
     $preproc->open($params{filename});
