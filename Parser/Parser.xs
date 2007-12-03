@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Id: Parser.xs 41964 2007-07-18 13:47:50Z wsnyder $
+#* $Id: Parser.xs 46563 2007-10-26 17:47:42Z wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Parser Perl XS interface
@@ -73,10 +73,12 @@ public:
 
     // Verilog::SigParser Callback methods
     virtual void endcellCb(VFileLine* fl, const string& kwd);
+    virtual void endinterfaceCb(VFileLine* fl, const string& kwd);
     virtual void endmoduleCb(VFileLine* fl, const string& kwd);
     virtual void endtaskfuncCb(VFileLine* fl, const string& kwd);
     virtual void functionCb(VFileLine* fl, const string& kwd, const string& name, const string& type);
     virtual void instantCb(VFileLine* fl, const string& mod, const string& cell, const string& range);
+    virtual void interfaceCb(VFileLine* fl, const string& kwd, const string& name);
     virtual void moduleCb(VFileLine* fl, const string& kwd, const string& name, bool celldefine);
     virtual void paramPinCb(VFileLine* fl, const string& name, const string& conn, int number);
     virtual void pinCb(VFileLine* fl, const string& name, const string& conn, int number);
@@ -176,6 +178,11 @@ void VParserXs::endcellCb(VFileLine* fl, const string& kwd) {
     static string hold1; hold1 = kwd;
     call(NULL, 1,"endcell",hold1.c_str());
 }
+void VParserXs::endinterfaceCb(VFileLine* fl, const string& kwd) {
+    cbFileline(fl);
+    static string hold1; hold1 = kwd;
+    call(NULL, 1,"endinterface",hold1.c_str());
+}
 void VParserXs::endmoduleCb(VFileLine* fl, const string& kwd) {
     cbFileline(fl);
     static string hold1; hold1 = kwd;
@@ -199,6 +206,12 @@ void VParserXs::instantCb(VFileLine* fl, const string& mod, const string& cell, 
     static string hold2; hold2 = cell;
     static string hold3; hold3 = range;
     call(NULL, 3,"instant",hold1.c_str(), hold2.c_str(), hold3.c_str());
+}
+void VParserXs::interfaceCb(VFileLine* fl, const string& kwd, const string& name) {
+    cbFileline(fl);
+    static string hold1; hold1 = kwd;
+    static string hold2; hold2 = name;
+    call(NULL, 2,"interface",hold1.c_str(), hold2.c_str());
 }
 void VParserXs::moduleCb(VFileLine* fl, const string& kwd, const string& name, bool celldefine) {
     cbFileline(fl);

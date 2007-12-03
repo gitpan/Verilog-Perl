@@ -137,6 +137,10 @@ module spec;
       if ( !B & !M )
 	( posedge CLK => (  Q[0] : 1'bx )) = ( Tac, Tcs );
       $width (negedge CLK &&& EN, Tac, 0, notif_clk);
+      ( in1 => q ) = (3, 4);
+      ( in1 +=> q ) = Tac;
+      ( a, b, c *> q1, q2) = 10;
+      ( s +*> q ) = Tcs;
    endspecify
 endmodule
 
@@ -194,4 +198,14 @@ module v2kparam
     input  [LENGTH-1:0] myin, myinb
     );
    assign myout = myin ^ myinb ^ $callemptyparens();
+endmodule
+
+module foreqn (in);
+   input [1:0] in;
+   reg        a,b;
+   reg [1:0]  c;
+   always for ({a,c[0]} = in; a < 1'b1; {b,c[1]} = in) begin
+   end
+   always for ({a,c[in]} = 0; a < 1'b1; {b,c[in]} = 2'b10) begin
+   end
 endmodule

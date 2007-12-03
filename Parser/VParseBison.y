@@ -1,5 +1,5 @@
 %{
-/* $Id: VParseBison.y 44672 2007-09-17 17:47:56Z wsnyder $
+/* $Id: VParseBison.y 47213 2007-11-08 18:23:00Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: SystemC bison parser
  *
@@ -90,9 +90,20 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token_table
 
 // Generic types used by Verilog::Parser
+// IEEE: real_number
 %token<str>		yaFLOATNUM	"FLOATING-POINT NUMBER"
+
+// IEEE: identifier, class_identifier, class_variable_identifier,
+// covergroup_variable_identifier, dynamic_array_variable_identifier,
+// enum_identifier, interface_identifier, interface_instance_identifier,
+// package_identifier, type_identifier, variable_identifier,
 %token<str>		yaID		"IDENTIFIER"
+
+// IEEE: integral_number
 %token<str>		yaINTNUM	"INTEGER NUMBER"
+// IEEE: time_literal + time_unit
+%token<str>		yaTIMENUM	"TIME NUMBER"
+// IEEE: string_literal
 %token<str>		yaSTRING	"STRING"
 %token<str>		yaTIMINGSPEC	"TIMING SPEC ELEMENT"
 
@@ -105,15 +116,29 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 
 %token<str>		'!'
 %token<str>		'#'
+%token<str>		'%'
+%token<str>		'&'
 %token<str>		'('
 %token<str>		')'
+%token<str>		'*'
+%token<str>		'+'
 %token<str>		','
+%token<str>		'-'
 %token<str>		'.'
+%token<str>		'/'
+%token<str>		':'
 %token<str>		';'
+%token<str>		'<'
 %token<str>		'='
+%token<str>		'>'
+%token<str>		'?'
 %token<str>		'@'
 %token<str>		'['
 %token<str>		']'
+%token<str>		'^'
+%token<str>		'{'
+%token<str>		'|'
+%token<str>		'}'
 %token<str>		'~'
 
 // Specific keywords
@@ -131,6 +156,7 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yCASEX		"casex"
 %token<str>		yCASEZ		"casez"
 %token<str>		yCLOCK		"clock"
+%token<str>		yCLOCKING	"clocking"
 %token<str>		yCOVER		"cover"
 %token<str>		yDEASSIGN	"deassign"
 %token<str>		yDEFAULT	"default"
@@ -142,10 +168,13 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yENDCASE	"endcase"
 %token<str>		yENDFUNCTION	"endfunction"
 %token<str>		yENDGENERATE	"endgenerate"
+%token<str>		yENDINTERFACE	"endinterface"
 %token<str>		yENDMODULE	"endmodule"
 %token<str>		yENDSPECIFY	"endspecify"
 %token<str>		yENDTABLE	"endtable"
 %token<str>		yENDTASK	"endtask"
+%token<str>		yEXPORT		"export"
+%token<str>		yEXTERN		"extern"
 %token<str>		yFINAL		"final"
 %token<str>		yFOR		"for"
 %token<str>		yFORCE		"force"
@@ -155,12 +184,15 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yGENERATE	"generate"
 %token<str>		yGENVAR		"genvar"
 %token<str>		yIF		"if"
+%token<str>		yIMPORT		"import"
 %token<str>		yINITIAL	"initial"
 %token<str>		yINOUT		"inout"
 %token<str>		yINPUT		"input"
 %token<str>		yINTEGER	"integer"
+%token<str>		yINTERFACE	"interface"
 %token<str>		yJOIN		"join"
 %token<str>		yLOCALPARAM	"localparam"
+%token<str>		yMODPORT	"modport"
 %token<str>		yMODULE		"module"
 %token<str>		yNAND		"nand"
 %token<str>		yNEGEDGE	"negedge"
@@ -172,12 +204,14 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yPOSEDGE	"posedge"
 %token<str>		yREAL		"real"
 %token<str>		yREALTIME	"realtime"
+%token<str>		yREF		"ref"
 %token<str>		yREG		"reg"
 %token<str>		yRELEASE	"release"
 %token<str>		yREPEAT		"repeat"
 %token<str>		ySCALARED	"scalared"
 %token<str>		ySIGNED		"signed"
 %token<str>		ySPECIFY	"specify"
+%token<str>		ySTATIC		"static"
 %token<str>		ySUPPLY0	"supply0"
 %token<str>		ySUPPLY1	"supply1"
 %token<str>		yTABLE		"table"
@@ -192,28 +226,78 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yXNOR		"xnor"
 %token<str>		yXOR		"xor"
 
+%token<str>		yP_OROR		"||"
+%token<str>		yP_ANDAND	"&&"
+%token<str>		yP_NOR		"~|"
+%token<str>		yP_XNOR		"^~"
+%token<str>		yP_NAND		"~&"
+%token<str>		yP_EQUAL	"=="
+%token<str>		yP_NOTEQUAL	"!="
+%token<str>		yP_CASEEQUAL	"==="
+%token<str>		yP_CASENOTEQUAL	"!=="
+%token<str>		yP_WILDEQUAL	"==?"
+%token<str>		yP_WILDNOTEQUAL	"!=?"
+%token<str>		yP_GTE		">="
+%token<str>		yP_LTE		"<="
+%token<str>		yP_SLEFT	"<<"
+%token<str>		yP_SRIGHT	">>"
+%token<str>		yP_SSRIGHT	">>>"
+%token<str>		yP_POW		"**"
+
 %token<str>		yP_PARSTRENGTH	"(-for-strength"
 %token<str>		yP_PLUSCOLON	"+:"
 %token<str>		yP_MINUSCOLON	"-:"
 %token<str>		yP_MINUSGT	"->"
+%token<str>		yP_MINUSGTGT	"->>"
+%token<str>		yP_EQGT		"=>"
+%token<str>		yP_ASTGT	"*>"
+%token<str>		yP_ANDANDAND	"&&&"
+%token<str>		yP_POUNDPOUND	"##"
+%token<str>		yP_DOTSTAR	".*"
+
+%token<str>		yP_ATAT		"@@"
+%token<str>		yP_COLONCOLON	"::"
+%token<str>		yP_COLONEQ	":="
+%token<str>		yP_COLONDIV	":/"
+%token<str>		yP_ORMINUSGT	"|->"
+%token<str>		yP_OREQGT	"|=>"
+
+%token<str>		yP_PLUSPLUS	"++"
+%token<str>		yP_MINUSMINUS	"--"
+%token<str>		yP_PLUSEQ	"+="
+%token<str>		yP_MINUSEQ	"-="
+%token<str>		yP_TIMESEQ	"*="
+%token<str>		yP_DIVEQ	"/="
+%token<str>		yP_MODEQ	"%="
+%token<str>		yP_ANDEQ	"&="
+%token<str>		yP_OREQ		"|="
+%token<str>		yP_XOREQ	"^="
+%token<str>		yP_SLEFTEQ	"<<="
+%token<str>		yP_SRIGHTEQ	">>="
+%token<str>		yP_SSRIGHTEQ	">>>="
+
+// [* is not a operator, as "[ * ]" is legal
+// [= and [-> could be repitition operators, but to match [* we don't add them.
+// '( is not a operator, as "' (" is legal
+// '{ could be an operator.  More research needed.
 
 //********************
 // Verilog op precedence
-%left<str>	':'
-%left<str>	'?'
-%left<str>	yP_OROR
-%left<str>	yP_ANDAND
-%left<str>	'|' yP_NOR
-%left<str>	'^'
-%left<str>	yP_XNOR
-%left<str>	'&' yP_NAND
-%left<str>	yP_EQUAL yP_NOTEQUAL yP_CASEEQUAL yP_CASENOTEQUAL yP_WILDEQUAL yP_WILDNOTEQUAL
-%left<str>	'>' '<' yP_GTE yP_LTE
-%left<str>	yP_SLEFT yP_SRIGHT yP_SSRIGHT
-%left<str>	'+' '-'
-%left<str>	'*' '/' '%'
-%left<str>	yP_POW
-%left<str>	'{' '}'
+%left		':'
+%left		'?'
+%left		yP_OROR
+%left		yP_ANDAND
+%left		'|' yP_NOR
+%left		'^'
+%left		yP_XNOR
+%left		'&' yP_NAND
+%left		yP_EQUAL yP_NOTEQUAL yP_CASEEQUAL yP_CASENOTEQUAL yP_WILDEQUAL yP_WILDNOTEQUAL
+%left		'>' '<' yP_GTE yP_LTE
+%left		yP_SLEFT yP_SRIGHT yP_SSRIGHT
+%left		'+' '-'
+%left		'*' '/' '%'
+%left		yP_POW
+%left		'{' '}'
 %left<str>	prUNARYARITH
 %left<str>	prREDUCTION
 %left<str>	prNEGATION
@@ -269,15 +353,21 @@ fileE:		/* empty */				{ }
 	|	file					{ }
 	;
 
-file:		mod 					{ }
-	|	file mod 				{ }
+file:		description				{ }
+	|	file description			{ }
+	;
+
+// IEEE: description
+description:	moduleDecl				{ }
+	|	interfaceDecl				{ }
 	;
 
 //**********************************************************************
 // Module headers
 
-mod:		modHdr modParE modPortsE ';' modItemListE yENDMODULE endLabelE
-			{ PARSEP->endmoduleCb($<fl>1,$6); }
+// IEEE: module_declaration:
+moduleDecl:	modHdr modParE modPortsE ';' modItemListE yENDMODULE endLabelE
+			{ PARSEP->endmoduleCb($<fl>6,$6); }
 	;
 
 modHdr:		yMODULE	yaID				{ PARSEP->moduleCb($<fl>1,$1,$2,PARSEP->inCellDefine()); }
@@ -307,6 +397,13 @@ modPortsE:	/* empty */					{ }
 	|	'(' {GRAMMARP->pinNum(1);} portV2kArgs ')'	{ }
 	;
 
+modPortsStarE:	/* empty */					{ }
+	|	'(' '*' ')'					{ }
+	|	'(' ')'						{ }
+	|	'(' {GRAMMARP->pinNum(1);} portList ')'		{ }
+	|	'(' {GRAMMARP->pinNum(1);} portV2kArgs ')'	{ }
+	;
+
 portList:	port					{ }
 	|	portList ',' port	  		{ }
 	;
@@ -330,6 +427,92 @@ portV2kSecond:	portV2kDecl				{ }
 portV2kSig:	sigAndAttr				{ $<fl>$=$<fl>1; PARSEP->portCb($<fl>1, $1); }
 	;
 
+//**********************************************************************
+// Interface headers
+
+// IEEE: interface_declaration + interface_nonansi_header + interface_ansi_header:
+interfaceDecl:	intHdr modParE modPortsStarE ';' interfaceItemListE yENDINTERFACE endLabelE
+			{ PARSEP->endinterfaceCb($<fl>6,$6); }
+	|	yEXTERN	intHdr modParE modPortsE ';'	{ }
+	;
+
+intHdr:		yINTERFACE lifetimeE yaID		{ PARSEP->interfaceCb($<fl>1,$1,$3); }
+	;
+
+interfaceItemListE:
+		/* empty */				{ }
+	|	interfaceItemList			{ }
+	;
+
+interfaceItemList:
+		interfaceItem				{ }
+	|	interfaceItemList interfaceItem		{ }
+	;
+
+// IEEE: interface_item + non_port_interface_item
+interfaceItem:	
+		varDecl					{ }
+	|	generateRegion				{ }
+	|	interfaceOrGenerateItem			{ }
+	|	interfaceDecl				{ }
+	//|	program_declaration
+	;
+
+// IEEE: interface_or_generate_item
+interfaceOrGenerateItem:
+		modportDecl				{ }
+	//|	moduleCommonItem			{ }
+	//|	extern_tf_declaration			{ }
+	;
+
+// IEEE: modport_declaration:
+modportDecl:	yMODPORT modportItemList ';'		{ }
+	;
+
+modportItemList: modportItem				{ }
+	|	modportItemList ',' modportItem		{ }
+	;
+
+// IEEE: modport_item
+modportItem:	yaID '(' modportPortsDeclList ')'	{ }
+
+modportPortsDeclList:
+		modportPortsDecl			{ }
+	|	modportPortsDeclList ',' modportPortsDecl	{ }
+	;
+
+// IEEE: modport_ports_declaration  + modport_simple_ports_declaration
+//	+ (modport_tf_ports_declaration+import_export) + modport_clocking_declaration
+// We've expanded the lists each take to instead just have standalone ID ports.
+// We track the type as with the V2k series of defines, then create as each ID is seen.
+modportPortsDecl:
+		portDirection modportSimplePort		{ }
+	|	yCLOCKING yaID				{ }
+	|	yIMPORT modportTfPort			{ }
+	|	yEXPORT modportTfPort			{ }
+	// Continuations of above after a comma.
+	|	modportSimplePort			{ }
+	;
+
+//IEEE: modport_simple_port or modport_tf_port, depending what keyword was earlier
+modportSimplePort:
+		yaID					{ }
+	|	'.' yaID '(' ')'			{ }
+	|	'.' yaID '(' expr ')'			{ }
+
+//IEEE: modport_tf_port
+modportTfPort:	yaID					{ }
+	//|	method_prototype
+	;
+
+//IEEE: port_direction
+portDirection:	varInput				{ }
+	|	varOutput				{ }
+	|	varInout				{ }
+	|	varRef					{ }
+	;
+
+
 //************************************************
 // Variable Declarations
 
@@ -341,29 +524,33 @@ regsigList:	regsig  				{ }
 	|	regsigList ',' regsig		       	{ }
 	;
 
-portV2kDecl:	varRESET varInput  varSignedE v2kNetDeclE regrangeE portV2kSig	{ }
-	|	varRESET varInout  varSignedE v2kNetDeclE regrangeE portV2kSig	{ }
-	|	varRESET varOutput varSignedE v2kVarDeclE regrangeE portV2kSig	{ }
+portV2kDecl:	varRESET varInput  signingE v2kNetDeclE regrangeE portV2kSig	{ }
+	|	varRESET varInout  signingE v2kNetDeclE regrangeE portV2kSig	{ }
+	|	varRESET varOutput signingE v2kVarDeclE regrangeE portV2kSig	{ }
+//	|	varRESET yaID          portV2kSig	{ }
+//	|	varRESET yaID '.' yaID portV2kSig	{ }
 	;
 
-ioDecl:		varRESET varInput  varSignedE v2kVarDeclE regrangeE  sigList ';'	{ }
-     	|	varRESET varInout  varSignedE v2kVarDeclE regrangeE  sigList ';'	{ }
-     	|	varRESET varOutput varSignedE v2kVarDeclE regrangeE  sigList ';'	{ }
+// IEEE: port_declaration - plus ';'
+portDecl:	varRESET varInput  signingE v2kVarDeclE regrangeE  sigList ';'	{ }
+     	|	varRESET varInout  signingE v2kVarDeclE regrangeE  sigList ';'	{ }
+     	|	varRESET varOutput signingE v2kVarDeclE regrangeE  sigList ';'	{ }
 	;
 
-varDecl:	varRESET varReg     varSignedE regrangeE  regsigList ';'	{ }
-	|	varRESET varGParam  varSignedE regrangeE  paramList ';'		{ }
-	|	varRESET varLParam  varSignedE regrangeE  paramList ';'		{ }
-	|	varRESET varNet     strengthSpecE varSignedE delayrange netSigList ';'	{ }
-	|	varRESET varGenVar  varSignedE                          regsigList ';'	{ }
+varDecl:	varRESET varReg     signingE regrangeE  regsigList ';'	{ }
+	|	varRESET varGParam  signingE regrangeE  paramList ';'		{ }
+	|	varRESET varLParam  signingE regrangeE  paramList ';'		{ }
+	|	varRESET varNet     strengthSpecE signingE delayrange netSigList ';'	{ }
+	|	varRESET varGenVar  signingE                          regsigList ';'	{ }
 	;
 
-modParDecl:	varRESET varGParam  varSignedE regrangeE   param 	{ }
+modParDecl:	varRESET varGParam  signingE regrangeE   param 	{ }
 	;
 
 varRESET:	/* empty */ 				{ VARRESET(); }
 	;
 
+// IEEE: net_type
 varNet:		ySUPPLY0				{ VARDECL($1); }
 	|	ySUPPLY1				{ VARDECL($1); }
 	|	yWIRE 					{ VARDECL($1); }
@@ -385,6 +572,8 @@ varOutput:	yOUTPUT					{ VARIO($1); }
 	;
 varInout:	yINOUT					{ VARIO($1); }
 	;
+varRef:		yREF					{ VARIO($1); }
+	;
 
 varTypeKwds:	yINTEGER				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yREAL					{ $<fl>$=$<fl>1; $$=$1; }
@@ -392,7 +581,8 @@ varTypeKwds:	yINTEGER				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yTIME					{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
-varSignedE:	/*empty*/ 				{ }
+// IEEE: signing - plus empty
+signingE:	/*empty*/ 				{ }
 	|	ySIGNED					{ VARSIGNED("signed"); }
 	|	yUNSIGNED				{ VARSIGNED("unsigned"); }
 	;
@@ -417,11 +607,16 @@ modItemList:	modItem					{ }
 	;
 
 modItem:	modOrGenItem 				{ }
-	|	yGENERATE genTopBlock yENDGENERATE	{ }
+	|	generateRegion				{ }
 	|	ySPECIFY specifyJunkList yENDSPECIFY	{ }
 	|	ySPECIFY yENDSPECIFY			{ }
 	;
 
+// IEEE: generate_region
+generateRegion:	yGENERATE genTopBlock yENDGENERATE	{ }
+	;
+
+// IEEE: ??? + parameter_override
 modOrGenItem:	yALWAYS stmtBlock			{ }
 	|	yFINAL stmtBlock			{ }
 	|	yINITIAL stmtBlock			{ }
@@ -430,7 +625,7 @@ modOrGenItem:	yALWAYS stmtBlock			{ }
 	|	instDecl 				{ }
 	|	taskDecl 				{ }
 	|	funcDecl 				{ }
-	|	ioDecl	 				{ }
+	|	portDecl	 			{ }
 	|	varDecl 				{ }
 	|	tableDecl 				{ }
 
@@ -482,18 +677,22 @@ genCaseList:	caseCondList ':' genItemBlock		{ }
 //************************************************
 // Assignments and register declarations
 
+// IEEE: variable_lvalue
+variableLvalue:	varRefDotBit				{ }
+	|	'{' concIdList '}'			{ }
+ 	;
+
 assignList:	assignOne				{ }
 	|	assignList ',' assignOne		{ }
 	;
 
-assignOne:	varRefDotBit '=' expr			{ }
-	|	'{' concIdList '}' '=' expr		{ }
+assignOne:	variableLvalue '=' expr			{ }
 	;
 
 // IEEE: delay_or_event_control
 delayOrEvE:	/* empty */				{ }
 	|	delay					{ } /* ignored */
-	|	sensitivity				{ } /* ignored */
+	|	eventControl				{ } /* ignored */
 	|	yREPEAT '(' expr ')' delayOrEvE		{ } /* ignored */
 	;
 
@@ -511,6 +710,7 @@ delay:		'#' dlyTerm				{ } /* ignored */
 dlyTerm:	yaID 					{ }
 	|	yaINTNUM 				{ }
 	|	yaFLOATNUM 				{ }
+	|	yaTIMENUM 				{ }
 	;
 
 dlyInParen:	expr 					{ }
@@ -583,6 +783,7 @@ paramList:	param					{ }
 	|	paramList ',' param			{ }
 	;
 
+// IEEE: list_of_defparam_assignments
 defpList:	defpOne					{ }
 	|	defpList ',' defpOne			{ }
 	;
@@ -611,7 +812,7 @@ instnameList:	instnameParen				{ }
 	|	instnameList ',' instnameParen		{ }
 	;
 
-instnameParen:	instname cellpinList ')'		{ PARSEP->endcellCb($<fl>1,""); }
+instnameParen:	instname cellpinList ')'		{ PARSEP->endcellCb($<fl>3,""); }
 	;
 
 instname:	yaID instRangeE '(' 			{ PARSEP->instantCb($<fl>1, GRAMMARP->m_cellMod, $1, $2); PINPARAMS(); }
@@ -630,7 +831,7 @@ cellpinItList:	cellpinItemE				{ }
 	;
 
 cellpinItemE:	/* empty: ',,' is legal */		{ GRAMMARP->pinNumInc(); }  /*PINDONE(yylval.fl,"",""); <- No, as then () implys a pin*/
-	|	'.' '*'					{ PINDONE($<fl>1,"*","*");GRAMMARP->pinNumInc(); }
+	|	yP_DOTSTAR				{ PINDONE($<fl>1,"*","*");GRAMMARP->pinNumInc(); }
 	|	'.' yaID				{ PINDONE($<fl>1,$2,$2);  GRAMMARP->pinNumInc(); }
 	|	'.' yaID '(' ')'			{ PINDONE($<fl>1,$2,"");  GRAMMARP->pinNumInc(); }
 	|	'.' yaID '(' expr ')'			{ PINDONE($<fl>1,$2,$4);  GRAMMARP->pinNumInc(); }
@@ -638,16 +839,16 @@ cellpinItemE:	/* empty: ',,' is legal */		{ GRAMMARP->pinNumInc(); }  /*PINDONE(
 	;
 
 //************************************************
-// Sensitivity lists
+// EventControl lists
 
-//IEEE: event_control
-sensitivity:	'@' '(' senList ')'			{ }
+// IEEE: event_control
+eventControl:	'@' '(' senList ')'			{ }
 	|	'@' senitemVar				{ }
 	|	'@' '(' '*' ')'				{ }
 	|	'@' '*'					{ }  /* Verilog 2001 */
 	;
 
-//IEEE: event_expression - split over several
+// IEEE: event_expression - split over several
 senList:	senitem					{ }
 	|	senList yOR senitem			{ }
 	|	senList ',' senitem			{ }	/* Verilog 2001 */
@@ -667,6 +868,7 @@ senitemEdge:	yPOSEDGE expr				{ }
 //************************************************
 // Statements
 
+// IEEE: statement + seq_block + par_block
 stmtBlock:	stmt					{ }
 	|	yBEGIN stmtList yEND			{ }
 	|	yBEGIN yEND				{ }
@@ -690,14 +892,16 @@ stmtList:	stmtBlock				{ }
 	|	stmtList stmtBlock			{ }
 	;
 
+assignLhs:	varRefDotBit				{ }
+	|	'{' concIdList '}'			{ }
+	;
+
 stmt:		';'					{ }
 	|	labeledStmt				{ }
 	|	yaID ':' labeledStmt			{ }  /*S05 block creation rule*/
 
-	|	varRefDotBit yP_LTE delayOrEvE expr ';'	{ }
-	|	varRefDotBit '=' delayOrEvE expr ';'	{ }
-	|	'{' concIdList '}' yP_LTE delayOrEvE expr ';' { }
-	|	'{' concIdList '}' '=' delayOrEvE expr ';'  { }
+	|	assignLhs yP_LTE delayOrEvE expr ';'	{ }
+	|	assignLhs '=' delayOrEvE expr ';'	{ }
 	|	stateCaseForIf				{ }
 	|	taskRef ';' 				{ }
 
@@ -708,7 +912,7 @@ stmt:		';'					{ }
 	|	ygenSYSCALL '(' exprList ')' ';'	{ }
 	|	ygenSYSCALL ';'				{ }
 	|	delay stmtBlock				{ }
-	|	sensitivity stmtBlock			{ }
+	|	eventControl stmtBlock			{ }
 	|	yASSIGN expr '=' delayOrEvE expr ';'	{ }
 	|	yDEASSIGN expr ';'			{ }
 	|	yDISABLE expr ';'			{ }
@@ -723,7 +927,7 @@ stmt:		';'					{ }
 stateCaseForIf: caseStmt caseAttrE caseListE yENDCASE	{ }
 	|	yIF expr stmtBlock	%prec prLOWER_THAN_ELSE	{ }
 	|	yIF expr stmtBlock yELSE stmtBlock	{ }
-	|	yFOR '(' varRefDotBit '=' expr ';' expr ';' varRefDotBit '=' expr ')' stmtBlock
+	|	yFOR '(' assignLhs '=' expr ';' expr ';' assignLhs '=' expr ')' stmtBlock
 							{ }
 	|	yWHILE '(' expr ')' stmtBlock		{ }
 	|	yDO stmtBlock yWHILE '(' expr ')'	{ }
@@ -765,15 +969,17 @@ taskRef:	idDotted		 		{ }
 funcRef:	idDotted '(' exprList ')'		{ }
 	;
 
-taskDecl: 	yTASK taskAutoE taskId funcGuts yENDTASK endLabelE
-			{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>1,$5); }
+taskDecl: 	yTASK lifetimeE taskId funcGuts yENDTASK endLabelE
+			{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>5,$5); }
 	;
 
-funcDecl: 	yFUNCTION taskAutoE funcId funcGuts yENDFUNCTION endLabelE
-		 	{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>1,$5); }
+funcDecl: 	yFUNCTION lifetimeE funcId funcGuts yENDFUNCTION endLabelE
+		 	{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>5,$5); }
 	;
 
-taskAutoE:	/* empty */		 		{ }
+// IEEE: lifetime - plus empty
+lifetimeE:	/* empty */		 		{ }
+	|	ySTATIC			 		{ }
 	|	yAUTOMATIC		 		{ }
 	;
 
@@ -801,7 +1007,7 @@ funcVarList:	funcVar					{ }
 	|	funcVarList funcVar			{ }
 	;
 
-funcVar: 	ioDecl					{ }
+funcVar: 	portDecl				{ }
 	|	varDecl 				{ }
 	;
 
@@ -864,6 +1070,7 @@ exprNoStr:	expr yP_OROR expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 
 	|	yaINTNUM				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	yaFLOATNUM				{ $<fl>$=$<fl>1; $$ = $1; }
+	|	yaTIMENUM				{ $<fl>$=$<fl>1; $$ = $1; }
 
 	|	varRefDotBit	  			{ $<fl>$=$<fl>1; $$ = $1; }
 	;
@@ -889,6 +1096,9 @@ exprList:	expr					{ $<fl>$=$<fl>1; $$ = $1; }
 // For simplicty, assume everything is a module, perhaps nameless,
 // and deal with it later.
 
+// IEEE: cmos_switchtype + enable_gatetype + mos_switchtype
+//	+ n_input_gatetype + n_output_gatetype + pass_en_switchtype
+//	+ pass_switchtype
 gateKwd:	ygenGATE				{ $<fl>$=$<fl>1; INSTPREP($1,0); }
 	|	yAND					{ $<fl>$=$<fl>1; INSTPREP($1,0); }
 	| 	yBUF					{ $<fl>$=$<fl>1; INSTPREP($1,0); }
@@ -901,11 +1111,14 @@ gateKwd:	ygenGATE				{ $<fl>$=$<fl>1; INSTPREP($1,0); }
 	;
 
 // This list is also hardcoded in VParseLex.l
+// IEEE: strength0+strength1 - plus HIGHZ/SMALL/MEDIUM/LARGE
 strength:	ygenSTRENGTH				{ }
 	|	ySUPPLY0				{ }
 	|	ySUPPLY1				{ }
 	;
 
+// IEEE: drive_strength + pullup_strength + pulldown_strength 
+//	+ charge_strength - plus empty
 strengthSpecE:	/* empty */					{ }
 	|	yP_PARSTRENGTH strength ')'			{ }
 	|	yP_PARSTRENGTH strength ',' strength ')'	{ }
@@ -942,6 +1155,7 @@ specifyJunk:	dlyTerm 	{} /* ignored */
 	|	'[' {} | ']' {}
 	|	'|' {}
 	|	'~' {}
+	|	'@' {}
 
 	|	yIF {}
 	|	yNEGEDGE {}
@@ -961,6 +1175,25 @@ specifyJunk:	dlyTerm 	{} /* ignored */
 	|	yP_PLUSCOLON {} | yP_MINUSCOLON {}
 	|	yP_POW {}
 	|	yP_MINUSGT {}
+	|	yP_EQGT {}	| yP_ASTGT {}
+	|	yP_ANDANDAND {}
+	|	yP_MINUSGTGT {}
+	|	yP_POUNDPOUND {}
+	|	yP_DOTSTAR {}
+	|	yP_ATAT {}
+	|	yP_COLONCOLON {}
+	|	yP_COLONEQ {}
+	|	yP_COLONDIV {}
+	|	yP_ORMINUSGT {}
+	|	yP_OREQGT {}
+
+	|	yP_PLUSPLUS {}	| yP_MINUSMINUS {}
+	|	yP_PLUSEQ {}	| yP_MINUSEQ {}
+	|	yP_TIMESEQ {}
+	|	yP_DIVEQ {}	| yP_MODEQ {}
+	|	yP_ANDEQ {}	| yP_OREQ {}
+	|	yP_XOREQ {}
+	|	yP_SLEFTEQ {}	| yP_SRIGHTEQ {} | yP_SSRIGHTEQ {}
 
 	|	error {}
 	;

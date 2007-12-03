@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 35_sigparser.t 41964 2007-07-18 13:47:50Z wsnyder $
+# $Id: 35_sigparser.t 46563 2007-10-26 17:47:42Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -42,11 +42,13 @@ sub error {
 
 sub attribute {	$_[0]->_common('attribute', @_); }
 sub endcell    { $_[0]->_common('endcell', @_); }
+sub endinterface { $_[0]->_common('endinterface', @_); }
 sub endtaskfunc{ $_[0]->_common('endtaskfunc', @_); }
 sub endmodule  { $_[0]->_common('endmodule', @_); }
 sub funcsignal { $_[0]->_common('funcsignal', @_); }
 sub function {	$_[0]->_common('function', @_); }
 sub instant {	$_[0]->_common('instant', @_); }
+sub interface { $_[0]->_common('interface', @_); }
 sub module {	$_[0]->_common('module', @_); }
 sub parampin {	$_[0]->_common('parampin', @_); }
 sub pin {	$_[0]->_common('pin', @_); }
@@ -71,6 +73,7 @@ read_test("verilog/v_hier_subprim.v", $dump_fh);
 read_test("verilog/v_hier_sub.v", $dump_fh);
 read_test("verilog/parser_bugs.v", $dump_fh);
 read_test("verilog/pinorder.v", $dump_fh);
+read_test("verilog/parser_sv.v", $dump_fh);
 ok(1);
 $dump_fh->close();
 

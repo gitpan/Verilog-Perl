@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm 46100 2007-10-18 13:21:22Z wsnyder $
+# $Id: Netlist.pm 48154 2007-12-03 16:39:22Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -25,7 +25,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.013';
+$VERSION = '3.020';
 
 ######################################################################
 #### Error Handling
@@ -209,6 +209,11 @@ sub files {
 sub files_sorted { return files(@_); }
 
 sub read_file {
+    my $self = shift;
+    return $self->read_verilog_file(@_);
+}
+
+sub read_verilog_file {
     my $self = shift;
     my $fileref = Verilog::Netlist::File::read
 	(netlist=>$self,

@@ -1,5 +1,5 @@
 # Verilog - Verilog Perl Interface
-# $Id: Net.pm 46100 2007-10-18 13:21:22Z wsnyder $
+# $Id: Net.pm 48154 2007-12-03 16:39:22Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -21,7 +21,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.013';
+$VERSION = '3.020';
 use strict;
 
 ######################################################################
@@ -183,7 +183,8 @@ Verilog::Netlist::Net - Net for a Verilog Module
 =head1 DESCRIPTION
 
 A Verilog::Netlist::Net object is created by Verilog::Netlist::Module for
-every signal and input/output declaration in the current module.
+every signal and input/output declaration, and parameter in the current
+module.
 
 =head1 ACCESSORS
 
@@ -219,7 +220,7 @@ The name of the net.
 
 =item $self->type
 
-The C++ type of the net.
+The C++ or declaration type of the net.  For example "wire" or "parameter".
 
 =item $self->width
 

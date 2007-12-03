@@ -1,5 +1,5 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 46100 2007-10-18 13:21:22Z wsnyder $
+# $Id: SigParser.pm 48154 2007-12-03 16:39:22Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -26,7 +26,7 @@ use base qw(Verilog::Parser);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.013';
+$VERSION = '3.020';
 
 #######################################################################
 
@@ -77,6 +77,10 @@ sub endcell {
     my $self = shift;
 }
 
+sub endinterface {
+    my $self = shift;
+}
+
 sub endtaskfunc {
     my $self = shift;
 }
@@ -97,6 +101,12 @@ sub instant {
     my $module = shift;
     my $cell = shift;
     my $range = shift;
+}
+
+sub interface {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
 }
 
 sub module {
@@ -215,6 +225,11 @@ if the first word has a true value in hash C<$self->metacomment>.
 This method is called at the end of defining a cell. It is useful for
 writing clean up routines.
 
+=item $self->endinterface ( $token )
+
+This method is called at a endinterface keyword. It is useful for writing
+clean up routines.
+
 =item $self->endtaskfunc ( $token )
 
 This method is called at a endfunction or endtask keyword.  It is useful
@@ -245,6 +260,10 @@ if the cell was arrayed.
 
 Prior to version 3.000, the name of the parameters were also included in
 this callback. This has been replaced with the parampin callback.
+
+=item $self->interface ( $keyword, $name )
+
+This method is called when an interface is defined.
 
 =item $self->module ( $keyword, $name, ignored, $in_celldefine )
 

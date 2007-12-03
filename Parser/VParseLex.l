@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VParseLex"
 %{
-/* $Id: VParseLex.l 42513 2007-07-30 14:59:58Z wsnyder $
+/* $Id: VParseLex.l 47087 2007-11-06 19:42:04Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Parser Lexer
  * 
@@ -232,6 +232,12 @@ escid	\\[^ \t\f\r\n]+
   "use"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
 }
 
+  /* Verilog 2005 */
+<V05,S05>{
+  /*     Keywords */
+  "uwire"		{ FL; VALTEXT; CALLBACK(keywordCb); return yWIRE; }
+}
+
   /* System Verilog 2005 */
 <S05>{
   /*     Keywords */
@@ -239,10 +245,28 @@ escid	\\[^ \t\f\r\n]+
   "always_ff"		{ FL; VALTEXT; CALLBACK(keywordCb); return yALWAYS; }
   "always_latch"	{ FL; VALTEXT; CALLBACK(keywordCb); return yALWAYS; }
   "assert"		{ FL; VALTEXT; CALLBACK(keywordCb); return yASSERT; }
+  "bit"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
+  "byte"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTEGER; }
+  "chandle"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTEGER; }
+  "clocking"		{ FL; VALTEXT; CALLBACK(keywordCb); return yCLOCKING; }
   "do"			{ FL; VALTEXT; CALLBACK(keywordCb); return yDO; }
+  "endinterface"	{ FL; VALTEXT; CALLBACK(keywordCb); return yENDINTERFACE; }
+  "export"		{ FL; VALTEXT; CALLBACK(keywordCb); return yEXPORT; }
+  "extern"		{ FL; VALTEXT; CALLBACK(keywordCb); return yEXTERN; }
   "final"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFINAL; }
+  "import"		{ FL; VALTEXT; CALLBACK(keywordCb); return yIMPORT; }
+  "int"			{ FL; VALTEXT; CALLBACK(keywordCb); return yINTEGER; }
+  "interface"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTERFACE; }
   "join_any"		{ FL; VALTEXT; CALLBACK(keywordCb); return yJOIN; }
   "join_none"		{ FL; VALTEXT; CALLBACK(keywordCb); return yJOIN; }
+  "logic"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
+  "longint"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTEGER; }
+  "modport"		{ FL; VALTEXT; CALLBACK(keywordCb); return yMODPORT; }
+  "ref"			{ FL; VALTEXT; CALLBACK(keywordCb); return yREF; }
+  "shortint"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTEGER; }
+  "shortreal"		{ FL; VALTEXT; CALLBACK(keywordCb); return yREAL; }
+  "static"		{ FL; VALTEXT; CALLBACK(keywordCb); return ySTATIC; }
+  "string"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
   /*     Generic unsupported keywords */
   "alias"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "assume"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -250,12 +274,8 @@ escid	\\[^ \t\f\r\n]+
   "bind"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "bins"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "binsof"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "bit"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "break"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "byte"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "chandle"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "class"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "clocking"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "const"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "constraint"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "context"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -268,32 +288,23 @@ escid	\\[^ \t\f\r\n]+
   "endcass"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endclocking"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endgroup"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "endinterface"	{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endpackage"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endprogram"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endproperty"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endsequence"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "enum"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "expect"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "export"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "extends"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "extern"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "first_match"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "foreach"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "forkjoin"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "iff"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "ignore_bins"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "illegal_bins"	{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "import"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "inside"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "int"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "interface"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "intersect"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "local"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "logic"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "longint"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "matches"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "modport"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "new"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "null"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "package"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -307,14 +318,9 @@ escid	\\[^ \t\f\r\n]+
   "randc"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "randcase"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "randsequence"	{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "ref"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "return"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "sequence"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "shortint"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "shortreal"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "solve"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "static"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "string"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "struct"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "super"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "tagged"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -390,6 +396,9 @@ escid	\\[^ \t\f\r\n]+
   "~&"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_NAND; }
   "~|"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_NOR; }
   "->"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MINUSGT; }
+  "=>"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_EQGT; }
+  "*>"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ASTGT; }
+  "&&&"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ANDANDAND; }
 }
 
   /* Verilog 2001 Operators */
@@ -399,12 +408,35 @@ escid	\\[^ \t\f\r\n]+
   "**"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_POW; }
   "+:"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_PLUSCOLON; }
   "-:"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MINUSCOLON; }
+  ".*"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_DOTSTAR; }
 }
 
   /* SystemVerilog Operators */
 <S05>{
   "==?"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_WILDEQUAL; }
   "!=?"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_WILDNOTEQUAL; }
+  "++"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_PLUSPLUS; }
+  "--"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MINUSMINUS; }
+  "+="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_PLUSEQ; }
+  "-="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MINUSEQ; }
+  "*="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_TIMESEQ; }
+  "/="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_DIVEQ; }
+  "%="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MODEQ; }
+  "&="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ANDEQ; }
+  "|="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_OREQ; }
+  "^="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_XOREQ; }
+  "<<="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_SLEFTEQ; }
+  ">>="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_SRIGHTEQ; }
+  "<<<="		{ FL; VALTEXT; CALLBACK(operatorCb); return yP_SLEFTEQ; }
+  ">>>="		{ FL; VALTEXT; CALLBACK(operatorCb); return yP_SSRIGHTEQ; }
+  "->>"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_MINUSGTGT; }
+  "##"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_POUNDPOUND; }
+  "@@"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ATAT; }
+  "::"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_COLONCOLON; }
+  ":="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_COLONEQ; }
+  ":/"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_COLONDIV; }
+  "|->"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ORMINUSGT; }
+  "|=>"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_OREQGT; }
 }
 
   /* Identifiers and numbers */
@@ -447,6 +479,9 @@ escid	\\[^ \t\f\r\n]+
 			}
   [0-9][_0-9]*(\.[_0-9]+)?([eE][-+]?[_0-9]+) {
                           FL; VALTEXT; CALLBACK(numberCb); return yaFLOATNUM;
+			}
+  [0-9][_0-9]*(\.[_0-9]+)?(fs|ps|ns|us|ms|s|step) {
+                          FL; VALTEXT; CALLBACK(numberCb); return yaTIMENUM;
 			}
 }
 

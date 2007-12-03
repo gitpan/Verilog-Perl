@@ -1,4 +1,4 @@
-#$Id: Parser.pm 46100 2007-10-18 13:21:22Z wsnyder $
+#$Id: Parser.pm 48154 2007-12-03 16:39:22Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2007 by Wilson Snyder.  This program is free software;
@@ -23,7 +23,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.013';
+$VERSION = '3.020';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 
@@ -287,7 +287,7 @@ constructor.
 =item $parser->unreadbackCat ($text)
 
 Add text to be returned with the next unreadback call.  This is much faster
-then using "$parser->unreadback($parser->unreadback . $text)".
+than using "$parser->unreadback($parser->unreadback . $text)".
 
 =back
 

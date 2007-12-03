@@ -1,4 +1,4 @@
-#$Id: Preproc.pm 46100 2007-10-18 13:21:22Z wsnyder $
+#$Id: Preproc.pm 48154 2007-12-03 16:39:22Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2007 by Wilson Snyder.  This program is free software;
@@ -22,7 +22,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '3.013';
+$VERSION = '3.020';
 
 ######################################################################
 #### Configuration Section
@@ -140,7 +140,7 @@ sub include {
 		);
 }
 
-# Note rather then overriding these, a derived Verilog::Getopt class can
+# Note rather than overriding these, a derived Verilog::Getopt class can
 # accomplish the same thing.
 
 sub undef {
@@ -277,7 +277,7 @@ default), insert comments in output streams.  When set to 'sub', call the
 comment() function so that meta-comments can be processed outside of the
 output stream.  Note that some programs use meta-comments to embed useful
 information (synthesis and lint), so use this with caution if feeding to
-tools other then your own.  Defaults to 1.
+tools other than your own.  Defaults to 1.
 
 =item keep_whitespace=>0
 

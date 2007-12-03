@@ -1,4 +1,4 @@
-// $Id: VParseLex.h 40140 2007-06-07 23:02:12Z wsnyder $  -*- C++ -*-
+// $Id: VParseLex.h 47880 2007-11-27 20:27:49Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2007 by Wilson Snyder.  This program is free software;
@@ -110,7 +110,7 @@ class VParseLex {
     // Internal Utilities
     static bool symEscapeless(const char* textp, int leng) {
 	// Are \ escapes needed to print this symbol?
-	if (leng<1) return false;  // Probably not a valid identifier, but better then a core dump...
+	if (leng<1) return false;  // Probably not a valid identifier, but better than a core dump...
 	if (!isalpha(textp[0]) && textp[0] != '_') return false;
 	while (leng) {
 	    if (!isalnum(*textp) && *textp != '_') return false;
