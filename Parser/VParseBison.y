@@ -1,5 +1,5 @@
 %{
-/* $Id: VParseBison.y 47213 2007-11-08 18:23:00Z wsnyder $
+/* $Id: VParseBison.y 49328 2008-01-07 16:28:25Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: SystemC bison parser
  *
@@ -11,7 +11,7 @@
  *
  ******************************************************************************
  *
- * Copyright 2001-2007 by Wilson Snyder.  This program is free software;
+ * Copyright 2001-2008 by Wilson Snyder.  This program is free software;
  * you can redistribute it and/or modify it under the terms of either the GNU
  * General Public License or the Perl Artistic License.
  *
@@ -1093,7 +1093,7 @@ exprList:	expr					{ $<fl>$=$<fl>1; $$ = $1; }
 // Gate declarations
 
 // We can't tell between UDPs and modules as they aren't declared yet.
-// For simplicty, assume everything is a module, perhaps nameless,
+// For simplicity, assume everything is a module, perhaps nameless,
 // and deal with it later.
 
 // IEEE: cmos_switchtype + enable_gatetype + mos_switchtype

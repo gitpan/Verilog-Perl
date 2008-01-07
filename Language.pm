@@ -1,9 +1,9 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 48154 2007-12-03 16:39:22Z wsnyder $
+# $Id: Language.pm 49328 2008-01-07 16:28:25Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -36,7 +36,7 @@ Verilog::Language - Verilog language utilities
 =head1 DESCRIPTION
 
 Verilog::Language provides general utilities for using the Verilog
-Language, such as parsing numbers or determing what keywords exist.
+Language, such as parsing numbers or determining what keywords exist.
 General functions will be added as needed.
 
 =head1 WHICH PACKAGE
@@ -94,7 +94,7 @@ parser from scratch.)
 
 Return true if the given symbol string is a Verilog reserved keyword.
 Value indicates the language standard as per the `begin_keywords macro,
-'1364-1995', '1364-2001', '1364-2005', or '1800-2005'.
+'1364-1995', '1364-2001', '1364-2008', or '1800-2008'.
 
 =item Verilog::Language::is_compdirect ($symbol_string)
 
@@ -109,8 +109,8 @@ Return true if the given symbol is a built in gate primitive; for example
 
 Sets the language standard to indicate what are keywords.  If undef, all
 standards apply.  The year is indicates the language standard as per the
-`begin_keywords macro, '1364-1995', '1364-2001', '1364-2005', or
-'1800-2005'.
+`begin_keywords macro, '1364-1995', '1364-2001', '1364-2008', or
+'1800-2008'.
 
 =item Verilog::Language::number_bigint ($number_string)
 
@@ -168,7 +168,7 @@ Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2007 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2008 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 
@@ -200,7 +200,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.020';
+$VERSION = '3.021';
 
 ######################################################################
 #### Internal Variables
@@ -248,7 +248,7 @@ foreach my $kwd (qw(
 		    struct super tagged this throughout timeprecision
 		    timeunit type typedef union unique var virtual void
 		    wait_order wildcard with within
-		    )) { $Keywords{'1800-2005'}{$kwd} = '1800-2005'; }
+		    )) { $Keywords{'1800-2008'}{$kwd} = '1800-2008'; }
 
 foreach my $kwd (
 		 "`celldefine", "`default_nettype", "`define", "`else",
@@ -264,7 +264,7 @@ foreach my $kwd (
 		 "`file", "`line",
 		 ) { $Keywords{$kwd}{'1364-2001'} = $Compdirect{$kwd} = '1364-2001'; }
 
-language_standard ('1800-2005');  # Default standard
+language_standard ('1800-2008');  # Default standard
 
 foreach my $kwd (qw(
 		    and buf bufif0 bufif1 cmos nand nmos nor not notif0
@@ -283,15 +283,15 @@ sub language_standard {
 	    $Standard = '1364-1995';
 	    @subsets = ('1364-1995');
 	} elsif ($standard eq '2001' || $standard eq '1364-2001' || $standard eq '1364-2001-noconfig'
-		 || $standard eq '1364-2005') {
+		 || $standard eq '1364-2008') {
 	    $Standard = '1364-2001';
 	    @subsets = ('1364-2001', '1364-1995');
-	} elsif ($standard eq '1364-2005') {
-	    $Standard = '1364-2005';
-	    @subsets = ('1364-2005', '1364-2001', '1364-1995');
-	} elsif ($standard eq 'sv31' || $standard eq '1800-2005') {
-	    $Standard = '1800-2005';
-	    @subsets = ('1800-2005', '1364-2005', '1364-2001', '1364-1995');
+	} elsif ($standard eq '1364-2008') {
+	    $Standard = '1364-2008';
+	    @subsets = ('1364-2008', '1364-2001', '1364-1995');
+	} elsif ($standard eq 'sv31' || $standard eq '1800-2008') {
+	    $Standard = '1800-2008';
+	    @subsets = ('1800-2008', '1364-2008', '1364-2001', '1364-1995');
 	} else {
 	    croak "%Error: Verilog::Language::language_standard passed bad value: $standard,";
 	}

@@ -1,7 +1,7 @@
-// $Id: VParse.h 46563 2007-10-26 17:47:42Z wsnyder $  -*- C++ -*-
+// $Id: VParse.h 49328 2008-01-07 16:28:25Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2007 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // General Public License or the Perl Artistic License.
 //

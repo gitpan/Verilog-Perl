@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VParseLex"
 %{
-/* $Id: VParseLex.l 47087 2007-11-06 19:42:04Z wsnyder $
+/* $Id: VParseLex.l 49328 2008-01-07 16:28:25Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Parser Lexer
  * 
@@ -15,7 +15,7 @@
  * 
  ******************************************************************************
  * 
- * Copyright 2000-2007 by Wilson Snyder.  This program is free software;
+ * Copyright 2000-2008 by Wilson Snyder.  This program is free software;
  * you can redistribute it and/or modify it under the terms of either the GNU
  * General Public License or the Perl Artistic License.
  * 
@@ -285,7 +285,7 @@ escid	\\[^ \t\f\r\n]+
   "coverpoint"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "cross"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "dist"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "endcass"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
+  "endclass"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endclocking"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endgroup"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endpackage"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -434,7 +434,7 @@ escid	\\[^ \t\f\r\n]+
   "@@"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ATAT; }
   "::"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_COLONCOLON; }
   ":="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_COLONEQ; }
-  ":/"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_COLONDIV; }
+  ":/"[^\/\*]		{ FL; VALTEXT; CALLBACK(operatorCb); return yP_COLONDIV; }  /* : then comment is not ":/" */
   "|->"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ORMINUSGT; }
   "|=>"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_OREQGT; }
 }
@@ -543,8 +543,8 @@ escid	\\[^ \t\f\r\n]+
   "`begin_keywords"[ \t]*\"1364-1995\"		{ yy_push_state(V95); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1364-2001\"		{ yy_push_state(V01); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1364-2001-noconfig\"	{ yy_push_state(V01); CALLBACK(preprocCb); }
-  "`begin_keywords"[ \t]*\"1364-2005\"		{ yy_push_state(V05); CALLBACK(preprocCb); }
-  "`begin_keywords"[ \t]*\"1800-2005\"		{ yy_push_state(S05); CALLBACK(preprocCb); }
+  "`begin_keywords"[ \t]*\"1364-2008\"		{ yy_push_state(V05); CALLBACK(preprocCb); }
+  "`begin_keywords"[ \t]*\"1800-2008\"		{ yy_push_state(S05); CALLBACK(preprocCb); }
   "`end_keywords"				{ yy_pop_state();     CALLBACK(preprocCb); }
 }
 

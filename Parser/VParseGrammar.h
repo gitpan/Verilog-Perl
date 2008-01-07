@@ -1,7 +1,7 @@
-// $Id: VParseGrammar.h 39236 2007-05-23 13:52:17Z wsnyder $ //-*- C++ -*-
+// $Id: VParseGrammar.h 49328 2008-01-07 16:28:25Z wsnyder $ //-*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2007 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // General Public License or the Perl Artistic License.
 //

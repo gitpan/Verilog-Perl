@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VPreprocLex"
 %{
-/* $Id: VPreprocLex.l 40354 2007-06-13 17:26:39Z wsnyder $
+/* $Id: VPreprocLex.l 49328 2008-01-07 16:28:25Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Preprocessor Lexer
  * 
@@ -15,7 +15,7 @@
  * 
  ******************************************************************************
  * 
- * Copyright 2000-2007 by Wilson Snyder.  This program is free software;
+ * Copyright 2000-2008 by Wilson Snyder.  This program is free software;
  * you can redistribute it and/or modify it under the terms of either the GNU
  * General Public License or the Perl Artistic License.
  * 
@@ -67,7 +67,7 @@ drop		[\032]
 <INITIAL>^{ws}*"`line"{ws}+.*{crnl}	{ VPreprocLex::s_currentLexp->lineDirective(yytext);
 					  return(VP_LINE); }
 
-	/* Special directives we recognise */
+	/* Special directives we recognize */
 <INITIAL>"`include"	{ return(VP_INCLUDE); }
 <INITIAL>"`ifdef"	{ return(VP_IFDEF); }
 <INITIAL>"`ifndef"	{ return(VP_IFNDEF); }
@@ -77,7 +77,7 @@ drop		[\032]
 <INITIAL>"`undef"	{ return(VP_UNDEF); }
 <INITIAL>"`define"	{ return(VP_DEFINE); }
 
-	/* Optional directives we recognise */
+	/* Optional directives we recognize */
 <INITIAL>"`__FILE__"	{ if (!pedantic()) {
 	    		     yytext = (char*)VPreprocLex::s_currentLexp->m_curFilelinep->cfilename();
 	    		     yyleng = strlen(yytext); return (VP_TEXT);

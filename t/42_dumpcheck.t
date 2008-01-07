@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
-# $Id: 42_dumpcheck.t 29806 2007-01-10 13:04:28Z wsnyder $
+# $Id: 42_dumpcheck.t 49328 2008-01-07 16:28:25Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 

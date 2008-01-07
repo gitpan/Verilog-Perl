@@ -1,9 +1,9 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 48154 2007-12-03 16:39:22Z wsnyder $
+# $Id: SigParser.pm 49328 2008-01-07 16:28:25Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
-# Copyright 2000-2007 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 # 
@@ -26,7 +26,7 @@ use base qw(Verilog::Parser);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.020';
+$VERSION = '3.021';
 
 #######################################################################
 
@@ -317,7 +317,7 @@ expect a lot, the Parser is still naive, and there are many awkward cases
 that aren't covered.
 
 Note the SigParser is focused on extracting signal information.  It does
-NOT extract enough information to derrive general interconnect; for example
+NOT extract enough information to derive general interconnect; for example
 the contents of 'assign' statements are not parsed.
 
 =head1 DISTRIBUTION
@@ -326,7 +326,7 @@ Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.com/verilog-perl.html>.
 
-Copyright 2000-2007 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2008 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

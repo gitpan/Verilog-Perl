@@ -84,7 +84,8 @@ PACKAGES
 
     Verilog::Language
         Verilog::Language provides general utilities for using the Verilog
-        Language, such as parsing numbers or determing what keywords exist.
+        Language, such as parsing numbers or determining what keywords
+        exist.
 
     Verilog::Netlist
         Verilog::Netlist reads and holds interconnect information about a
@@ -180,7 +181,7 @@ DISTRIBUTION
     software tool suite. The latest version is available from CPAN and from
     <http://www.veripool.com/verilog-perl.html>.
 
-    Copyright 2000-2007 by Wilson Snyder. This package is free software; you
+    Copyright 2000-2008 by Wilson Snyder. This package is free software; you
     can redistribute it and/or modify it under the terms of either the GNU
     Lesser General Public License or the Perl Artistic License.
 
