@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 10_keywords.t 49328 2008-01-07 16:28:25Z wsnyder $
+# $Id: 10_keywords.t 49603 2008-01-15 14:57:32Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -19,7 +19,7 @@ ok (Verilog::Language::is_keyword("input"));
 ok (!Verilog::Language::is_keyword("not_input"));
 ok (Verilog::Language::is_compdirect("`define"));
 
-ok (Verilog::Language::language_standard() eq '1800-2008');
+ok (Verilog::Language::language_standard() eq '1800-2005');
 ok (Verilog::Language::is_keyword("do"));
 ok (Verilog::Language::language_standard(2001) eq '1364-2001');
 ok (Verilog::Language::is_keyword("generate"));

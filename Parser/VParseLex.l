@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VParseLex"
 %{
-/* $Id: VParseLex.l 49328 2008-01-07 16:28:25Z wsnyder $
+/* $Id: VParseLex.l 49622 2008-01-15 16:57:46Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: Verilog Parser Lexer
  * 
@@ -251,6 +251,7 @@ escid	\\[^ \t\f\r\n]+
   "clocking"		{ FL; VALTEXT; CALLBACK(keywordCb); return yCLOCKING; }
   "do"			{ FL; VALTEXT; CALLBACK(keywordCb); return yDO; }
   "endinterface"	{ FL; VALTEXT; CALLBACK(keywordCb); return yENDINTERFACE; }
+  "enum"		{ FL; VALTEXT; CALLBACK(keywordCb); return yENUM; }
   "export"		{ FL; VALTEXT; CALLBACK(keywordCb); return yEXPORT; }
   "extern"		{ FL; VALTEXT; CALLBACK(keywordCb); return yEXTERN; }
   "final"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFINAL; }
@@ -267,6 +268,7 @@ escid	\\[^ \t\f\r\n]+
   "shortreal"		{ FL; VALTEXT; CALLBACK(keywordCb); return yREAL; }
   "static"		{ FL; VALTEXT; CALLBACK(keywordCb); return ySTATIC; }
   "string"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
+  "typedef"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTYPEDEF; }
   /*     Generic unsupported keywords */
   "alias"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "assume"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -292,7 +294,6 @@ escid	\\[^ \t\f\r\n]+
   "endprogram"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endproperty"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "endsequence"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "enum"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "expect"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "extends"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "first_match"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -329,7 +330,6 @@ escid	\\[^ \t\f\r\n]+
   "timeprecision"	{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "timeunit"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "type"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "typedef"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "union"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "unique"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "var"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -543,8 +543,8 @@ escid	\\[^ \t\f\r\n]+
   "`begin_keywords"[ \t]*\"1364-1995\"		{ yy_push_state(V95); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1364-2001\"		{ yy_push_state(V01); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1364-2001-noconfig\"	{ yy_push_state(V01); CALLBACK(preprocCb); }
-  "`begin_keywords"[ \t]*\"1364-2008\"		{ yy_push_state(V05); CALLBACK(preprocCb); }
-  "`begin_keywords"[ \t]*\"1800-2008\"		{ yy_push_state(S05); CALLBACK(preprocCb); }
+  "`begin_keywords"[ \t]*\"1364-2005\"		{ yy_push_state(V05); CALLBACK(preprocCb); }
+  "`begin_keywords"[ \t]*\"1800-2005\"		{ yy_push_state(S05); CALLBACK(preprocCb); }
   "`end_keywords"				{ yy_pop_state();     CALLBACK(preprocCb); }
 }
 
