@@ -3,6 +3,12 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.023 2008/02/12
+
+****	Fix arrayed input/output pins.  [Thomas Ziller]
+
+****	Fix "output reg unsigned" parse error.
+
 * Verilog::Language 3.022 2008/01/15
 
 ***	Add ignoring of SystemVerilog enumerations.  [Thomas Ziller]
@@ -553,7 +559,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 49623 2008-01-15 16:58:29Z wsnyder $
+$Id: Changes 50835 2008-02-12 15:52:31Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

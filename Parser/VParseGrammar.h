@@ -1,4 +1,4 @@
-// $Id: VParseGrammar.h 49328 2008-01-07 16:28:25Z wsnyder $ //-*- C++ -*-
+// $Id: VParseGrammar.h 50705 2008-02-07 18:28:54Z wsnyder $ //-*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -66,6 +66,7 @@ public: // Only for VParseBison
     string	m_varIO;
     string	m_varSigned;
     string	m_varRange;
+    string	m_varArray;
 
     string	m_cellMod;
     bool	m_cellParam;
