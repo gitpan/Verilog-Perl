@@ -1,4 +1,4 @@
-// $Id: VParse.cpp 49328 2008-01-07 16:28:25Z wsnyder $  -*- C++ -*-
+// $Id: VParse.cpp 52657 2008-03-31 21:40:18Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -64,6 +64,8 @@ void VParse::debug(int level) {
 VFileLine* VParse::inFilelinep() const { return m_inFilelinep; }
 
 bool VParse::inCellDefine() const { return m_lexp->m_inCellDefine; }
+
+void VParse::language(const char* valuep) { m_lexp->language(valuep); }
 
 void VParse::parse(const string& text) {
     if (debug()>=10) { cout<<"VParse::parse: '"<<text<<"'\n"; }

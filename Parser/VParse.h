@@ -1,4 +1,4 @@
-// $Id: VParse.h 49328 2008-01-07 16:28:25Z wsnyder $  -*- C++ -*-
+// $Id: VParse.h 52657 2008-03-31 21:40:18Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -76,6 +76,7 @@ public:
     void parse(const string& text);		///< Add given text to 
     void setEof();				///< Got a end of file
     bool sigParser() const { return m_sigParser; }
+    void language(const char* valuep);
 
     VFileLine* inFilelinep() const;		///< File/Line number for last callback
     void inFileline(const string& filename, int lineno) { m_inFilelinep = m_inFilelinep->create(filename, lineno); }

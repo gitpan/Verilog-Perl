@@ -1,5 +1,5 @@
 # Verilog::Getopt.pm -- Verilog command line parsing
-# $Id: Getopt.pm 50835 2008-02-12 15:52:31Z wsnyder $
+# $Id: Getopt.pm 52775 2008-04-02 19:50:10Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -29,7 +29,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.023';
+$VERSION = '3.024';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance
@@ -456,8 +456,16 @@ sub define {
 	my $params = shift||"";
 	print "Define $token $params= $value\n" if $Debug;
 	my $oldval = $self->{defines}{$token};
-	(!defined $oldval or ($oldval eq $value) or !$self->{define_warnings})
-	    or warn "%Warning: ".$self->fileline().": Redefining `$token\n";
+	my $oldparams;
+	if (ref $oldval eq 'ARRAY') {
+	    ($oldval, $oldparams) = @{$oldval};
+	}
+	if (defined $oldval
+	    && (($oldval ne $value)
+		|| (defined $oldparams && $oldparams ne $params))
+	    && $self->{define_warnings}) {
+	    warn "%Warning: ".$self->fileline().": Redefining `$token\n";
+	}
 	if ($params) {
 	    $self->{defines}{$token} = [$value, $params];
 	} else {

@@ -3,6 +3,20 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.024 2008/04/02
+
+***	Verilog::Parser will now start parsing using the keywords
+	based on the Verilog::Language::language_standard setting.
+
+****	Fix vhier ignoring --language option.  [Martin Scharrer]
+
+****	Fix SystemVerilog parameterized defines with `` expansion,
+	and fix extra whitespace inserted on substitution. [Vladimir Matveyenko]
+
+****	Fix missing uwire keyword in Verilog::Language. [Jonathan David]
+
+****	Fix parse error on min:typ:max delay pairs, bug34575. [Martin Scharrer]
+
 * Verilog::Language 3.023 2008/02/12
 
 ****	Fix arrayed input/output pins.  [Thomas Ziller]
@@ -559,7 +573,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 50835 2008-02-12 15:52:31Z wsnyder $
+$Id: Changes 52775 2008-04-02 19:50:10Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

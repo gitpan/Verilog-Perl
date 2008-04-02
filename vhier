@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: vhier 49328 2008-01-07 16:28:25Z wsnyder $
+# $Id: vhier 52587 2008-03-28 19:52:56Z wsnyder $
 ######################################################################
 #
 # Copyright 2005-2008 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -84,7 +84,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vhier 49328 2008-01-07 16:28:25Z wsnyder $ '."\n";
+    print 'Version: $Id: vhier 52587 2008-03-28 19:52:56Z wsnyder $ '."\n";
     pod2usage(-verbose=>2, -exitval => 2);
     exit (1);
 }
@@ -314,7 +314,7 @@ Show the module name of all cells in top-down order.
 Show all input filenames.  Copying all of these files should result in only
 those files needed to represent the entire design.
 
-=item --language-standard <1995|2001|sv31>
+=item --language <1364-1995|1364-2001|1364-2005|1800-2005>
 
 Set the language standard for the files.  This determines which tokens are
 signals versus keywords, such as the ever-common "do" (data-out signal,

@@ -1,5 +1,5 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Id: Parser.xs 49328 2008-01-07 16:28:25Z wsnyder $
+#* $Id: Parser.xs 52657 2008-03-31 21:40:18Z wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Parser Perl XS interface
@@ -387,6 +387,20 @@ CODE:
     RETVAL = THIS->cbFilelinep()->filename().c_str();
 }
 OUTPUT: RETVAL
+
+#//**********************************************************************
+#// self->language()
+
+void
+VParserXs::language (valuep)
+const char* valuep
+PROTOTYPE: $$
+CODE:
+{
+    if (items > 1) {
+        THIS->language(valuep);
+    }
+}
 
 #//**********************************************************************
 #// self->lineno([setit])

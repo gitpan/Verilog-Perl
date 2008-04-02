@@ -1,4 +1,4 @@
-// $Id: VParseLex.h 49328 2008-01-07 16:28:25Z wsnyder $  -*- C++ -*-
+// $Id: VParseLex.h 52657 2008-03-31 21:40:18Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -125,6 +125,7 @@ class VParseLex {
 
     void debug(int level);
     int lexToken(VParseBisonYYSType* yylvalp);
+    void language(const char* value);
 };
 
 #endif // Guard

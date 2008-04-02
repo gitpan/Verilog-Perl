@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 50835 2008-02-12 15:52:31Z wsnyder $
+# $Id: Language.pm 52775 2008-04-02 19:50:10Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -200,7 +200,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.023';
+$VERSION = '3.024';
 
 ######################################################################
 #### Internal Variables
@@ -231,6 +231,10 @@ foreach my $kwd (qw(
 		    noshowcancelled pulsestyle_ondetect pulsestyle_onevent
 		    showcancelled signed specparam unsigned use
 		    )) { $Keywords{'1364-2001'}{$kwd} = '1364-2001'; }
+
+foreach my $kwd (qw(
+		    uwire
+		    )) { $Keywords{'1364-2005'}{$kwd} = '1364-2005'; }
 
 foreach my $kwd (qw(
 		    alias always_comb always_ff always_latch assert assume
@@ -282,8 +286,7 @@ sub language_standard {
 	if ($standard eq '1995' || $standard eq '1364-1995') {
 	    $Standard = '1364-1995';
 	    @subsets = ('1364-1995');
-	} elsif ($standard eq '2001' || $standard eq '1364-2001' || $standard eq '1364-2001-noconfig'
-		 || $standard eq '1364-2005') {
+	} elsif ($standard eq '2001' || $standard eq '1364-2001' || $standard eq '1364-2001-noconfig') {
 	    $Standard = '1364-2001';
 	    @subsets = ('1364-2001', '1364-1995');
 	} elsif ($standard eq '1364-2005') {

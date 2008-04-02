@@ -1,5 +1,5 @@
 %{
-/* $Id: VParseBison.y 50762 2008-02-08 18:38:36Z wsnyder $
+/* $Id: VParseBison.y 52652 2008-03-31 20:57:50Z wsnyder $
  ******************************************************************************
  * DESCRIPTION: SystemC bison parser
  *
@@ -747,10 +747,9 @@ delayE:		/* empty */				{ }
 	;
 
 delay:		'#' dlyTerm				{ } /* ignored */
-	|	'#' '(' dlyInParen ')'			{ } /* ignored */
-	|	'#' '(' dlyInParen ',' dlyInParen ')'		{ } /* ignored */
-	|	'#' '(' dlyInParen ',' dlyInParen ',' dlyInParen ')'	{ } /* ignored */
-	|	'#' '(' dlyInParen ':' dlyInParen ':' dlyInParen ')'	{ } /* ignored */
+	|	'#' '(' minTypMax ')'			{ } /* ignored */
+	|	'#' '(' minTypMax ',' minTypMax ')'		{ } /* ignored */
+	|	'#' '(' minTypMax ',' minTypMax ',' minTypMax ')'	{ } /* ignored */
 	;
 
 dlyTerm:	yaID 					{ }
@@ -759,7 +758,9 @@ dlyTerm:	yaID 					{ }
 	|	yaTIMENUM 				{ }
 	;
 
-dlyInParen:	expr 					{ }
+// IEEE: mintypmax_expression and constant_mintypmax_expression
+minTypMax:	expr 					{ }
+	|	expr ':' expr ':' expr			{ }
 	;
 
 sigAndAttr:	sigId sigAttrListE			{ $<fl>$=$<fl>1; $$=$1; }
