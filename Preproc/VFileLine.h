@@ -1,4 +1,4 @@
-// $Id: VFileLine.h 49328 2008-01-07 16:28:25Z wsnyder $  -*- C++ -*-
+// $Id: VFileLine.h 54014 2008-04-30 13:51:22Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -16,7 +16,7 @@
 ///
 /// Authors: Wilson Snyder
 ///
-/// Code available from: http://www.veripool.com/verilog-perl
+/// Code available from: http://www.veripool.org/verilog-perl
 ///
 //*************************************************************************
 

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 49328 2008-01-07 16:28:25Z wsnyder $
+# $Id: Makefile.PL 53966 2008-04-29 15:59:51Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -35,8 +35,9 @@ sub MY::postamble {
 CC = g++
 LEX = flex
 YACC = bison
-PPSRC = ../Preproc/src
+PPSRC = ../Preproc
 FLEXFIX = $(PPSRC)/flexfix
+XSUBPPFIX = $(PPSRC)/xsubppfix
 YFLAGS = -d -v
 
 CCFLAGS += -I$(PPSRC)
@@ -68,19 +69,25 @@ VParseBison.cpp:	VParseBison.y
 	-(grep conflicts VParseBison.output || mv VParseBison.c VParseBison.cpp )
 	-rm -rf VParseBison.c
 
+Parser_cleaned.c: Parser.c
+	$(PERL) $(XSUBPPFIX) < $< > $@
+
 clean::
 	-rm -rf test *.d *.o *.output
-	-rm -rf VParseLex*.cpp VParseBison.h VParseBison.cpp
+	-rm -rf VParseLex*.cpp VParseBison.h VParseBison.cpp Parser_cleaned.c
 ';
     return $out;
 }
+
+# Grr; some flags cause warnings in g++
+(my $ccflags = $Config{ccflags}) =~ s/ *-Wdeclaration-after-statement//;
 
 WriteMakefile(
               NAME => "Verilog::Parser",
 	      LIBS => '-lstdc++',
 	      VERSION_FROM  => 'Parser.pm',
 	      XSOPT => '-C++',
+	      CCFLAGS	=> $ccflags,
     	      OBJECT   => 'VFileLine.o VParseLex.o VParse.o VParseBison.o',
-	      MYEXTLIB => 'Parser.o',
-	      INC => (" -I. -Isrc"),
+	      MYEXTLIB => 'Parser_cleaned.o',
 	      );

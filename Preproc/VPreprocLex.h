@@ -1,4 +1,4 @@
-// $Id: VPreprocLex.h 52513 2008-03-27 17:48:26Z wsnyder $  -*- C++ -*-
+// $Id: VPreprocLex.h 54014 2008-04-30 13:51:22Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -16,7 +16,7 @@
 ///
 /// Authors: Wilson Snyder
 ///
-/// Code available from: http://www.veripool.com/verilog-perl
+/// Code available from: http://www.veripool.org/verilog-perl
 ///
 /// This header provides the interface between the lex proper VPreprocLex.l/.cpp
 /// and the class implementation file VPreproc.cpp
@@ -132,7 +132,7 @@ class VPreprocLex {
     void lineDirective(const char* text) { m_curFilelinep = m_curFilelinep->lineDirective(text); }
     void linenoInc() { m_curFilelinep = m_curFilelinep->create(m_curFilelinep->lineno()+1); }
     /// Called by VPreproc.cpp to inform lexer
-    void pushStateDefArg();
+    void pushStateDefArg(int level);
     void pushStateDefValue();
     void pushStateIncFilename();
     void unputString(const char* textp);

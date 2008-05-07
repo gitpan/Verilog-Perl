@@ -1,4 +1,4 @@
-// $Id: test.v 49328 2008-01-07 16:28:25Z wsnyder $
+// $Id: test.v 54014 2008-04-30 13:51:22Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2000-2008 by Wilson Snyder.
@@ -12,7 +12,7 @@ module example (/*AUTOARG*/
    a, b
    );
 
-   // See http://veripool.com
+   // See http://www.veripool.org
    // for what AUTOARG and friends can do for you!
 
    /*Comment // test*/

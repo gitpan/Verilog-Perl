@@ -1,12 +1,12 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Id: Parser.xs 52657 2008-03-31 21:40:18Z wsnyder $
+#* $Id: Parser.xs 54014 2008-04-30 13:51:22Z wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Parser Perl XS interface
 #* 
 #* Author: Wilson Snyder <wsnyder@wsnyder.org>
 #* 
-#* Code available from: http://www.veripool.com/
+#* Code available from: http://www.veripool.org/
 #* 
 #*********************************************************************
 #* 
@@ -345,6 +345,7 @@ OUTPUT: RETVAL
 
 void
 VParserXs::_DESTROY()
+PROTOTYPE: $
 CODE:
 {
     delete THIS;

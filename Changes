@@ -3,6 +3,22 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.025 2008/05/07
+
+****	Fix "output reg name=expr;" bug34649 syntax error.  [Martin Scharrer]
+
+****	Fix functions with "input integer".  [Johan Wouters]
+
+****	Fix bug introduced in 3.024 with parametrized defines.
+
+****	Fix compiler warnings under GCC 4.2.1.
+
+****	Fix "endclass" keyword misspelling.  [John Dickol]
+
+****	Fix preprocessor `else after series of `elsif.  [Mark Nodine]
+
+****	Fix parametrized defines calling define with comma.  [Joshua Wise]
+
 * Verilog::Language 3.024 2008/04/02
 
 ***	Verilog::Parser will now start parsing using the keywords
@@ -573,7 +589,7 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 52775 2008-04-02 19:50:10Z wsnyder $
+$Id: Changes 54310 2008-05-07 18:22:37Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

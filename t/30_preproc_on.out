@@ -1,6 +1,60 @@
-verilog/inc2.v:1: `line 1 "verilog/inc1.v" 1
-verilog/inc2.v:1: `line 1 "verilog/inc1.v" 0
-verilog/inc2.v:1: `line 1 "verilog/inc2.v" 1
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc1.v" 1
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc1.v" 0
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc2.v" 1
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc2.v" 0
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc_ifdef.v" 1
+verilog/inc_ifdef.v:1: // DESCRIPTION: Verilog::Preproc: Example source code
+verilog/inc_ifdef.v:2: // This file ONLY is placed into the Public Domain, for any use,
+verilog/inc_ifdef.v:3: // without warranty, 2000-2008 by Wilson Snyder.
+verilog/inc_ifdef.v:4: 
+verilog/inc_ifdef.v:5:  
+verilog/inc_ifdef.v:6:  
+verilog/inc_ifdef.v:7:    
+verilog/inc_ifdef.v:8: 
+verilog/inc_ifdef.v:8: `line 8 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:8: 
+verilog/inc_ifdef.v:9: 
+verilog/inc_ifdef.v:10:  
+verilog/inc_ifdef.v:11:  
+verilog/inc_ifdef.v:12:   $display("1A");
+verilog/inc_ifdef.v:13:   
+verilog/inc_ifdef.v:14:   
+verilog/inc_ifdef.v:15:   
+verilog/inc_ifdef.v:15: `line 15 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:15: 
+verilog/inc_ifdef.v:16:   $display("2A");
+verilog/inc_ifdef.v:17:    
+verilog/inc_ifdef.v:18:   
+verilog/inc_ifdef.v:19:    
+verilog/inc_ifdef.v:20:   
+verilog/inc_ifdef.v:21:   
+verilog/inc_ifdef.v:21: `line 21 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:21: 
+verilog/inc_ifdef.v:22:   $display("3AELSE");
+verilog/inc_ifdef.v:23:   
+verilog/inc_ifdef.v:24:  
+verilog/inc_ifdef.v:25:   
+verilog/inc_ifdef.v:26:  
+verilog/inc_ifdef.v:26: `line 26 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:26: 
+verilog/inc_ifdef.v:27:  
+verilog/inc_ifdef.v:28:   
+verilog/inc_ifdef.v:29:    
+verilog/inc_ifdef.v:30:   
+verilog/inc_ifdef.v:31:    
+verilog/inc_ifdef.v:32:   
+verilog/inc_ifdef.v:33:   
+verilog/inc_ifdef.v:34:   
+verilog/inc_ifdef.v:35:   
+verilog/inc_ifdef.v:36:  
+verilog/inc_ifdef.v:37:   
+verilog/inc_ifdef.v:38: 
+verilog/inc_ifdef.v:39:   
+verilog/inc_ifdef.v:40: 
+verilog/inc_ifdef.v:40: `line 40 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:40: 
+verilog/inc_ifdef.v:41: `line 41 "verilog/inc_ifdef.v" 2
+verilog/inc_ifdef.v:41: `line 1 "verilog/inc2.v" 0
 verilog/inc2.v:1: // DESCRIPTION: Verilog::Preproc: Example source code
 verilog/inc2.v:2: // This file ONLY is placed into the Public Domain, for any use,
 verilog/inc2.v:3: // without warranty, 2000-2008 by Wilson Snyder.
@@ -112,11 +166,11 @@ verilog/inc1.v:72:       //$display(`msg( \`, \`));  // Illegal
 verilog/inc1.v:73:       $display("pre thrupre thrumid thrupost post: \"right side\"");
 verilog/inc1.v:74:       $display("left side: \"right side\"");
 verilog/inc1.v:75:       $display("left side : \"right side \"");
-verilog/inc1.v:76:       $display("left_side : \"left_side \"");
-verilog/inc1.v:77:       $display("na : \"left_side \"");
-verilog/inc1.v:78:       $display("prep ( midp1 left_side midp2 ( outp ) ) : \"left_side \"");
+verilog/inc1.v:76:       $display("left_side : \"right_side \"");
+verilog/inc1.v:77:       $display("na : \"right_side \"");
+verilog/inc1.v:78:       $display("prep ( midp1 left_side midp2 ( outp ) ) : \"right_side \"");
 verilog/inc1.v:79:       $display("na: \"nana\"");
-verilog/inc1.v:80:       $display("left_side left_side : \"left_side left_side \"");   // Results vary between simulators
+verilog/inc1.v:80:       $display("`ls `rs : \"`ls `rs \"");   // Results vary between simulators
 verilog/inc1.v:81:       $display(": \"\"");  // Empty
 verilog/inc1.v:82:       $display("left side: \"right side\"");
 verilog/inc1.v:83:       $display("left side  : \"right side  \"");
@@ -151,4 +205,19 @@ verilog/inc1.v:110:     I!#r#e6<_Q{{E2+]I3<[3s)1@D|'E''i!O?]jD>Jo_![Cl)
 verilog/inc1.v:110:     #nj1]p,3^1~,="E@QZB\T)eU\pC#C|7=\$J$##A[@-@{Qk]
 verilog/inc1.v:113: `endprotected
 verilog/inc1.v:114: endmodule
-verilog/inc1.v:115: `line 115 "verilog/inc1.v" 2
+verilog/inc1.v:115: //"
+verilog/inc1.v:116: 
+verilog/inc1.v:117: //======================================================================
+verilog/inc1.v:118: // macro call with define that has comma
+verilog/inc1.v:119:  
+verilog/inc1.v:120:  
+verilog/inc1.v:121:  
+verilog/inc1.v:122:  
+verilog/inc1.v:123:  
+verilog/inc1.v:124:  
+verilog/inc1.v:125:  
+verilog/inc1.v:126: 
+verilog/inc1.v:127: begin addr <= (({regs[6], regs[7]} + 1)); rd <= 1; end and begin addr <= (({regs[6], regs[7]})); wdata <= (rdata); wr <= 1; end
+verilog/inc1.v:128: begin addr <= ({regs[6], regs[7]} + 1); rd <= 1; end
+verilog/inc1.v:129: begin addr <= ({regs[6], regs[7]}); wdata <= (rdata); wr <= 1; end 
+verilog/inc1.v:130: `line 130 "verilog/inc1.v" 2

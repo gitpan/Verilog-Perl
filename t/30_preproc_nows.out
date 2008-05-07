@@ -1,6 +1,18 @@
-verilog/inc2.v:1: `line 1 "verilog/inc1.v" 1
-verilog/inc2.v:1: `line 1 "verilog/inc1.v" 0
-verilog/inc2.v:1: `line 1 "verilog/inc2.v" 1
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc1.v" 1
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc1.v" 0
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc2.v" 1
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc2.v" 0
+verilog/inc_ifdef.v:1: `line 1 "verilog/inc_ifdef.v" 1
+verilog/inc_ifdef.v:8: `line 8 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:12:  $display("1A");
+verilog/inc_ifdef.v:15: `line 15 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:16:  $display("2A");
+verilog/inc_ifdef.v:21: `line 21 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:22:  $display("3AELSE");
+verilog/inc_ifdef.v:26: `line 26 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:40: `line 40 "verilog/inc_ifdef.v" 0
+verilog/inc_ifdef.v:41: `line 41 "verilog/inc_ifdef.v" 2
+verilog/inc_ifdef.v:41: `line 1 "verilog/inc2.v" 0
 verilog/inc2.v:4: At file verilog/inc2.v line 4
 verilog/inc3.v:1: `line 5 "verilog/inc2.v" 0
 verilog/inc3.v:1: `line 1 "verilog/inc3.v" 1
@@ -33,11 +45,11 @@ verilog/inc1.v:71:  initial begin
 verilog/inc1.v:73:  $display("pre thrupre thrumid thrupost post: \"right side\"");
 verilog/inc1.v:74:  $display("left side: \"right side\"");
 verilog/inc1.v:75:  $display("left side : \"right side \"");
-verilog/inc1.v:76:  $display("left_side : \"left_side \"");
-verilog/inc1.v:77:  $display("na : \"left_side \"");
-verilog/inc1.v:78:  $display("prep ( midp1 left_side midp2 ( outp ) ) : \"left_side \"");
+verilog/inc1.v:76:  $display("left_side : \"right_side \"");
+verilog/inc1.v:77:  $display("na : \"right_side \"");
+verilog/inc1.v:78:  $display("prep ( midp1 left_side midp2 ( outp ) ) : \"right_side \"");
 verilog/inc1.v:79:  $display("na: \"nana\"");
-verilog/inc1.v:80:  $display("left_side left_side : \"left_side left_side \""); 
+verilog/inc1.v:80:  $display("`ls `rs : \"`ls `rs \""); 
 verilog/inc1.v:81:  $display(": \"\""); 
 verilog/inc1.v:82:  $display("left side: \"right side\"");
 verilog/inc1.v:83:  $display("left side  : \"right side  \"");
@@ -58,4 +70,7 @@ verilog/inc1.v:110:     I!#r#e6<_Q{{E2+]I3<[3s)1@D|'E''i!O?]jD>Jo_![Cl)
 verilog/inc1.v:110:     #nj1]p,3^1~,="E@QZB\T)eU\pC#C|7=\$J$##A[@-@{Qk]
 verilog/inc1.v:113: `endprotected
 verilog/inc1.v:114: endmodule
-verilog/inc1.v:115: `line 115 "verilog/inc1.v" 2
+verilog/inc1.v:127: begin addr <= (({regs[6], regs[7]} + 1)); rd <= 1; end and begin addr <= (({regs[6], regs[7]})); wdata <= (rdata); wr <= 1; end
+verilog/inc1.v:128: begin addr <= ({regs[6], regs[7]} + 1); rd <= 1; end
+verilog/inc1.v:129: begin addr <= ({regs[6], regs[7]}); wdata <= (rdata); wr <= 1; end 
+verilog/inc1.v:130: `line 130 "verilog/inc1.v" 2

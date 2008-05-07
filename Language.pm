@@ -1,5 +1,5 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 52775 2008-04-02 19:50:10Z wsnyder $
+# $Id: Language.pm 54310 2008-05-07 18:22:37Z wsnyder $
 # Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
@@ -164,9 +164,9 @@ strings.  Newlines will be preserved in this process.
 
 =head1 DISTRIBUTION
 
-Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
-L<http://www.veripool.com/verilog-perl.html>.
+L<http://www.veripool.org/verilog-perl>.
 
 Copyright 2000-2008 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
@@ -184,7 +184,7 @@ L<Verilog::Parser>,
 L<Verilog::ParseSig>, 
 L<Verilog::Getopt>
 
-And the L<http://www.veripool.com/verilog-mode.html>Verilog-Mode package for Emacs.
+And the L<http://www.veripool.org/verilog-mode>Verilog-Mode package for Emacs.
 
 =cut
 ######################################################################
@@ -200,7 +200,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.024';
+$VERSION = '3.035';
 
 ######################################################################
 #### Internal Variables
@@ -240,7 +240,7 @@ foreach my $kwd (qw(
 		    alias always_comb always_ff always_latch assert assume
 		    before bind bins binsof bit break byte chandle class
 		    clocking const constraint context continue cover
-		    covergroup coverpoint cross dist do endcass endclocking
+		    covergroup coverpoint cross dist do endclass endclocking
 		    endgroup endinterface endpackage endprogram endproperty
 		    endsequence enum expect export extends extern final
 		    first_match foreach forkjoin iff ignore_bins

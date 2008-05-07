@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 49328 2008-01-07 16:28:25Z wsnyder $
+# $Id: Makefile.PL 54012 2008-04-30 13:27:58Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -36,7 +36,7 @@ dist: maintainer-copy distcheck README
 
 ## Maintainer use:
 preexist:
-	test ! -r \$(HOME)/src/kits/\$(DISTVNAME).tar.gz
+	svnorcvs nexists \$(DISTNAME)_\$(VERSION_SYM)
 	test -s README
 
 tag:
@@ -46,8 +46,7 @@ maintainer-diff:
 	svnorcvs diff \$(DISTNAME)_\$(VERSION_SYM) 
 
 maintainer-dist: preexist dist tag
-	cp \$(DISTVNAME).tar.gz \$(HOME)/src/kits
-	mv \$(DISTVNAME).tar.gz \$(HOME)/backpack
+	svnorcvs release \$(DISTVNAME).tar.gz
 
 maintainer-copy:
 

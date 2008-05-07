@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: 30_preproc.t 49328 2008-01-07 16:28:25Z wsnyder $
+# $Id: 30_preproc.t 54240 2008-05-06 12:57:20Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -73,6 +73,7 @@ sub test {
     my $pp = new MyPreproc (options=>$opt, @args);
     $pp->open("inc1.v");
     $pp->open("inc2.v");
+    $pp->open("inc_ifdef.v");
 
     my $fhout = IO::File->new(">test_dir/inc${id}.out");
     $::OUTTO = $fhout;

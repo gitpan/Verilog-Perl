@@ -1,12 +1,12 @@
 #/* Verilog.xs -- Verilog Booter  -*- C++ -*-
-#* $Id: Preproc.xs 49328 2008-01-07 16:28:25Z wsnyder $
+#* $Id: Preproc.xs 54014 2008-04-30 13:51:22Z wsnyder $
 #*********************************************************************
 #*
 #* DESCRIPTION: Verilog::Preproc Perl XS interface
 #* 
 #* Author: Wilson Snyder <wsnyder@wsnyder.org>
 #* 
-#* Code available from: http://www.veripool.com/
+#* Code available from: http://www.veripool.org/
 #* 
 #*********************************************************************
 #* 
@@ -216,6 +216,7 @@ OUTPUT: RETVAL
 
 void
 VPreprocXs::_DESTROY()
+PROTOTYPE: $
 CODE:
 {
     delete THIS;

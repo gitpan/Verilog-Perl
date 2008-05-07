@@ -1,4 +1,4 @@
-#$Id: Parser.pm 52775 2008-04-02 19:50:10Z wsnyder $
+#$Id: Parser.pm 54310 2008-05-07 18:22:37Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2008 by Wilson Snyder.  This program is free software;
@@ -23,7 +23,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.024';
+$VERSION = '3.035';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 
@@ -414,9 +414,9 @@ of parenthesis are required.  (Use "cell cell();", not "cell cell;".)
 
 =head1 DISTRIBUTION
 
-Verilog-Perl is part of the L<http://www.veripool.com/> free Verilog EDA
+Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
-L<http://www.veripool.com/verilog-perl.html>.
+L<http://www.veripool.org/verilog-perl>.
 
 Copyright 2000-2008 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU

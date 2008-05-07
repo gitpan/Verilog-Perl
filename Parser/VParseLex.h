@@ -1,4 +1,4 @@
-// $Id: VParseLex.h 52657 2008-03-31 21:40:18Z wsnyder $  -*- C++ -*-
+// $Id: VParseLex.h 54014 2008-04-30 13:51:22Z wsnyder $  -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -16,7 +16,7 @@
 ///
 /// Authors: Wilson Snyder
 ///
-/// Code available from: http://www.veripool.com/verilog-perl
+/// Code available from: http://www.veripool.org/verilog-perl
 ///
 /// This header provides the interface between the lex proper VParseLex.l/.cpp
 /// and the class implementation file VParse.cpp
