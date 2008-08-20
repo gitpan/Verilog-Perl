@@ -1,15 +1,14 @@
-#$Id: Parser.pm 54310 2008-05-07 18:22:37Z wsnyder $
 ######################################################################
 #
 # Copyright 2001-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 package Verilog::Parser;
@@ -23,7 +22,7 @@ require DynaLoader;
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.035';
+$VERSION = '3.040';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 
@@ -368,34 +367,34 @@ file.
   package MyParser;
   use Verilog::Parser;
   @ISA = qw(Verilog::Parser);
-  
+
   # parse, parse_file, etc are inherited from Verilog::Parser
   sub new {
       my $class = shift;
       #print "Class $class\n";
       my $self = $class->SUPER::new();
-      bless $self, $class; 
+      bless $self, $class;
       return $self;
   }
-  
+
   sub symbol {
       my $self = shift;
       my $token = shift;
-      
+
       $self->{symbols}{$token}++;
   }
-  
+
   sub report {
       my $self = shift;
-  
+
       foreach my $sym (sort keys %{$self->{symbols}}) {
-  	 printf "Symbol %-30s occurs %4d times\n",
-  	 $sym, $self->{symbols}{$sym};
+	 printf "Symbol %-30s occurs %4d times\n",
+	 $sym, $self->{symbols}{$sym};
       }
   }
-  
+
   package main;
-  
+
   my $parser = MyParser->new();
   $parser->parse_file (shift);
   $parser->report();
@@ -429,11 +428,11 @@ Wilson Snyder <wsnyder@wsnyder.org>
 =head1 SEE ALSO
 
 L<Verilog-Perl>,
-L<Verilog::Preproc>, 
-L<Verilog::SigParser>, 
-L<Verilog::Language>, 
-L<Verilog::Netlist>, 
-L<Verilog::Getopt>, 
+L<Verilog::Preproc>,
+L<Verilog::SigParser>,
+L<Verilog::Language>,
+L<Verilog::Netlist>,
+L<Verilog::Getopt>,
 L<vrename>,
 L<vpm>
 L<vppp>

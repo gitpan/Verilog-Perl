@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-# $Id: 20_getopt.t 49328 2008-01-07 16:28:25Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -26,7 +25,7 @@ my @param = qw ( +libext+t
 		 +define+foo=bar
 		 +define+foo2
 		 -v libdir
-		 -y moddir 
+		 -y moddir
 		 -Dbaz=bar
 		 -Iincdir2
 		 -f t/20_getopt.opt

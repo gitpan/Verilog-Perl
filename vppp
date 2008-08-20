@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 # vppp - Preprocess Verilog
-# $Id: vppp 54014 2008-04-30 13:51:22Z wsnyder $
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder <wsnyder@wsnyder.org>.  This
@@ -27,7 +26,9 @@ use Pod::Usage;
 use Verilog::Preproc;
 use Verilog::Getopt;
 use strict;
-use vars qw ($Debug);
+use vars qw ($Debug $VERSION);
+
+$VERSION = '3.040';
 
 ######################################################################
 # main
@@ -59,6 +60,7 @@ if (! GetOptions (
 					   );
 		      $opt_blank=0;
 		  } },
+		  "version"	=> sub { print "Version $VERSION\n"; exit(0); },
 		  "<>"		=> \&parameter,
 		  )) {
     die "%Error: Bad usage, try 'vppp --help'\n";
@@ -92,7 +94,7 @@ exit (0);
 ######################################################################
 
 sub usage {
-    print 'Version: $Id: vppp 54014 2008-04-30 13:51:22Z wsnyder $ '."\n";
+    print "Version $VERSION\n";
     pod2usage(-verbose=>2, -exitval => 2);
     exit (1);
 }
@@ -202,6 +204,10 @@ in the language reference manual. Defaults false.
 =item --simple
 
 Requests simple output, an alias for --noline, --nocomment and --noblank.
+
+=item --version
+
+Displays program version and exits.
 
 =back
 

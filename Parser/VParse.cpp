@@ -1,4 +1,4 @@
-// $Id: VParse.cpp 54014 2008-04-30 13:51:22Z wsnyder $  -*- C++ -*-
+// -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -20,13 +20,14 @@
 ///
 //*************************************************************************
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <stack>
 #include <vector>
 #include <map>
 #include <deque>
-#include <assert.h>
+#include <cassert>
 
 #include "VParse.h"
 #include "VParseLex.h"

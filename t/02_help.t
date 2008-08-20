@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-# $Id: 02_help.t 49328 2008-01-07 16:28:25Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2007-2008 by Wilson Snyder.  This program is free software;
@@ -11,7 +10,7 @@ use Test;
 
 BEGIN { require "t/test_utils.pl"; }
 my @execs = glob ("blib/script/[a-z]*");
-plan tests => (2 * ($#execs+1));
+plan tests => (3 * ($#execs+1));
 
 foreach my $exe (@execs) {
     print "Doc test of: $exe\n";
@@ -21,5 +20,11 @@ foreach my $exe (@execs) {
 	skip("vsplitmodule is only example (harmless)",1);
     } else {
 	ok ($help =~ /DISTRIBUTION/);
+    }
+    $help = `$PERL $exe --version 2>&1`;
+    if ($exe =~ /vsplitmodule/) {
+	skip("vsplitmodule is only example (harmless)",1);
+    } else {
+	ok ($help =~ /Version.*[0-9]/);
     }
 }

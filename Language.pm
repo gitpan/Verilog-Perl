@@ -1,17 +1,15 @@
 # Verilog::Language.pm -- Verilog language keywords, etc
-# $Id: Language.pm 54310 2008-05-07 18:22:37Z wsnyder $
-# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 =pod
@@ -180,8 +178,8 @@ Wilson Snyder <wsnyder@wsnyder.org>
 
 L<Verilog-Perl>,
 L<Verilog::EditFiles>
-L<Verilog::Parser>, 
-L<Verilog::ParseSig>, 
+L<Verilog::Parser>,
+L<Verilog::ParseSig>,
 L<Verilog::Getopt>
 
 And the L<http://www.veripool.org/verilog-mode>Verilog-Mode package for Emacs.
@@ -200,7 +198,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.035';
+$VERSION = '3.040';
 
 ######################################################################
 #### Internal Variables
@@ -493,7 +491,7 @@ sub split_bus {
 	    if (/^\[/) {
 		$inbra = 1;
 		$pretext[$brnum] .= $_;
-	    } 
+	    }
 	    if (!$inbra) {
 		# Not in bracket, just remember text
 		$pretext[$brnum] .= $_;
@@ -599,7 +597,7 @@ sub split_bus_nocomma {
 	    if (/^\[/) {
 		$inbra = 1;
 		$pretext[$brnum] .= $_;
-	    } 
+	    }
 	    if (!$inbra) {
 		# Not in bracket, just remember text
 		$pretext[$brnum] .= $_;

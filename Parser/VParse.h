@@ -1,4 +1,4 @@
-// $Id: VParse.h 54014 2008-04-30 13:51:22Z wsnyder $  -*- C++ -*-
+// -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -73,7 +73,7 @@ public:
     /// Insert given file into this point in input stream
     int debug() const { return m_debug; }	///< Set debugging level
     void debug(int level);			///< Set debugging level
-    void parse(const string& text);		///< Add given text to 
+    void parse(const string& text);		///< Add given text to
     void setEof();				///< Got a end of file
     bool sigParser() const { return m_sigParser; }
     void language(const char* valuep);

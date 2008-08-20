@@ -1,4 +1,3 @@
-# $Id: Makefile.PL 54012 2008-04-30 13:27:58Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -43,7 +42,7 @@ tag:
 	svnorcvs tag  \$(DISTNAME)_\$(VERSION_SYM)
 
 maintainer-diff:
-	svnorcvs diff \$(DISTNAME)_\$(VERSION_SYM) 
+	svnorcvs diff \$(DISTNAME)_\$(VERSION_SYM)
 
 maintainer-dist: preexist dist tag
 	svnorcvs release \$(DISTVNAME).tar.gz
@@ -75,7 +74,7 @@ WriteMakefile(
 	      EXE_FILES => [qw( vrename vpm vppp vhier vsplitmodule )],
 	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpm simv ),},
 	      'dist'    => {COMPRESS => 'gzip -9f',
-			    SUFFIX   => '.gz', 
+			    SUFFIX   => '.gz',
 			    DIST_DEFAULT => 'README all tardist',
 			},
 	      );

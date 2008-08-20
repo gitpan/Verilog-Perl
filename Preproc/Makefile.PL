@@ -1,4 +1,3 @@
-# $Id: Makefile.PL 53966 2008-04-29 15:59:51Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -32,7 +31,13 @@ sub MY::postamble {
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
     $out .= "OPTIMIZE += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= '
-CC = g++
+ifeq ($(OBJCACHE_HOSTS_DETERMINANT),)
+OBJCACHE :=
+else
+OBJCACHE := objcache --read --write
+endif
+
+CC = $(OBJCACHE) g++
 LEX = flex
 YACC = bison
 PPSRC = ../Preproc
@@ -56,7 +61,7 @@ VPreprocLex.cpp: $(FLEXFIX) VPreprocLex_prefix.cpp
 	$(PERL) $(FLEXFIX) < VPreprocLex_prefix.cpp > $@
 
 Preproc_cleaned.c: Preproc.c
-	$(PERL) $(XSUBPPFIX) < $< > $@
+	$(PERL) $(XSUBPPFIX) < Preproc.c > Preproc_cleaned.c
 
 clean::
 	-rm -rf test *.d *.o *.output
@@ -74,6 +79,6 @@ WriteMakefile(
 	      VERSION_FROM  => 'Preproc.pm',
 	      XSOPT => '-C++',
 	      CCFLAGS	=> $ccflags,
-    	      OBJECT   => 'VFileLine.o VPreproc.o VPreprocLex.o',
+	      OBJECT   => 'VFileLine.o VPreproc.o VPreprocLex.o',
 	      MYEXTLIB => 'Preproc_cleaned.o',
 	      );

@@ -1,5 +1,6 @@
 ^CVS/
 /CVS/
+^.git/
 ,v$
 \.(bak|old)/
 \.(bak|old)$
@@ -15,6 +16,7 @@
 \.dll$
 \.exp$
 \.tmp$
+\.pre\..*$
 VPreprocLex\.cpp$
 simv
 .*\.tar\.gz

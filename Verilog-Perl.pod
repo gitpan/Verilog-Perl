@@ -1,4 +1,4 @@
-# $Id: Verilog-Perl.pod 54014 2008-04-30 13:51:22Z wsnyder $ -*- Perl -*-
+# -*- Perl -*-
 # See copyright, etc in below POD section.
 ######################################################################
 

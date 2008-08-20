@@ -1,34 +1,35 @@
-%{
-/* $Id: VParseBison.y 54014 2008-04-30 13:51:22Z wsnyder $
- ******************************************************************************
- * DESCRIPTION: SystemC bison parser
- *
- * This file is part of SystemC-Perl.
- *
- * Author: Wilson Snyder <wsnyder@wsnyder.org>
- *
- * Code available from: http://www.veripool.org/systemperl
- *
- ******************************************************************************
- *
- * Copyright 2001-2008 by Wilson Snyder.  This program is free software;
- * you can redistribute it and/or modify it under the terms of either the GNU
- * General Public License or the Perl Artistic License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- *****************************************************************************/
+// -*- C++ -*-
+//*****************************************************************************
+// DESCRIPTION: SystemC bison parser
+//
+// This file is part of SystemC-Perl.
+//
+// Author: Wilson Snyder <wsnyder@wsnyder.org>
+//
+// Code available from: http://www.veripool.org/systemperl
+//
+//*****************************************************************************
+//
+// Copyright 2001-2008 by Wilson Snyder.  This program is free software;
+// you can redistribute it and/or modify it under the terms of either the GNU
+// General Public License or the Perl Artistic License.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+//****************************************************************************/
 
-#include <stdio.h>
+%{
+
+#include <cstdio>
 #include <fstream>
 #include <stack>
 #include <vector>
 #include <map>
 #include <deque>
-#include <assert.h>
+#include <cassert>
 
 #include "VParse.h"
 #include "VParseGrammar.h"
@@ -167,10 +168,12 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yELSE		"else"
 %token<str>		yEND		"end"
 %token<str>		yENDCASE	"endcase"
+%token<str>		yENDCLOCKING	"endclocking"
 %token<str>		yENDFUNCTION	"endfunction"
 %token<str>		yENDGENERATE	"endgenerate"
 %token<str>		yENDINTERFACE	"endinterface"
 %token<str>		yENDMODULE	"endmodule"
+%token<str>		yENDPROPERTY	"endproperty"
 %token<str>		yENDSPECIFY	"endspecify"
 %token<str>		yENDTABLE	"endtable"
 %token<str>		yENDTASK	"endtask"
@@ -186,6 +189,7 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yGENERATE	"generate"
 %token<str>		yGENVAR		"genvar"
 %token<str>		yIF		"if"
+%token<str>		yIFF		"iff"
 %token<str>		yIMPORT		"import"
 %token<str>		yINITIAL	"initial"
 %token<str>		yINOUT		"inout"
@@ -204,6 +208,7 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yOUTPUT		"output"
 %token<str>		yPARAMETER	"parameter"
 %token<str>		yPOSEDGE	"posedge"
+%token<str>		yPROPERTY	"property"
 %token<str>		yREAL		"real"
 %token<str>		yREALTIME	"realtime"
 %token<str>		yREF		"ref"
@@ -286,6 +291,12 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 
 //********************
 // Verilog op precedence
+
+%token<str>	prUNARYARITH
+%token<str>	prREDUCTION
+%token<str>	prNEGATION
+
+
 %left		':'
 %left		'?'
 %left		yP_OROR
@@ -301,39 +312,17 @@ void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %left		'*' '/' '%'
 %left		yP_POW
 %left		'{' '}'
-%left<str>	prUNARYARITH
-%left<str>	prREDUCTION
-%left<str>	prNEGATION
+%left		prUNARYARITH yP_MINUSMINUS yP_PLUSPLUS
+%left		prREDUCTION
+%left		prNEGATION
 
 %nonassoc prLOWER_THAN_ELSE
 %nonassoc yELSE
 
-// Types
-%type<str>	anyrange
-%type<str>	cateList
-%type<str>	concIdList
-%type<str>	constExpr
-%type<str>	expr
-%type<str>	exprList
-%type<str>	exprNoStr
-%type<str>	funcTypeE
-%type<str>	funcRef
-%type<str>	gateKwd
-%type<str>	idArrayed
-%type<str>	idDotted
-%type<str>	instModName
-%type<str>	instRangeE
-%type<str>	portRangeE
-%type<str>	portV2kInit
-%type<str>	portV2kSig
-%type<str>	rangeList
-%type<str>	rangeListE
-%type<str>	sigAndAttr
-%type<str>	sigId
-%type<str>	strAsInt
-%type<str>	varRefBase
-%type<str>	varRefDotBit
-%type<str>	varTypeKwds
+//BISONPRE_TYPES
+//  Blank lines for type insertion
+//  Blank lines for type insertion
+//  Blank lines for type insertion
 
 %start fileE
 
@@ -568,7 +557,8 @@ portDirection:	yINPUT					{ VARIO($1); }
 	|	yREF					{ VARIO($1); }
 	;
 
-varTypeKwds:	yINTEGER				{ $<fl>$=$<fl>1; $$=$1; }
+varTypeKwds<str>:
+		yINTEGER				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yREAL					{ $<fl>$=$<fl>1; $$=$1; }
 	|	yREALTIME				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yTIME					{ $<fl>$=$<fl>1; $$=$1; }
@@ -661,6 +651,9 @@ modOrGenItem:	yALWAYS stmtBlock			{ }
 	|	tableDecl 				{ }
 	|	typedefDecl				{ }
 
+	|	concurrent_assertion_item		{ }  // IEEE puts in modItem, all tools put here
+	|	clocking_declaration			{ }
+
 	|	error ';'				{ }
 	;
 
@@ -688,8 +681,8 @@ genItemList:	genItem					{ }
 
 genItem:	modOrGenItem 				{ }
 	|	yCASE  '(' expr ')' genCaseListE yENDCASE	{ }
-	|	yIF expr genItemBlock	%prec prLOWER_THAN_ELSE	{ }
-	|	yIF expr genItemBlock yELSE genItemBlock	{ }
+	|	yIF '(' expr ')' genItemBlock	%prec prLOWER_THAN_ELSE	{ }
+	|	yIF '(' expr ')' genItemBlock yELSE genItemBlock	{ }
 	|	yFOR '(' varRefBase '=' expr ';' expr ';' varRefBase '=' expr ')' genItemBlock
 							{ }
 	;
@@ -712,7 +705,7 @@ genCaseList:	caseCondList ':' genItemBlock		{ }
 // IEEE: variable_lvalue
 variableLvalue:	varRefDotBit				{ }
 	|	'{' concIdList '}'			{ }
- 	;
+	;
 
 assignList:	assignOne				{ }
 	|	assignList ',' assignOne		{ }
@@ -749,7 +742,8 @@ minTypMax:	expr 					{ }
 	|	expr ':' expr ':' expr			{ }
 	;
 
-sigAndAttr:	sigId sigAttrListE			{ $<fl>$=$<fl>1; $$=$1; }
+sigAndAttr<str>:
+		sigId sigAttrListE			{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 netSigList:	netSig  				{ }
@@ -764,11 +758,13 @@ netSig:		sigId sigAttrListE			{ }
 sigIdRange:	yaID rangeList				{ $<fl>$=$<fl>1; VARARRAY($2); VARDONE($<fl>1, $1, ""); }
 	;
 
-regSigId:	yaID rangeListE				{ $<fl>$=$<fl>1; VARARRAY($2); VARDONE($<fl>1, $1, ""); }
+regSigId<str>:
+		yaID rangeListE				{ $<fl>$=$<fl>1; VARARRAY($2); VARDONE($<fl>1, $1, ""); }
 	|	yaID rangeListE '=' constExpr		{ $<fl>$=$<fl>1; VARARRAY($2); VARDONE($<fl>1, $1, $4); }
 	;
 
-sigId:		yaID					{ $<fl>$=$<fl>1; VARDONE($<fl>1, $1, ""); }
+sigId<str>:
+		yaID					{ $<fl>$=$<fl>1; VARDONE($<fl>1, $1, ""); }
 	;
 
 sigList:	sigInit					{ }
@@ -785,15 +781,18 @@ regsig:		regSigId sigAttrListE			{}
 sigAttrListE:	/* empty */				{}
 	;
 
-rangeListE:	/* empty */    		               	{ $$ = ""; }
+rangeListE<str>:
+		/* empty */    		               	{ $$ = ""; }
 	|	rangeList 				{ $$ = $1; }
 	;
 
-rangeList:	anyrange				{ $$ = $1; }
+rangeList<str>:
+		anyrange				{ $$ = $1; }
         |	rangeList anyrange			{ $$ = $1+$2; }
 	;
 
-regrangeE:	/* empty */    		               	{ VARRANGE(""); }
+regrangeE<str>:
+		/* empty */    		               	{ VARRANGE(""); }
 	|	anyrange 				{ VARRANGE($1); }
 	;
 
@@ -806,7 +805,8 @@ regArRangeList:	anyrange				{ VARRANGE($1); }
         |	regArRangeList anyrange			{ VARARRAY(GRAMMARP->m_varArray+GRAMMARP->m_varRange); VARRANGE($2); }
 	;
 
-anyrange:	'[' constExpr ':' constExpr ']'		{ $$ = "["+$2+":"+$4+"]"; }
+anyrange<str>:
+		'[' constExpr ':' constExpr ']'		{ $$ = "["+$2+":"+$4+"]"; }
 	;
 
 delayrange:	regrangeE delayE 			{ }
@@ -814,7 +814,8 @@ delayrange:	regrangeE delayE 			{ }
 	|	yVECTORED regrangeE delayE		{ }
 	;
 
-portRangeE:	/* empty */	                   	{ $$ = ""; }
+portRangeE<str>:
+		/* empty */	                   	{ $$ = ""; }
 	|	'[' constExpr ']'              		{ $$ = "["+$2+"]"; }
 	|	'[' constExpr ':' constExpr  ']'    	{ $$ = "["+$2+":"+$4+"]"; }
 	;
@@ -845,7 +846,8 @@ defpOne:	varRefDotBit '=' expr 			{ }
 
 instDecl:	instModName {INSTPREP($1,1);} strengthSpecE instparamListE {INSTPREP($1,0);} instnameList ';' 	{ }
 
-instModName:	yaID 					{ $<fl>$=$<fl>1; $$ = $1; }
+instModName<str>:
+		yaID 					{ $<fl>$=$<fl>1; $$ = $1; }
 	|	gateKwd			 		{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
@@ -865,7 +867,8 @@ instname:	yaID instRangeE '(' 			{ PARSEP->instantCb($<fl>1, GRAMMARP->m_cellMod
 	|	instRangeE '(' 				{ PARSEP->instantCb($<fl>2, GRAMMARP->m_cellMod, "", $1); PINPARAMS(); } // UDP
 	;
 
-instRangeE:	/* empty */				{ $$ = ""; }
+instRangeE<str>:
+		/* empty */				{ $$ = ""; }
 	|	'[' constExpr ':' constExpr ']'		{ $$ = "["+$2+":"+$4+"]"; }
 	;
 
@@ -938,16 +941,34 @@ stmtList:	stmtBlock				{ }
 	|	stmtList stmtBlock			{ }
 	;
 
-assignLhs:	varRefDotBit				{ }
-	|	'{' concIdList '}'			{ }
+assignLhs<str>:
+		varRefDotBit				{ $<fl>$=$<fl>1; $$ = $1; }
+	|	'{' concIdList '}'			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	;
 
 stmt:		';'					{ }
 	|	labeledStmt				{ }
 	|	yaID ':' labeledStmt			{ }  /*S05 block creation rule*/
 
-	|	assignLhs yP_LTE delayOrEvE expr ';'	{ }
-	|	assignLhs '=' delayOrEvE expr ';'	{ }
+	|	assignLhs yP_LTE	delayOrEvE expr ';'	{ }
+	|	assignLhs '=' 		delayOrEvE expr ';'	{ }
+	|	assignLhs yP_PLUSEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_MINUSEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_TIMESEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_DIVEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_MODEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_ANDEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_OREQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_XOREQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_SLEFTEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_SRIGHTEQ	delayOrEvE expr ';'	{ }
+	|	assignLhs yP_SSRIGHTEQ	delayOrEvE expr ';'	{ }
+
+	|	varRefDotBit yP_PLUSPLUS 		{ }
+	|	varRefDotBit yP_MINUSMINUS 		{ }
+	|	yP_PLUSPLUS	varRefDotBit		{ }
+	|	yP_MINUSMINUS	varRefDotBit		{ }
+
 	|	stateCaseForIf				{ }
 	|	taskRef ';' 				{ }
 
@@ -971,8 +992,8 @@ stmt:		';'					{ }
 // Case/If
 
 stateCaseForIf: caseStmt caseAttrE caseListE yENDCASE	{ }
-	|	yIF expr stmtBlock	%prec prLOWER_THAN_ELSE	{ }
-	|	yIF expr stmtBlock yELSE stmtBlock	{ }
+	|	yIF '(' expr ')' stmtBlock	%prec prLOWER_THAN_ELSE	{ }
+	|	yIF '(' expr ')' stmtBlock yELSE stmtBlock	{ }
 	|	yFOR '(' assignLhs '=' expr ';' expr ';' assignLhs '=' expr ')' stmtBlock
 							{ }
 	|	yWHILE '(' expr ')' stmtBlock		{ }
@@ -1012,7 +1033,8 @@ taskRef:	idDotted		 		{ }
 	|	idDotted '(' exprList ')'		{ }
 	;
 
-funcRef:	idDotted '(' exprList ')'		{ }
+funcRef<str>:
+		idDotted '(' exprList ')'		{ $1+"("+$3+")" }
 	;
 
 taskDecl: 	yTASK lifetimeE taskId funcGuts yENDTASK endLabelE
@@ -1020,7 +1042,7 @@ taskDecl: 	yTASK lifetimeE taskId funcGuts yENDTASK endLabelE
 	;
 
 funcDecl: 	yFUNCTION lifetimeE funcId funcGuts yENDFUNCTION endLabelE
-		 	{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>5,$5); }
+			{ GRAMMARP->m_inFTask=false; PARSEP->endtaskfuncCb($<fl>5,$5); }
 	;
 
 // IEEE: lifetime - plus empty
@@ -1042,9 +1064,10 @@ funcGuts:	'(' {GRAMMARP->pinNum(1);} portV2kArgs ')' ';' funcBody	{ }
 
 funcBody:	funcVarList stmtBlock			{ }
 	|	stmtBlock				{ }
- 	;
+	;
 
-funcTypeE:	/* empty */				{ $$ = ""; }
+funcTypeE<str>:
+		/* empty */				{ $$ = ""; }
 	|	varTypeKwds				{ $$ = $1; }
 	|	'[' constExpr ':' constExpr ']'		{ $$ = "["+$2+":"+$4+"]"; }
 	;
@@ -1060,10 +1083,12 @@ funcVar: 	portDecl				{ }
 //************************************************
 // Expressions
 
-constExpr:	expr					{ $<fl>$=$<fl>1; $$ = $1; }
+constExpr<str>:
+		expr					{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
-exprNoStr:	expr yP_OROR expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
+exprNoStr<str>:
+		expr yP_OROR expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr yP_ANDAND expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr '&' expr				{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	expr '|' expr				{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
@@ -1102,6 +1127,11 @@ exprNoStr:	expr yP_OROR expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	'!' expr	%prec prNEGATION	{ $<fl>$=$<fl>1; $$ = $1+$2; }
 	|	'~' expr	%prec prNEGATION	{ $<fl>$=$<fl>1; $$ = $1+$2; }
 
+	|	varRefDotBit yP_PLUSPLUS		{ $<fl>$=$<fl>1; $$ = $1+$2; }
+	|	varRefDotBit yP_MINUSMINUS		{ $<fl>$=$<fl>1; $$ = $1+$2; }
+	|	yP_PLUSPLUS	varRefDotBit		{ $<fl>$=$<fl>1; $$ = $1+$2; }
+	|	yP_MINUSMINUS	varRefDotBit		{ $<fl>$=$<fl>1; $$ = $1+$2; }
+
 	|	expr '?' expr ':' expr			{ $<fl>$=$<fl>1; $$ = $1+"?"+$3+":"+$5; }
 	|	'(' expr ')'				{ $<fl>$=$<fl>1; $$ = "("+$2+")"; }
 	|	'_' '(' statePushVlg expr statePop ')'	{ $<fl>$=$<fl>1; $$ = "_("+$4+")"; }	// Arbitrary Verilog inside PSL
@@ -1122,15 +1152,18 @@ exprNoStr:	expr yP_OROR expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	;
 
 // Generic expressions
-expr:		exprNoStr				{ $<fl>$=$<fl>1; $$ = $1; }
+expr<str>:
+		exprNoStr				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	strAsInt				{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
-cateList:	expr					{ $<fl>$=$<fl>1; $$ = $1; }
+cateList<str>:
+		expr					{ $<fl>$=$<fl>1; $$ = $1; }
 	|	cateList ',' expr			{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
 	;
 
-exprList:	expr					{ $<fl>$=$<fl>1; $$ = $1; }
+exprList<str>:
+		expr					{ $<fl>$=$<fl>1; $$ = $1; }
 	|	exprList ',' expr			{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
 	|	exprList ','				{ $<fl>$=$<fl>1; $$ = $1+","; }   // Verilog::Parser only: ,, is ok
 	;
@@ -1145,7 +1178,8 @@ exprList:	expr					{ $<fl>$=$<fl>1; $$ = $1; }
 // IEEE: cmos_switchtype + enable_gatetype + mos_switchtype
 //	+ n_input_gatetype + n_output_gatetype + pass_en_switchtype
 //	+ pass_switchtype
-gateKwd:	ygenGATE				{ $<fl>$=$<fl>1; INSTPREP($1,0); }
+gateKwd<str>:
+		ygenGATE				{ $<fl>$=$<fl>1; INSTPREP($1,0); }
 	|	yAND					{ $<fl>$=$<fl>1; INSTPREP($1,0); }
 	| 	yBUF					{ $<fl>$=$<fl>1; INSTPREP($1,0); }
 	|	yNAND					{ $<fl>$=$<fl>1; INSTPREP($1,0); }
@@ -1163,7 +1197,7 @@ strength:	ygenSTRENGTH				{ }
 	|	ySUPPLY1				{ }
 	;
 
-// IEEE: drive_strength + pullup_strength + pulldown_strength 
+// IEEE: drive_strength + pullup_strength + pulldown_strength
 //	+ charge_strength - plus empty
 strengthSpecE:	/* empty */					{ }
 	|	yP_PARSTRENGTH strength ')'			{ }
@@ -1248,17 +1282,20 @@ specifyJunk:	dlyTerm 	{} /* ignored */
 // IDs
 
 // VarRef to dotted, and/or arrayed, and/or bit-ranged variable
-varRefDotBit:	idDotted				{ $<fl>$=$<fl>1; $$ = $1; }
+varRefDotBit<str>:
+		idDotted				{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
-idDotted:	idArrayed 				{ $<fl>$=$<fl>1; $$ = $1; }
+idDotted<str>:
+		idArrayed 				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	idDotted '.' idArrayed	 		{ $<fl>$=$<fl>1; $$ = $1+"."+$3; }
 	;
 
 // Single component of dotted path, maybe [#].
 // Due to lookahead constraints, we can't know if [:] or [+:] are valid (last dotted part),
 // we'll assume so and cleanup later.
-idArrayed:	yaID						{ $<fl>$=$<fl>1; $$ = $1; }
+idArrayed<str>:
+		yaID						{ $<fl>$=$<fl>1; $$ = $1; }
 	|	idArrayed '[' expr ']'				{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"]"; }
 	|	idArrayed '[' constExpr ':' constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+":"+$5+"]"; }
 	|	idArrayed '[' expr yP_PLUSCOLON  constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"+:"+$5+"]"; }
@@ -1266,13 +1303,16 @@ idArrayed:	yaID						{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
 // VarRef without any dots or vectorizaion
-varRefBase:	yaID					{ $<fl>$=$<fl>1; $$ = $1; }
+varRefBase<str>:
+		yaID					{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
-strAsInt:	yaSTRING				{ $<fl>$=$<fl>1; $$ = $1; }
+strAsInt<str>:
+		yaSTRING				{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
-concIdList:	varRefDotBit				{ $<fl>$=$<fl>1; $$ = $1; }
+concIdList<str>:
+		varRefDotBit				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	concIdList ',' varRefDotBit		{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
 	;
 
@@ -1285,6 +1325,34 @@ endLabelE:	/* empty */				{ }
 
 labeledStmt:	assertStmt				{ }
 	;
+
+clocking_declaration:		// IEEE: clocking_declaration  (INCOMPLETE)
+		yDEFAULT yCLOCKING '@' '(' senList ')' ';' yENDCLOCKING  {}
+	;
+
+concurrent_assertion_item:	// IEEE: concurrent_assertion_item  (complete)
+		concurrent_assertion_statement		{ }
+	|	yaID ':' concurrent_assertion_statement	{ }
+	;
+
+concurrent_assertion_statement:	// IEEE: concurrent_assertion_statement  (INCOMPLETE)
+		cover_property_statement		{ }
+	;
+
+cover_property_statement:	// IEEE: cover_property_statement (complete)
+		yCOVER yPROPERTY '(' property_spec ')' stmtBlock	{ }
+	;
+
+property_spec:			// IEEE: property_spec
+		'@' '(' senitemEdge ')' property_spec_disable expr	{ }
+	|	property_spec_disable expr	 			{ }
+	;
+
+property_spec_disable:
+		/* empty */				{ }
+	|	yDISABLE yIFF '(' expr ')'		{ }
+	;
+
 
 assertStmt:	yASSERT '(' expr ')' stmtBlock %prec prLOWER_THAN_ELSE	{ }
 	|	yASSERT '(' expr ')'           yELSE stmtBlock		{ }

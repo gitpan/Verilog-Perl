@@ -9,7 +9,7 @@
 `FOOBAR2
 
 `define MULTILINE first part \
-  		second part
+		second part
 
 /*******COMMENT*****/
 `MULTILINE
@@ -24,7 +24,7 @@
 `define nosubst NOT_SUBSTITUTED
 `define WITHTICK "`nosubst"
 "Inside: `nosubst"
-`WITHTICK		  
+`WITHTICK
 
 `define withparam(a, b) a b LLZZ a b
 `withparam(x,y)
@@ -44,10 +44,10 @@
 $display(`msg(left side, right side))
 
 `define foo(f) f``_suffix
-`foo(bar)  
+`foo(bar)  more
 
 `define zap(which)   \
-   	$c("Zap(\"",which,"\");");
+	$c("Zap(\"",which,"\");");
 `zap(bug1);
 `zap("bug2");
 
@@ -126,4 +126,26 @@ endmodule
 
 `EX_READ((`_HL + 1)) and `EX_WRITE((`_HL), rdata)
 `EX_READ(`_HL + 1)
-`EX_WRITE(`_HL, rdata) 
+`EX_WRITE(`_HL, rdata)  more
+
+//======================================================================
+// include of parameterized file
+`define INCNAME "inc4.v"
+`include `INCNAME
+`ifndef INC4
+ `error "No Inc4"
+`endif
+`undef INC4
+
+`ifdef NOT_DEFINED_INC
+ `include NOT_DEFINED_INC
+`endif
+
+//======================================================================
+// macro call with , in {}
+
+`define xxerror(log, msg) $blah(log,msg)
+`xxerror("ab,cd","e,f");
+`xxerror(this.log, vec);
+`xxerror(this.log, vec[1,2,3]);
+`xxerror(this.log, {blah.name(), " is not foo"});

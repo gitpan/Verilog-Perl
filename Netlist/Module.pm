@@ -1,17 +1,15 @@
 # Verilog - Verilog Perl Interface
-# $Id: Module.pm 54310 2008-05-07 18:22:37Z wsnyder $
-# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 package Verilog::Netlist::Module;
@@ -25,7 +23,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.035';
+$VERSION = '3.040';
 use strict;
 
 structs('new',
@@ -40,7 +38,7 @@ structs('new',
 	   attrs	=> '@',		# list of "category name[ =](.*)" strings
 	   comment	=> '$', #'	# Comment provided by user
 	   _ports	=> '%',		# hash of Verilog::Netlist::Ports
-	   _portsordered=> '@',		# list of Verilog::Netlist::Ports as ordered in list of ports   
+	   _portsordered=> '@',		# list of Verilog::Netlist::Ports as ordered in list of ports
 	   _nets	=> '%',		# hash of Verilog::Netlist::Nets
 	   _cells	=> '%',		# hash of Verilog::Netlist::Cells
 	   _celldecls	=> '%',		# hash of declared cells (for autocell only)
@@ -77,7 +75,7 @@ sub find_port_by_index {
     # @{$self->_portsordered}[$myindex-1] returns the name of
     # the port in the module at this index.  Then, this is
     # used to find the port reference via the port hash
-    return $self->_ports->{@{$self->_portsordered}[$myindex-1]}; 
+    return $self->_ports->{@{$self->_portsordered}[$myindex-1]};
 }
 sub find_cell {
     my $self = shift;

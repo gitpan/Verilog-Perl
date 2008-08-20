@@ -1,17 +1,15 @@
 # Verilog - Verilog Perl Interface
-# $Id: Net.pm 54310 2008-05-07 18:22:37Z wsnyder $
-# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 package Verilog::Netlist::Net;
@@ -21,7 +19,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.035';
+$VERSION = '3.040';
 use strict;
 
 ######################################################################
@@ -39,6 +37,7 @@ structs('new',
 	   array	=> '$', #'	# Vector
 	   module	=> '$', #'	# Module entity belongs to
 	   signed	=> '$', #'	# True if signed
+	   value	=> '$', #'	# For parameters, the value of the parameter
 	   # below only after links()
 	   port		=> '$', #'	# Reference to port connected to
 	   msb		=> '$', #'	# MSB of signal (if known)
@@ -134,6 +133,7 @@ sub dump {
 	,"  ",($self->_used_in() ? "I":""),($self->_used_out() ? "O":""),
 	,"  Type:",$self->type(),"  Array:",$self->array()||"";
     print "  ",($self->msb).":".($self->lsb) if defined $self->msb;
+    print "  Value:",$self->value if defined $self->value && $self->value ne '';
     print "\n";
 }
 
@@ -221,6 +221,11 @@ The name of the net.
 =item $self->type
 
 The C++ or declaration type of the net.  For example "wire" or "parameter".
+
+=item $self->value
+
+If the net's type is 'parameter', the value from the parameter's
+declaration.
 
 =item $self->width
 

@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-# $Id: 10_keywords.t 52323 2008-03-24 13:23:10Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;

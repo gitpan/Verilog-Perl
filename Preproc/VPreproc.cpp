@@ -1,4 +1,4 @@
-// $Id: VPreproc.cpp 54246 2008-05-06 14:18:16Z wsnyder $  -*- C++ -*-
+// -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -20,12 +20,13 @@
 ///
 //*************************************************************************
 
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
+#include <cstring>
 #include <stack>
 #include <vector>
 #include <map>
-#include <assert.h>
+#include <cassert>
 
 #include "VPreproc.h"
 #include "VPreprocLex.h"
@@ -42,7 +43,7 @@ class VPreDefRef {
     string	m_params;	// Define parameter list for next expansion
     string	m_nextarg;	// String being built for next argument
     int		m_parenLevel;	// Parenthesis counting inside def args
-    
+
     vector<string> m_args;	// List of define arguments
 public:
     string name() const { return m_name; }
@@ -213,20 +214,20 @@ const char* VPreprocImp::tokenName(int tok) {
     case VP_ENDIF	: return("ENDIF");
     case VP_UNDEF	: return("UNDEF");
     case VP_DEFINE	: return("DEFINE");
-    case VP_ELSE	: return("ELSE");	
-    case VP_ELSIF	: return("ELSIF");	
-    case VP_LINE	: return("LINE");	
+    case VP_ELSE	: return("ELSE");
+    case VP_ELSIF	: return("ELSIF");
+    case VP_LINE	: return("LINE");
     case VP_SYMBOL	: return("SYMBOL");
     case VP_STRING	: return("STRING");
     case VP_DEFVALUE	: return("DEFVALUE");
     case VP_COMMENT	: return("COMMENT");
-    case VP_TEXT	: return("TEXT");	
-    case VP_WHITE	: return("WHITE");	
+    case VP_TEXT	: return("TEXT");
+    case VP_WHITE	: return("WHITE");
     case VP_DEFREF	: return("DEFREF");
     case VP_DEFARG	: return("DEFARG");
     case VP_ERROR	: return("ERROR");
     default: return("?");
-    } 
+    }
 }
 
 string VPreprocImp::trimWhitespace(const string& strg) {
@@ -440,7 +441,7 @@ int VPreprocImp::getRawToken() {
 	    if (yyleng) m_rawAtBol = (yytext[yyleng-1]=='\n');
 	    if (m_state!=ps_DEFVALUE) return (VP_TEXT);
 	    else {
-		VPreprocLex::s_currentLexp->appendDefValue(yytext,yyleng); 
+		VPreprocLex::s_currentLexp->appendDefValue(yytext,yyleng);
 		goto next_tok;
 	    }
 	}
@@ -460,7 +461,7 @@ int VPreprocImp::getRawToken() {
 		     m_filelinep->lineno(), m_off?"of":"on", m_state, (int)m_defRefs.size(),
 		     tokenName(tok), buf.c_str());
 	}
-    
+
 	// On EOF, try to pop to upper level includes, as needed.
 	if (tok==VP_EOF) {
 	    eof();
@@ -555,7 +556,7 @@ int VPreprocImp::getToken() {
 	    }
 	}
 	case ps_DEFVALUE: {
- 	    static string newlines;
+	    static string newlines;
 	    newlines = "\n";  // Always start with trailing return
 	    if (tok == VP_DEFVALUE) {
 		// Remove returns
@@ -583,7 +584,7 @@ int VPreprocImp::getToken() {
 		    // Remove leading whitespace
 		    unsigned leadspace = 0;
 		    while (m_lexp->m_defValue.length() > leadspace
-		    	   && isspace(m_lexp->m_defValue[leadspace])) leadspace++;
+			   && isspace(m_lexp->m_defValue[leadspace])) leadspace++;
 		    if (leadspace) m_lexp->m_defValue.erase(0,leadspace);
 		    // Remove trailing whitespace
 		    unsigned trailspace = 0;
@@ -601,7 +602,7 @@ int VPreprocImp::getToken() {
 	    // DEFVALUE is terminated by a return, but lex can't return both tokens.
 	    // Thus, we emit a return here.
 	    yytext=(char*)(newlines.c_str()); yyleng=newlines.length();
-	    return(VP_WHITE); 
+	    return(VP_WHITE);
 	}
 	case ps_DEFPAREN: {
 	    if (tok==VP_TEXT && yyleng==1 && yytext[0]=='(') {
@@ -660,14 +661,12 @@ int VPreprocImp::getToken() {
 	case ps_INCNAME: {
 	    if (tok==VP_STRING) {
 		m_state = ps_TOP;
-		if (!m_off) {
-		    m_lastSym.assign(yytext,yyleng);
-		    if (debug()) cout<<"Include "<<m_lastSym<<endl;
-		    // Drop leading and trailing quotes.
-		    m_lastSym.erase(0,1);
-		    m_lastSym.erase(m_lastSym.length()-1,1);
-		    m_preprocp->include(m_lastSym);
-		}
+		m_lastSym.assign(yytext,yyleng);
+		if (debug()) cout<<"Include "<<m_lastSym<<endl;
+		// Drop leading and trailing quotes.
+		m_lastSym.erase(0,1);
+		m_lastSym.erase(m_lastSym.length()-1,1);
+		m_preprocp->include(m_lastSym);
 		goto next_tok;
 	    }
 	    else if (tok==VP_TEXT && yyleng==1 && yytext[0]=='<') {
@@ -706,7 +705,9 @@ int VPreprocImp::getToken() {
 	// Default is to do top level expansion of some tokens
 	switch (tok) {
 	case VP_INCLUDE:
-	    m_state = ps_INCNAME;  m_stateFor = tok;
+	    if (!m_off) {
+		m_state = ps_INCNAME;  m_stateFor = tok;
+	    }
 	    goto next_tok;
 	case VP_UNDEF:
 	case VP_DEFINE:

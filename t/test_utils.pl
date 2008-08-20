@@ -1,4 +1,3 @@
-# $Id: test_utils.pl 49328 2008-01-07 16:28:25Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Common routines required by package tests
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -28,6 +27,14 @@ sub run_system {
     system "$command";
     my $status = $?;
     ($status == 0) or die "%Error: Command Failed $command, $status, stopped";
+}
+
+sub wholefile {
+    my $file = shift;
+    my $fh = IO::File->new ($file) or die "%Error: $! $file";
+    my $wholefile = join('',$fh->getlines());
+    $fh->close();
+    return $wholefile;
 }
 
 sub files_identical {

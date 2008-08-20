@@ -1,23 +1,21 @@
 # Verilog - Verilog Perl Interface
-# $Id: Subclass.pm 54310 2008-05-07 18:22:37Z wsnyder $
-# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 package Verilog::Netlist::Subclass;
 use Class::Struct;
 require Exporter;
-$VERSION = '3.035';
+$VERSION = '3.040';
 @ISA = qw(Exporter);
 @EXPORT = qw(structs);
 use strict;
@@ -25,7 +23,7 @@ use strict;
 use vars qw($Warnings $Errors %_Error_Unlink_Files);
 $Warnings = $Errors = 0;
 
-# Maybe in the future
+# Maybe in the future.  For now all users of this must do it themselves
 #struct ('Verilog::Netlist::Subclass'
 #	 =>[name     	=> '$', #'	# Name of the element
 #	    filename 	=> '$', #'	# Filename this came from
@@ -43,9 +41,17 @@ sub fileline {
 
 ######################################################################
 #### Error Handling
-# Class::Struct is great, but it can't have a @ISA... Sigh.
-# Thus you can't just call a $netlist_object->warn ("message...");
 
+sub errors {
+    my $self = shift;
+    return $Errors;
+}
+sub warnings {
+    my $self = shift;
+    return $Errors;
+}
+
+# Methods
 sub info {
     my $self = shift;
     $self = shift if ref $_[0];	# Optional reference to object
@@ -70,7 +76,10 @@ sub exit_if_error {
     my $self = shift;
     my %opts = @_;
     my $allow = $opts{allow} || "";
-    exit(10) if ($Errors || ($Warnings && $allow !~ /warning/));
+    if ($Errors || ($Warnings && $allow !~ /warning/)) {
+	CORE::warn "Exiting due to errors\n";
+	exit(10);
+    }
     return ($Errors + $Warnings);
 }
 
@@ -79,9 +88,8 @@ sub unlink_if_error {
 }
 
 END {
-    $? = 10 if ($Errors || $Warnings);
-    if ($?) {
-	CORE::warn "Exiting due to errors\n";
+    my $has_err = $? || $Errors || $Warnings;
+    if ($has_err) {
 	foreach my $file (keys %_Error_Unlink_Files) { unlink $file; }
     }
 }
@@ -160,7 +168,11 @@ and $self->error() will produce consistent results.
 
 =item $self->error (I<Text...>)
 
-Print an error in a standard format.  
+Print an error in a standard format.
+
+=item $self->errors()
+
+Return number of errors detected.
 
 =item $self->exit_if_error()
 
@@ -172,7 +184,7 @@ The filename number the entity was created in.
 
 =item $self->info (I<Text...>)
 
-Print a informational in a standard format.  
+Print a informational in a standard format.
 
 =item $self->lineno()
 
@@ -191,7 +203,11 @@ hash.  This may be used to store application data on the specified node.
 
 =item $self->warn (I<Text...>)
 
-Print a warning in a standard format.  
+Print a warning in a standard format.
+
+=item $self->warnings()
+
+Return number of warnings detected.
 
 =back
 

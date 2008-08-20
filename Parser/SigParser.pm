@@ -1,17 +1,15 @@
 # Verilog::SigParser.pm -- Verilog signal parsing
-# $Id: SigParser.pm 54310 2008-05-07 18:22:37Z wsnyder $
-# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 package Verilog::SigParser;
@@ -26,7 +24,7 @@ use base qw(Verilog::Parser);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.035';
+$VERSION = '3.040';
 
 #######################################################################
 
@@ -37,7 +35,7 @@ sub new {
     my $self = $class->SUPER::new(_sigparser => 1,
 				  use_unreadback => 0,
 				  @_);
-    bless $self, $class; 
+    bless $self, $class;
     $self->debug($Debug) if $Debug;
     $self->{metacomment} = {} unless defined $self->{metacomment};
     return $self;
@@ -337,9 +335,9 @@ Wilson Snyder <wsnyder@wsnyder.org>
 =head1 SEE ALSO
 
 L<Verilog-Perl>,
-L<Verilog::Parser>, 
-L<Verilog::Language>, 
-L<Verilog::Netlist>, 
+L<Verilog::Parser>,
+L<Verilog::Language>,
+L<Verilog::Netlist>,
 L<Verilog::Getopt>
 
 =cut

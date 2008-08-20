@@ -1,17 +1,15 @@
 # Verilog - Verilog Perl Interface
-# $Id: File.pm 54310 2008-05-07 18:22:37Z wsnyder $
-# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 package Verilog::Netlist::File;
@@ -22,7 +20,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.035';
+$VERSION = '3.040';
 use strict;
 
 structs('new',
@@ -37,7 +35,7 @@ structs('new',
 	   # For special procedures
 	   _modules	=> '%',		# For autosubcell_include
 	   ]);
-	
+
 ######################################################################
 ######################################################################
 #### Read class
@@ -51,7 +49,11 @@ use vars qw (@ISA);
 
 sub new {
     my $class = shift;
-    my %params = (@_);	# filename=>
+    my %params = (preproc => "Verilog::Preproc",
+		  @_);	# filename=>
+
+    my $preproc_class = $params{preproc};
+    delete $params{preproc}; # Remove as preproc doesn't need passing down to Preprocessor
 
     # A new file; make new information
     $params{fileref} or die "%Error: No fileref parameter?";
@@ -61,7 +63,7 @@ sub new {
 				     cellref=>undef,	# Cell being parsed now
 				     _cmtref=>undef,	# Object to attach comments to
 				     );
-    
+
     my @opt;
     push @opt, (options=>$params{netlist}{options}) if $params{netlist}{options};
     my $meta = $params{metacomment};
@@ -77,7 +79,7 @@ sub new {
     }
     push @opt, keep_whitespace=>1;  # So we don't loose newlines
     push @opt, include_open_nonfatal=>1 if $params{netlist}{include_open_nonfatal};
-    my $preproc = Verilog::Preproc->new(@opt);
+    my $preproc = $preproc_class->new(@opt);
     $preproc->open($params{filename});
     $parser->parse_preproc_file ($preproc);
     return $parser;
@@ -142,6 +144,7 @@ sub signal_decl {
     my $vector = shift;
     my $array = shift;
     my $signed = shift;
+    my $value = shift;
     print " Sig $netname $inout\n" if $Verilog::Netlist::Debug;
 
     my $msb;
@@ -182,7 +185,7 @@ sub signal_decl {
 	     filename=>$self->filename, lineno=>$self->lineno,
 	     simple_type=>1, type=>$inout, array=>$array,
 	     comment=>undef, msb=>$msb, lsb=>$lsb,
-	     signed=>$signed,
+	     signed=>$signed, value=>$value,
 	     );
 	$net->type($inout);  # If it's already declared as in/out etc, mark the type
 	$self->{_cmtref} = $net;
@@ -201,7 +204,7 @@ sub instant {
 	 return $self->error ("CELL outside of module definition", $instname);
     }
     $self->{cellref} = $modref->new_cell
-	 (name=>$instname, 
+	 (name=>$instname,
 	  filename=>$self->filename, lineno=>$self->lineno,
 	  submodname=>$submodname, params=>$params,);
     $self->{_cmtref} = $self->{cellref};
@@ -331,6 +334,7 @@ sub read {
 	  filename=>$filepath,	# for ->read
 	  metacomment=>($params{metacomment} || $netlist->{metacomment}),
 	  keep_comments=>($params{keep_comments} || $netlist->{keep_comments}),
+	  preproc=>($params{preproc} || $netlist->{preproc}),
 	  );
     return $fileref;
 }

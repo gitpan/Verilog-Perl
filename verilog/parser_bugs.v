@@ -38,7 +38,7 @@ module bug26970;
 		 CLR  = 1'b0,
 		 S1   = 2'd1,
 		 HINC = 3'd4;
-   parameter   
+   parameter
      x = {S1,CLR,CLR,CLR,CLR,SET,SET,CLR,CLR,HINC };
 endmodule
 
@@ -253,4 +253,26 @@ endmodule
 module bug34649b (
        output reg name = 0
 		 );
+endmodule
+module bugvp10;
+   initial begin
+      x += 1;
+      x -= 1;
+      x /= 1;
+      x *= 1;
+      x |= 1;
+      x ^= 1;
+      x <<= 1;
+      x >>= 1;
+      x <<<= 1;
+      x >>>= 1;
+      y = x++;  // Part of expression
+      y = ++x;
+      y = x--;
+      y = --x;
+      x++; // Statement
+      ++x;
+      x--;
+      --x;
+   end
 endmodule

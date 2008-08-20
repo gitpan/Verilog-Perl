@@ -3,7 +3,27 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
-* Verilog::Language 3.025 2008/05/07
+* Verilog::Language 3.040 2008/08/20
+
+***	Add Netlist::Net->value containing parameter values.  [Ron D Smith]
+
+***	Added Verilog::Netlist/Verilog::Parser preproc option.
+	[by Miguel Corazao, AMD]
+
+***	Support +=, -=, etc, and ++, -- operators. [Sean de la Haye]
+
+***	Support "cover property."
+
+****	Eliminated automatic error printing upon application termination.
+	[by Miguel Corazao, AMD]
+
+****	Fix syntax error when "`include `defname" is ifdefed.  [John Dickol]
+
+****	Fix error when macro call has commas in concatenate. [John Dickol]
+
+****	Fix compile errors under Fedora 9, GCC 4.3.0.  [by Jeremy Bennett]
+
+* Verilog::Language 3.035 2008/05/07
 
 ****	Fix "output reg name=expr;" bug34649 syntax error.  [Martin Scharrer]
 
@@ -129,24 +149,24 @@ indicates the contributor was also the author of the fix; Thanks!
 
 ***	Added Verilog::SigParser->funcsignal callback for variables declared
 	inside a function or task.  bug26972.  [Mark Nodine]
-	
+
 ***	Added Verilog::SigParser->instant callbacks for gate primitives.
 	bug26969, bug27062. [Mark Nodine]
-	
+
 ***	Added Verilog::SigParser->parampin callbacks for parameter connections
 	to instantiations.
-	
+
 ***	Added Verilog::SigParser->signal_decl callbacks for all module vars,
 	including parameters and genvars.
-	
-***	Added Verilog::SigParser->signal_decl callback argument with 
+
+***	Added Verilog::SigParser->signal_decl callback argument with
 	initial values of parameters and wires. [Mark Nodine]
-	
+
 **	Verilog::Parser has been replaced with the front end of the
 	SigParser.  The preproc and syscall callbacks were added
 
 ***	Require call to Verilog::Parser->eof() at the end of all parsers.
-	
+
 ***	Changed Verilog::Parser->unreadback() method to not clear state.
 	You must now call unreadback('') to clear the unreadback characters.
 
@@ -341,7 +361,7 @@ indicates the contributor was also the author of the fix; Thanks!
 
 ***	Add Verilog::GetOpt GCC -U<define> switch for undefining.
 
-****	Support SUSE Linux and OS-X. [Jose Renau] 
+****	Support SUSE Linux and OS-X. [Jose Renau]
 
 * Verilog::Language 2.303 2004/11/18
 
@@ -488,7 +508,7 @@ indicates the contributor was also the author of the fix; Thanks!
 
 ****	Cleanups to support GNU Bison 1.35
 
-****	Minor changes for SystemC support  
+****	Minor changes for SystemC support
 
 * Verilog::Language 2.200 2002/5/3
 
@@ -499,7 +519,7 @@ indicates the contributor was also the author of the fix; Thanks!
 
 ****	Fixed `define substitution bug.
 
-* Verilog::Language 2.100 2002/3/11 
+* Verilog::Language 2.100 2002/3/11
 
 **	Installation now requires GCC/G++ and Flex.
 
@@ -589,7 +609,6 @@ indicates the contributor was also the author of the fix; Thanks!
 ****	test.pl added
 
 ----------------------------------------------------------------------
-$Id: Changes 54310 2008-05-07 18:22:37Z wsnyder $
 DESCRIPTION: Documentation on change history for this package
 ----------------------------------------------------------------------
 

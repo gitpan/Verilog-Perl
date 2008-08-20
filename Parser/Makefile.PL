@@ -1,4 +1,3 @@
-# $Id: Makefile.PL 53966 2008-04-29 15:59:51Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
@@ -32,13 +31,18 @@ sub MY::postamble {
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
     $out .= "OPTIMIZE += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= '
-CC = g++
+ifeq ($(OBJCACHE_HOSTS_DETERMINANT),)
+OBJCACHE :=
+else
+OBJCACHE := objcache --read --write
+endif
+
+CC = $(OBJCACHE) g++
 LEX = flex
 YACC = bison
 PPSRC = ../Preproc
 FLEXFIX = $(PPSRC)/flexfix
 XSUBPPFIX = $(PPSRC)/xsubppfix
-YFLAGS = -d -v
 
 CCFLAGS += -I$(PPSRC)
 #CFLAGS += -DFLEX_DEBUG
@@ -62,18 +66,17 @@ VParseLex.cpp: $(FLEXFIX) VParseLex_prefix.cpp
 
 VParseBison.h: VParseBison.cpp
 
-VParseBison.cpp:	VParseBison.y
+VParseBison.cpp:	VParseBison.y bisonpre
 	-rm -rf VParseBison.c VParseBison.cpp
 	@echo "If the next command fails, you probably need to install Bison 1.875 or newer"
-	${YACC} ${YFLAGS} --debug --verbose -d -k $< -pVParseBison -o VParseBison.c
-	-(grep conflicts VParseBison.output || mv VParseBison.c VParseBison.cpp )
-	-rm -rf VParseBison.c
+	$(PERL) bisonpre --yacc ${YACC} --debug --verbose --d -k $< -p VParseBison -o VParseBison.c
+	mv VParseBison.c VParseBison.cpp
 
 Parser_cleaned.c: Parser.c
-	$(PERL) $(XSUBPPFIX) < $< > $@
+	$(PERL) $(XSUBPPFIX) < Parser.c > Parser_cleaned.c
 
 clean::
-	-rm -rf test *.d *.o *.output
+	-rm -rf test *.d *.o *.output *.pre.*
 	-rm -rf VParseLex*.cpp VParseBison.h VParseBison.cpp Parser_cleaned.c
 ';
     return $out;
@@ -88,6 +91,6 @@ WriteMakefile(
 	      VERSION_FROM  => 'Parser.pm',
 	      XSOPT => '-C++',
 	      CCFLAGS	=> $ccflags,
-    	      OBJECT   => 'VFileLine.o VParseLex.o VParse.o VParseBison.o',
+	      OBJECT   => 'VFileLine.o VParseLex.o VParse.o VParseBison.o',
 	      MYEXTLIB => 'Parser_cleaned.o',
 	      );

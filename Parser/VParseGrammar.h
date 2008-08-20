@@ -1,4 +1,4 @@
-// $Id: VParseGrammar.h 54014 2008-04-30 13:51:22Z wsnyder $ //-*- C++ -*-
+// -*- C++ -*-
 //*************************************************************************
 //
 // Copyright 2000-2008 by Wilson Snyder.  This program is free software;

@@ -1,17 +1,15 @@
 # Verilog - Verilog Perl Interface
-# $Id: Netlist.pm 54310 2008-05-07 18:22:37Z wsnyder $
-# Author: Wilson Snyder <wsnyder@wsnyder.org>
 ######################################################################
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 ######################################################################
 
 package Verilog::Netlist;
@@ -25,7 +23,7 @@ use Verilog::Netlist::Subclass;
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.035';
+$VERSION = '3.040';
 
 ######################################################################
 #### Error Handling
@@ -43,6 +41,7 @@ sub new {
 		_files => {},
 		options => undef,	# Usually pointer to Verilog::Getopt
 		implicit_wires_ok => 1,
+ 		preproc => 'Verilog::Preproc',
 		link_read => 1,
 		#include_open_nonfatal => 0,
 		#keep_comments => 0,
@@ -144,7 +143,7 @@ sub find_module {
     }
     return undef;
 }
-    
+
 sub modules {
     my $self = shift;
     # Return all modules
@@ -200,7 +199,7 @@ sub find_file {
     # Return file maching name
     return $self->{_files}{$search};
 }
-    
+
 sub files {
     my $self = shift; ref $self or die;
     # Return all files
@@ -210,7 +209,8 @@ sub files_sorted { return files(@_); }
 
 sub read_file {
     my $self = shift;
-    return $self->read_verilog_file(@_);
+    my $fileref = $self->read_verilog_file(@_);
+    return $fileref;
 }
 
 sub read_verilog_file {
@@ -373,12 +373,38 @@ comments are stripped for speed.
 
 =item $netlist->new
 
-Creates a new netlist structure.  Pass optional parameters by name.  The
-parameter "options" may contain a reference to a Verilog::Getopt module,
-to be used for locating files.
+Creates a new netlist structure.  Pass optional parameters by name,
+with the following parameters:
 
-The parameter "include_open_nonfatal=>1" is passed to Verilog::Preproc
-to ignore any include files that do not exist.
+=over 8
+
+=item options => $opt_object
+
+An optional pointer to a Verilog::Getopt object, to be used for locating
+files.
+
+=item implicit_wires_ok => $true_or_false
+
+Indicates whether to allow undeclared wires to be used.
+
+=item preproc => $package_name
+
+The name of the preprocessor class. Defaults to "Verilog::Preproc".
+
+=item link_read => $true_or_false
+
+Indicates whether or not the parser should automatically search for
+undefined modules through the "options" object.
+
+=item include_open_nonfatal => $true_or_false
+
+Indicates that include files that do not exist should be ignored.
+
+=item keep_comments => $true_or_false
+
+Indicates that comments should be preserved in the structure (slower).
+
+=back
 
 =item $netlist->dump
 

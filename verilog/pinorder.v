@@ -1,5 +1,5 @@
-// $Id: pinorder.v 4305 2005-08-02 13:21:57Z wsnyder $
 // DESCRIPTION: Verilog-Perl: Example Verilog for testing package
+//
 // This file ONLY is placed into the Public Domain, for any use,
 // without warranty, 2003 by Wilson Snyder.
 
@@ -21,7 +21,7 @@ endmodule
 
 module foo2(/*AUTOARG*/
    // Outputs
-   x, 
+   x,
    // Inputs
    z, y
    );

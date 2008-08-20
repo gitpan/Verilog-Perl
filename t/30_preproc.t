@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-# $Id: 30_preproc.t 54240 2008-05-06 12:57:20Z wsnyder $
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
 # Copyright 2000-2008 by Wilson Snyder.  This program is free software;
