@@ -19,7 +19,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.040';
+$VERSION = '3.041';
 use strict;
 
 structs('new',
@@ -56,6 +56,10 @@ sub delete {
 ######################################################################
 #### Methods
 
+sub logger {
+    my $self = shift;
+    return $self->netlist->logger;
+}
 sub netlist {
     my $self = shift;
     return $self->module->netlist;

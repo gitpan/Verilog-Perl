@@ -23,7 +23,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.040';
+$VERSION = '3.041';
 use strict;
 
 structs('new',
@@ -54,8 +54,13 @@ structs('new',
 	   _pintemplates=> '@', #'	# Module SP_TEMPLATEs
 	   _ctor	=> '$', #'	# Module has SC_CTOR in it
 	   _code_symbols=> '$', #'	# Hash ref of symbols found in raw code
+	   _covergroups => '%', #'	# Hash of covergroups found in code
 	   lesswarn     => '$',	#'	# True if some warnings should be disabled
 	   ]);
+
+sub logger {
+    return $_[0]->netlist->logger;
+}
 
 sub modulename_from_filename {
     my $filename = shift;

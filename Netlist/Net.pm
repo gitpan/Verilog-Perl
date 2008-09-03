@@ -19,7 +19,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.040';
+$VERSION = '3.041';
 use strict;
 
 ######################################################################
@@ -53,6 +53,13 @@ structs('new',
 	   ]);
 
 ######################################################################
+
+sub logger {
+    return $_[0]->netlist->logger;
+}
+sub netlist {
+    return $_[0]->module->netlist;
+}
 
 sub _used_in_inc { $_[0]->_used_in(1+($_[0]->_used_in()||0)); }
 sub _used_out_inc { $_[0]->_used_out(1+($_[0]->_used_out()||0)); }

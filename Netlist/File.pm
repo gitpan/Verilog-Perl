@@ -20,7 +20,7 @@ use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.040';
+$VERSION = '3.041';
 use strict;
 
 structs('new',
@@ -309,6 +309,11 @@ package Verilog::Netlist::File;
 ######################################################################
 ######################################################################
 #### Functions
+
+sub logger {
+    my $self = shift;
+    return $self->netlist->logger;
+}
 
 sub read {
     my %params = (lookup_type=>'module',

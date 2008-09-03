@@ -24,7 +24,7 @@ use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.040';
+$VERSION = '3.041';
 use strict;
 
 structs('new',
@@ -61,6 +61,9 @@ sub delete {
 ######################################################################
 #### Methods
 
+sub logger {
+    return $_[0]->netlist->logger;
+}
 sub module {
     return $_[0]->cell->module;
 }
