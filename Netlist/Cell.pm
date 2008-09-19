@@ -17,10 +17,12 @@ use Class::Struct;
 
 use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
+use vars qw($VERSION @ISA);
+use strict;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.041';
-use strict;
+
+$VERSION = '3.042';
 
 structs('new',
 	'Verilog::Netlist::Cell::Struct'

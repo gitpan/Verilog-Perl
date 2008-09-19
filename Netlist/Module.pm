@@ -21,10 +21,12 @@ use Verilog::Netlist::Net;
 use Verilog::Netlist::Cell;
 use Verilog::Netlist::Pin;
 use Verilog::Netlist::Subclass;
+use vars qw($VERSION @ISA);
+use strict;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.041';
-use strict;
+
+$VERSION = '3.042';
 
 structs('new',
 	'Verilog::Netlist::Module::Struct'
@@ -43,6 +45,7 @@ structs('new',
 	   _cells	=> '%',		# hash of Verilog::Netlist::Cells
 	   _celldecls	=> '%',		# hash of declared cells (for autocell only)
 	   _cellarray	=> '%',		# hash of declared cell widths (for autocell only)
+	   _level	=> '$',		# Depth in hierarchy (if calculated)
 	   is_top	=> '$', #'	# Module is at top of hier (not a child)
 	   is_libcell	=> '$', #'	# Module is a library cell
 	   # SystemPerl:
@@ -57,6 +60,24 @@ structs('new',
 	   _covergroups => '%', #'	# Hash of covergroups found in code
 	   lesswarn     => '$',	#'	# True if some warnings should be disabled
 	   ]);
+
+sub delete {
+    my $self = shift;
+    foreach my $oref ($self->nets) {
+	$oref->delete;
+    }
+    foreach my $oref ($self->ports) {
+	$oref->delete;
+    }
+    foreach my $oref ($self->cells) {
+	$oref->delete;
+    }
+    my $h = $self->netlist->{_modules};
+    delete $h->{$self->name};
+    return undef;
+}
+
+######################################################################
 
 sub logger {
     return $_[0]->netlist->logger;
@@ -165,6 +186,20 @@ sub new_cell {
     my $cellref = new Verilog::Netlist::Cell (@_, module=>$self,);
     $self->_cells ($cellref->name(), $cellref);
     return $cellref;
+}
+
+sub level {
+    my $self = shift;
+    my $level = $self->_level;
+    return $level if defined $level;
+    $self->_level(1);  # Set before recurse in case there's circular module refs
+    foreach my $cell ($self->cells) {
+	if ($cell->submod) {
+	    my $celllevel = $cell->submod->level;
+	    $self->_level($celllevel+1) if $celllevel >= $self->_level;
+	}
+    }
+    return $self->_level;
 }
 
 sub link {
@@ -350,6 +385,13 @@ Returns Verilog::Netlist::Port matching given name.
 =item $self->find_net(I<name>)
 
 Returns Verilog::Netlist::Net matching given name.
+
+=item $self->level
+
+Returns the reverse depth of this module with respect to other modules.
+Leaf modules (modules with no cells) will be level 1.  Modules which
+instantiate cells of level 1 will be level 2 modules and so forth.  See
+also Netlist's modules_sorted_level.
 
 =item $self->lint
 

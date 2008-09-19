@@ -22,6 +22,7 @@ module example;
       //
       \escaped[10] = 1'b1;
       $uassert (\escaped[10] , "Escaped not 1\n");
+      $uassert_info (\escaped[10] , "Escaped not 1\n");
       //
       i=0;
       $uassert (1==1, "Why doesn't 1==1??\n");
@@ -100,6 +101,12 @@ module example;
       clk = !clk;
       if (i==20) $uwarn  (0, "Don't know what to do next!\n");
       if (i==22) $uerror (0, "Guess I'll error out!\n");
+   end
+
+   // Moved clock asserts
+   always @* begin
+      if (i==19) $uwarn_clk  (clk,"Called at next edge (1 of 2)\n");
+      if (i==18) $ucover_clk (clk,"example_cover_label");
    end
 
 endmodule

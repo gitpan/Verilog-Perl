@@ -22,7 +22,9 @@ use FindBin qw($RealBin);
 use File::Copy;
 use strict "vars";
 
-use lib "$RealBin/..";
+use lib 'blib/arch';
+use lib 'blib/lib';
+use lib '.';
 use Verilog::Parser;
 use Verilog::Getopt;
 
@@ -30,18 +32,19 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     $Vpm_Conversions_Regexp
 	     %Vpm_Chiponly_Rename
 	     $Opt_Vericov $Opt_Chiponly
+	     @Endmodule_Inserts
 	     $Last_Parser
 	     $Last_Module
 	     $Last_Task
 	     $ReqAck_Num
 	     $Vericov_Enabled
 	     $Got_Change
-	     $Sendout
+	     @Sendout
 	     %Insure_Symbols
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     %File_Dest
 	     );
-$VERSION = '3.041';
+$VERSION = '3.042';
 
 ######################################################################
 # configuration
@@ -51,15 +54,19 @@ $VERSION = '3.041';
 #     $wr would be bad (beginning of $write).  That would slow down the parsing.
 %Vpm_Conversions
     = (## U versions, to avoid conflicts with SystemVerilog
-       '$uassert' =>		\&assert,
-       '$uassert_amone' =>	sub {assert_hot(0,@_); },   # atmost one hot
-       '$uassert_onehot' =>	sub {assert_hot(1,@_); },
-       '$uassert_req_ack' =>	\&assert_req_ack,
-       '$uassert_info' =>	\&assert_info,
-       '$ucheck_ilevel' =>	\&check_ilevel,
-       '$uerror' =>		\&error,
-       '$uinfo' =>		\&info,
-       '$uwarn' =>		\&warn,
+       '$uassert' =>		\&ins_uassert,
+       '$uassert_amone' =>	sub {shift; uassert_hot(0,@_); },   # atmost one hot
+       '$uassert_onehot' =>	sub {shift; uassert_hot(1,@_); },
+       '$uassert_req_ack' =>	\&ins_uassert_req_ack,
+       '$uassert_info' =>	\&ins_uassert_info,
+       '$ucheck_ilevel' =>	\&ins_ucheck_ilevel,
+       '$uerror' =>		\&ins_uerror,
+       '$uinfo' =>		\&ins_uinfo,
+       '$uwarn' =>		\&ins_uwarn,
+       #'$uassert_clk' =>	sub {shift; my $clk=shift; my $cond=shift; umessage_clk("%%E", $cond,$clk,@_); }, # May be confusing, try without
+       '$uerror_clk' =>		sub {shift; umessage_clk("%%E", 0, @_); },
+       '$uwarn_clk' =>		sub {shift; umessage_clk("%%W", 0, @_); },
+       '$ucover_clk' =>		sub {shift; ucover_clk(@_); },
        );
 
 # Any tokens appearing here will be removed with the --chiponly option
@@ -112,6 +119,7 @@ if (! GetOptions (
 		  "debug"	=> \&debug,
 		  "exclude=s"	=> sub {shift; push @Opt_Exclude, shift;},
 		  "help"	=> \&usage,
+		  "language=s"	=> sub { shift; Verilog::Language::language_standard(shift); },
 		  "minimum!"	=> \$Opt_Minimum,
 		  "nopli!"	=> \$Opt_NoPli,
 		  "quiet!"	=> \$Opt_Quiet,
@@ -125,6 +133,8 @@ if (! GetOptions (
 		  )) {
     die "%Error: Bad usage, try 'vpm --help'\n";
 }
+
+our $Line_Supported = $Opt_Verilator || Verilog::Language::language_standard() ne '1364-1995';
 
 push @files, ($Opt->incdir(), $Opt->library(), $Opt->module_dir());
 
@@ -182,23 +192,23 @@ sub parameter {
 # Functions that transform the tokens
 
 # Note -I is specially detected below
-sub info   {     message_line ("-I",  1, @_); }
-sub warn   {     message_line ("%%W", 1, @_); }
-sub error  {     message_line ("%%E", 1, @_); }
+sub ins_uinfo   { shift; sendout( message (get_lineinfo(), 1, "-I",  1, "", @_)); }
+sub ins_uwarn   { shift; sendout( message (get_lineinfo(), 1, "%%W", 1, "", @_)); }
+sub ins_uerror  { shift; sendout( message (get_lineinfo(), 1, "%%E", 1, "", @_)); }
 
-sub assert {
+sub ins_uassert {
     shift;
     my $cond = shift;
     my @params = @_;
-    message_line ("%%E", $cond, 0,0, @params);
+    sendout( message (get_lineinfo(), 1, "%%E", $cond, "", 0, @params));
 }
 
-sub assert_info {
+sub ins_uassert_info {
     shift;
     my $cond = shift;
     my @params = @_;
     # Lower case -i indicates it's a assert vs. a info
-    message_line ("-i", $cond, 0,0, @params);
+    sendout( message (get_lineinfo(), 1, "-i", $cond, "", 0, @params));
 }
 
 sub check_signame {
@@ -208,22 +218,23 @@ sub check_signame {
     return undef;
 }
 
-sub assert_req_ack {
+sub ins_uassert_req_ack {
     shift;
     my @params = @_;
 
     # Check parameters
     my $req = check_signame(shift @params);
     my $ack = check_signame(shift @params);
-    ($req && $ack) or die "%Error: ".$Last_Parser->fileline.": Format of \$assert_req_ack boggled.\n";
+    ($req && $ack) or die "%Error: ".$Last_Parser->fileline.": Format of \$uassert_req_ack boggled.\n";
     @params = map {
 	my $ipar = $_;
-	$_ = check_signame($_);
-	($_) or die "%Error: ".$Last_Parser->fileline.": Parameter $ipar isn't a signal\n";
+	$ipar = check_signame($ipar);
+	($ipar) or die "%Error: ".$Last_Parser->fileline.": Parameter $ipar isn't a signal\n";
+	$ipar;
     } @params;
 
     # Form new variables
-    $ReqAck_Num or die "%Error: ".$Last_Parser->fileline.": \$assert_req_ack can't find module statement\n";
+    $ReqAck_Num or die "%Error: ".$Last_Parser->fileline.": \$uassert_req_ack can't find module statement\n";
     my $busy = "_assertreqack${ReqAck_Num}_busy_r";
     $Insure_Symbols{$Last_Module}{$busy} = ['reg', 0];	# Make this symbol exist if doesn't
 
@@ -237,15 +248,15 @@ sub assert_req_ack {
     }
 
     # Output it
-    message_header();
+    sendout(message_header());
     sendout("if (`__message_on) begin ");  # Need to wait till after reset, so FSM doesn't start
     sendout("casez({($busy),($req),($ack)}) ");
     sendout(" 3'b000: ;");
     sendout(" 3'b010: $busy<=1'b1;");
-    sendout(" 3'b011: "); error(0,"\"Unexpected $req coincident with $ack\\n\"");
-    sendout(" 3'b001: "); error(0,"\"Unexpected $ack with no request pending\\n\"");
+    sendout(" 3'b011: "); ins_uerror(0,"\"Unexpected $req coincident with $ack\\n\"");
+    sendout(" 3'b001: "); ins_uerror(0,"\"Unexpected $ack with no request pending\\n\"");
     sendout(" 3'b100: ;");
-    sendout(" 3'b11?: "); error(0,"\"Unexpected $req with request already pending\\n\"");
+    sendout(" 3'b11?: "); ins_uerror(0,"\"Unexpected $req with request already pending\\n\"");
     sendout(" 3'b101: $busy<=1'b0;");
     sendout("endcase ");
 
@@ -254,7 +265,7 @@ sub assert_req_ack {
 	sendout(" if (($busy)) begin");
 	for (my $n=0; $n<=$#params; $n++) {
 	    sendout(" if ($dholds[$n] != ^($params[$n])) ");
-	    error(0,"\"Unexpected transition of $params[$n] during transaction\\n\"");
+	    ins_uerror(0,"\"Unexpected transition of $params[$n] during transaction\\n\"");
 	}
 	sendout(" end");
 	# Save state of signals
@@ -265,12 +276,12 @@ sub assert_req_ack {
     }
     sendout(" end ");
 
-    message_trailer();
+    sendout(message_trailer());
     $ReqAck_Num++;
 }
 
-sub check_ilevel {
-    shift;
+sub ins_ucheck_ilevel {
+    shift; # $ucheck_ilevel
     my $level = shift;
     my $chk = "/*vpm*/if ((`__message_on) && ";
     $chk .= ' && (`__message_minimum >= (' . $level . '))' if $Opt_Minimum;
@@ -278,9 +289,8 @@ sub check_ilevel {
     sendout ($chk);
 }
 
-sub assert_hot {
+sub uassert_hot {
     my $check_nohot = shift;
-    shift;
     my @params = @_;
 
     my $text = "";
@@ -302,20 +312,101 @@ sub assert_hot {
 	};
     }
 
-    my $lineinfo = get_lineinfo();
-    message_header();
-
     # We use === so that x's will properly cause error messages
     my $vec = "({".join(",",@cl)."})";
     sendout("if (($vec & ($vec - ${len}'b1)) !== ${len}'b0 && `__message_on) ");
-    message_write($lineinfo,1,"%%E","",0,0,"MULTIPLE ACTIVE %b --> $text".'"',$vec);
+    ins_uerror(0,"\"MULTIPLE ACTIVE %b --> $text\\n\"",$vec);
 
     if ($check_nohot==1){
 	sendout("if ($vec === ${len}'b0 && `__message_on) ");
-	message_write($lineinfo,1,"%%E","",0,0,"NONE ACTIVE %b --> $text".'"',$vec);
+	ins_uerror(0,"\"NONE ACTIVE %b --> $text\\n\"",$vec);
+    }
+}
+
+sub umessage_clk {
+    my $char = shift;
+    my $cond = shift;
+    my $clk = shift;
+    my @params = @_;
+
+    $params[0] = convert_concat_string($params[0]);
+    ($params[0] =~ /^\s*\"/)
+	or die "%Error: ".$Last_Parser->fileline.": Non-string \$message second argument: $params[0]\n";
+
+    $ReqAck_Num or die "%Error: ".$Last_Parser->fileline.": \$uassert_req_ack can't find module statement\n";
+    my $sig = "_umessageclk${ReqAck_Num}";
+    $Insure_Symbols{$Last_Module}{$sig} = ['reg', 0];	# Make this symbol exist if doesn't
+    $ReqAck_Num++;
+
+    if ($cond eq '0') {
+	sendout("/*vpm*/$sig=1'b1;/*vpm*/");
+    } else {
+	sendout("/*vpm*/$sig=!($cond);/*vpm*/");
     }
 
-    message_trailer();
+    _insert_always_begin('assert', "/*vpm*/ $sig=1'b0; /*vpm*/");
+
+    my $bot = (" always @ (posedge $clk) if ($sig) "
+	       .message (get_lineinfo(), 1, $char, 1, "", @_)
+	       ." ");
+    push @Endmodule_Inserts, $bot;
+}
+
+sub ucover_clk {
+    my $clk = shift;
+    my $label = shift;
+    $#_==-1
+	or die "%Error: ".$Last_Parser->fileline.": Extra arguments to \$ucover_clk: $_[0]\n";
+
+    # We require quotes around the label so synthesis tools won't gripe if not wrapping in vpm
+    # (Otherwise it would look like a system call with a variable of the name of the label.)
+    ($label =~ s/^\s*\"([a-zA-Z][a-zA-Z0-9_]+)\"\s*$/$1/)
+	or die "%Error: ".$Last_Parser->fileline.": Non-string label \$ucover_clk second argument: $label\n";
+
+    $ReqAck_Num or die "%Error: ".$Last_Parser->fileline.": \$ucover_clk can't find module statement\n";
+    my $sig = "_ucoverclk${ReqAck_Num}";
+    $Insure_Symbols{$Last_Module}{$sig} = ['reg', 0];	# Make this symbol exist if doesn't
+    $ReqAck_Num++;
+
+    sendout("/*vpm*/$sig=1'b1;/*vpm*/");
+
+    _insert_always_begin('cover', "/*vpm*/ $sig=1'b0; /*vpm*/");
+
+    # Alas, `line is required to see correct cover point
+    my $bot = ("\n`line ".$Last_Parser->lineno." \"".$Last_Parser->filename."\" 0\n"
+	       ." $label: cover property (@(posedge $clk) ($sig));\n"
+	       ."`line /*vpm_endmod_line*/ \"".$Last_Parser->filename."\" 0\n");
+    push @Endmodule_Inserts, $bot;
+}
+
+sub _insert_always_begin {
+    my $for_assert = shift;
+    my $text = shift;
+    my $beginl;
+    for (my $l = $#Sendout; $l>=0; $l--) {
+	my $tok = $Sendout[$l];
+	#print "HUNT $l: ".($beginl||"").": $tok\n";
+	# Fortunately all comments must be a single array entry
+	$tok =~ s!//.*?\n!!go;
+	$tok =~ s!/\*.*?\*/$!!go;
+	if ($tok =~ /\bbegin\b/) {
+	    $beginl = $l;
+	}
+	if ($tok =~ /\b(if|initial|final)\b/) {
+	    $beginl = undef;
+	}
+	if ($tok =~ /\bposedge\b/) {
+	    if ($for_assert ne 'cover') {
+		die "%Error: ".$Last_Parser->fileline.": \$uerror_clk is under a posedge clk, use \$uerror instead\n";
+	    }
+	}
+	if ($tok =~ /\balways\b/) {
+	    last if !defined $beginl;  # And die below
+	    $Sendout[$beginl] =~ s/(\bbegin\b)/$1$text/;
+	    return;
+	}
+    }
+    die "%Error: ".$Last_Parser->fileline.": \$uerror_clk is not somewhere under an 'always begin' block\n";
 }
 
 sub get_lineinfo {
@@ -327,66 +418,24 @@ sub get_lineinfo {
     $lineinfo = sprintf ("%-21s", $lineinfo);
 }
 
-sub message_line {
-    my $char = shift;
-    my $cond = shift;
-    my $taskFlag = shift;
-    my @params = @_;
-
-    my $lineinfo = get_lineinfo();
-    message ($lineinfo, 1, $char, $cond, "", $taskFlag, @params);
-}
-
 use vars qw($Msg_Header_Level);
 sub message_header {
+    my $out = "";
     if (!$Msg_Header_Level) {
-	sendout ("\n/*summit modcovoff -bpen*/\n") if $Vericov_Enabled;
-	sendout ("/*vpm*/");
+	$out .= "\n/*summit modcovoff -bpen*/\n" if $Vericov_Enabled;
+	$out .= "/*vpm*/";
     }
-    sendout ("begin ");
-    sendout ("`coverage_block_off ") if ($Opt_Verilator && !$Msg_Header_Level);
+    $out .= "begin ";
+    $out .= "`coverage_block_off " if ($Opt_Verilator && !$Msg_Header_Level);
     $Msg_Header_Level++;
+    return $out;
 }
+
 sub message_trailer {
-    sendout ('end ');
-    sendout ('/*vpm*/') if ((--$Msg_Header_Level)==0);
-    sendout ("\n/*summit modcovon -bpen*/\n") if $Vericov_Enabled;
-}
-
-sub message_write {
-#    print "ARGS=".join("/",@_)."\n";
-    my $lineinfo = shift;
-    my $show_id = shift;
-    my $char = shift;
-    my $otherargs = shift;
-    my @params = @_;	# Task (dropped), Level (dropped), printf string, args
-
-    my $task;
-    if (($char eq "-I") || ($char eq "-i")) {}
-    elsif ($char eq "%%E") {
-	$task = ($Opt_Stop ? '$stop;' : "`pli.errors = `pli.errors+1;");
-    } elsif ($char eq "%%W") {
-	$task = ($Opt_Stop ? '$stop;' : "`pli.warnings = `pli.warnings+1;");
-    } else { die "%Error: Unknown message character class '$char'\n"; }
-
-    my $ids = "";
-    my $idm = "";
-    sendout ("begin");
-    sendout (" \$timeformat($Opt_Timeformat_Units, $Opt_Timeformat_Precision,\"\",20);")
-	if defined $Opt_Timeformat_Units;
-    sendout (" \$write (\"[%0t] ${char}:$ids${lineinfo} ");
-    my $par = $params[2];
-    $par =~ s/^\s*\"//;
-    sendout ("$par,\$time$idm$otherargs");
-    for $par (3 .. $#params) {
-	my $p = $params[$par];
-	sendout (", $p");
-	print "MESSAGE $char, Parameter $p\n" if ($Debug);
-    }
-    sendout (');');
-    sendout ($task)    if ($task && !$Opt_Chiponly);
-    sendout ('$stop;') if ($task && $Opt_Chiponly);
-    sendout (' end ');
+    my $out = 'end ';
+    $out .= '/*vpm*/' if ((--$Msg_Header_Level)==0);
+    $out .= "\n/*summit modcovon -bpen*/\n" if $Vericov_Enabled;
+    return $out;
 }
 
 sub message {
@@ -395,8 +444,7 @@ sub message {
     my $char = shift;
     my $cond = shift;
     my $otherargs = shift;
-    my $taskFlag = shift;
-    my @params = @_;
+    my @params = @_;	# Level, printf string, args
 
     if ($params[0] =~ /^\s*\"/) {
 	# No digit in first parameter
@@ -418,21 +466,19 @@ sub message {
     ($params[1] =~ /^\s*\"/)
 	or die "%Error: ".$Last_Parser->fileline.": Non-string \$message second argument: $params[1]\n";
 
-    message_header();
+    my $out = message_header();
 
     # These long lines without breaks are intentional; I want to preserve line numbers
     my $is_warn = (($char eq "%%E") || ($char eq "%%W") || ($char eq "-i"));
 
     if ($cond ne "1") {
-	# Conditional code, for $assert
+	# Conditional code, for $uassert
 	# Note this will only work in RTL code!  Chiponly build issues otherwise.
-	my $chk = "if (!($cond) && (`__message_on)) ";
-	sendout ($chk);
+	$out .= "if (!($cond) && (`__message_on)) ";
     } elsif ($params[0] =~ /^\s*0\s*$/) {
 	# Always enabled
 	if ($is_warn) {
-	    my $chk = "if (`__message_on) ";
-	    sendout ($chk);
+	    $out .= "if (`__message_on) ";
 	}
     } else {
 	# Complex test
@@ -441,12 +487,41 @@ sub message {
 	$chk .= ' && (`__message_minimum >= (' . $params[0] . '))' if $Opt_Minimum;
 	$chk .= " && (`__message_on) " if $is_warn;
 	$chk .= ') ';
-	sendout ($chk);
+	$out .= $chk;
     }
 
-    message_write($lineinfo,$show_id,$char,$otherargs,$taskFlag,@params);
+    my $task;
+    if (($char eq "-I") || ($char eq "-i")) {}
+    elsif ($char eq "%%E") {
+	$task = ($Opt_Stop ? '$stop;' : "`pli.errors = `pli.errors+1;");
+    } elsif ($char eq "%%W") {
+	$task = ($Opt_Stop ? '$stop;' : "`pli.warnings = `pli.warnings+1;");
+    } else { die "%Error: Unknown message character class '$char'\n"; }
 
-    message_trailer();
+    {	# if's body
+	$out .= "begin";
+	$out .= " \$timeformat($Opt_Timeformat_Units, $Opt_Timeformat_Precision,\"\",20);"
+	    if defined $Opt_Timeformat_Units;
+	$out .= " \$write (\"[%0t] ${char}:${lineinfo} ";
+
+	my $par = $params[1];
+	$par =~ s/^\s*\"//;
+
+	$out .= "$par,\$time$otherargs";
+	for my $parn (2 .. $#params) {
+	    my $p = $params[$parn];
+	    $out .= ", $p";
+	    print "MESSAGE $char, Parameter $p\n" if ($Debug);
+	}
+	$out .= ');';
+	$out .= $task    if ($task && !$Opt_Chiponly);
+	$out .= '$stop;' if ($task && $Opt_Chiponly);
+	$out .= ' end ';
+    }
+
+    $out .= message_trailer();
+
+    return $out;
 }
 
 ######################################################################
@@ -489,8 +564,14 @@ sub convert_concat_string {
 sub sendout {
     # Send out the string to the output file, consider this a change.
     my $string = shift;
-    $Sendout .= $string;
+    push @Sendout, $string;
     $Got_Change = 1;
+}
+
+sub sendout_orig {
+    # Send out the string to the output file, not a change.
+    my $string = shift;
+    push @Sendout, $string;
 }
 
 ######################################################################
@@ -536,7 +617,7 @@ sub vpm_process {
 
     ($filename ne $outname) or die "%Error: $filename: Would overwrite self.";
 
-    $Sendout = "";
+    @Sendout = ();
 
     @instance_tests_list = ();
 
@@ -564,7 +645,7 @@ sub vpm_process {
 	$parser->parse ($line);
     }
     $parser->eof;
-    $Sendout .= $parser->unreadback();    $parser->unreadback('');
+    sendout_orig($parser->unreadback());    $parser->unreadback('');
     $fh->close;
 
     # Hack the output text to add in the messages variable
@@ -577,22 +658,27 @@ sub vpm_process {
 	    $insert .= "$type $sym; initial $sym = $value;";
 	}
 	if ($insert) {
-	    $Sendout =~ s%/\*vpm symbols $mod\*/%/*vpm*/$insert/*vpm*/%g
+	    my $sendout = join('',@Sendout);
+	    $sendout =~ s%/\*vpm beginmodule $mod\*/%/*vpm*/$insert/*vpm*/%g
 		or die "vpm %Error: $filename: Couldn't find symbol insertion point in $mod\n";
+	    @Sendout = ($sendout);
 	}
     }
+
+    $#Endmodule_Inserts < 0
+	or die "vpm %Error: $filename: Couldn't find endmodule\n";
 
     # Put out the processed file
     print "Got_Change? $Got_Change  $outname\n"	if ($Debug);
     if ($Got_Change) {
 	my $date = localtime;
 	$fh->open(">$outname") or die "%Error: Can't write $outname.";
-	if ($Opt_Verilator) {
-	    print $fh "`line 1 \"$filename\"\n";
+	if ($Line_Supported) {
+	    print $fh "`line 1 \"$filename\" 0\n";
 	}
 	# No newline so line counts not affected
 	print $fh "/* Generated by vpm; File:\"$filename\" */";
-	print $fh $Sendout;
+	print $fh join('',@Sendout);
 	$fh->close;
 	if (defined $File_Mtime{$filename}) {
 	    utime $File_Mtime{$filename}, $File_Mtime{$filename}, $outname;
@@ -609,7 +695,7 @@ sub bitwidth {
     my $statement = shift;
     my $bits = 0;
     foreach my $sig (split /,\{\]/, $statement) {
-	if ($sig =~ /[a-z].* \[ ([0-9]+) : ([0-9]+) \]/x) {
+	if ($sig =~ /[a-z].* \[ (-?[0-9]+) : (-?[0-9]+) \]/x) {
 	    $bits += ($1 - $2) + 1;
 	} elsif ($sig =~ /[a-z]/) {
 	    $bits ++;
@@ -625,10 +711,10 @@ sub bitwidth {
 sub vpm_db_read_file {
     # Read when the unprocessed files were last known to not need processing
     my $filename = shift;
-    open (PWDFILE,"< $filename")	|| return;  # no error if fails
-    while (<PWDFILE>) {
-	chomp $_;
-	my ($tt_cmd, $tt_file, $tt_mtime) = split(/\t/);
+    my $fh = IO::File->new("<$filename") or return;  # no error if fails
+    while (my $line = $fh->getline) {
+	chomp $line;
+	my ($tt_cmd, $tt_file, $tt_mtime) = split(/\t/,$line);
 	$tt_cmd .= "";	# Warning removal
 	if ($tt_cmd eq "switch") {
 	    if ($tt_file =~ /vericov/) {
@@ -642,19 +728,19 @@ sub vpm_db_read_file {
 	    $File_Mtime_Read_Used{$tt_file} = 0;
 	}
     }
-    close PWDFILE;
+    $fh->close;
 }
 
 sub vpm_db_write_file {
     # Save which unprocessed files did not need processing
     my $filename = shift;
-    open (PWDFILE,"> $filename")	|| die("%Error: Can't write $filename.");
-    print PWDFILE "switch\tvericov\n" if $Opt_Vericov;
-    print PWDFILE "switch\tchiponly\n" if $Opt_Chiponly;
+    my $fh = IO::File->new(">$filename") or die "%Error: $! $filename.\n";
+    $fh->print ("switch\tvericov\n") if $Opt_Vericov;
+    $fh->print ("switch\tchiponly\n") if $Opt_Chiponly;
     foreach my $file (sort (keys %File_Mtime)) {
-	print PWDFILE "unproc\t$file\t$File_Mtime{$file}\n";
+	$fh->print ("unproc\t$file\t$File_Mtime{$file}\n");
     }
-    close PWDFILE;
+    $fh->close;
 }
 
 
@@ -793,7 +879,7 @@ sub vpm_process_one {
 ######################################################################
 # Parser functions called by Verilog::Parser
 
-package Verilog::Vpm::Parser;
+package Verilog::Vpm::Parser; ## no critic
 require Exporter;
 use Verilog::Parser;
 use base qw(Verilog::Parser);
@@ -804,7 +890,7 @@ BEGIN {
     @GLOBALS = qw
 	(
 	 $Debug
-	 $Sendout
+	 @Sendout
 	 $Last_Task
 	 $Last_Module
 	 $Opt_Chiponly
@@ -814,6 +900,7 @@ BEGIN {
 	 %Vpm_Conversions
 	 %Vpm_Chiponly_Rename
 	 %Insure_Symbols
+	 @Endmodule_Inserts
 	 );
     foreach (@GLOBALS) {
 	my ($type,$sym) = /^(.)(.*)$/;
@@ -825,8 +912,7 @@ BEGIN {
 
 use strict;
 use vars (@GLOBALS,
-	  qw ( @EXPORT $VERSION
-	       $Last_Keyword
+	  qw ( $Last_Keyword
 	       @Last_Symbols
 	       @Last_Number_Ops
 	       $Need_Vpm_Symbols
@@ -845,6 +931,7 @@ sub new {
     # State of the parser
     # These could be put under the class, but this is faster and we only parse
     # one file at a time
+    @Endmodule_Inserts = ();
     $Last_Keyword = "";
     @Last_Symbols = ();
     @Last_Number_Ops = ();
@@ -872,17 +959,26 @@ sub keyword {
     @Last_Number_Ops = ();
 
     if ($Opt_Vericov && (($token eq "case") || ($token eq "casex") || ($token eq "casez"))) {
-	$Sendout .= $since;
-	sendout ("\n/*summit implicit off*/\n") if $Vericov_Enabled;
-	$Sendout .= $token;
+	push @Sendout, $since;
+	::sendout ("\n/*summit implicit off*/\n") if $Vericov_Enabled;
+	push @Sendout, $token;
     }
     elsif ($Opt_Vericov && ($token eq "endcase")) {
-	$Sendout .= $since;
-	$Sendout .= $token;
-	sendout ("\n/*summit implicit on*/\n") if $Vericov_Enabled;
+	push @Sendout, $since . $token;
+	::sendout ("\n/*summit implicit on*/\n") if $Vericov_Enabled;
+    }
+    elsif ($token eq "endmodule") {
+	if ($#Endmodule_Inserts >= 0) {
+	    my $ins = join('',@Endmodule_Inserts);
+	    my $lineno = $parser->lineno;
+	    $ins =~ s!/\*vpm_endmod_line\*/!$lineno!g;
+	    ::sendout ("/*vpm*/ ".$ins." /*vpm*/");
+	    @Endmodule_Inserts = ();
+	}
+	push @Sendout, $since . $token;
     }
     else {
-	$Sendout .= $since . $token;
+	push @Sendout, $since . $token;
     }
 }
 
@@ -900,7 +996,7 @@ sub symbol {
 	if ($Vpm_Conversions {$token}
 		 || ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token} && !$Vpm_Chiponly_Rename{$token})
 		 || ($Opt_NoPli && $token =~ /^\$/ && $Parens==0)) {
-	    $Sendout .= $since;
+	    push @Sendout, $since;
 	    print "Callback SYMBOL $token\n"    if ($Debug);
 	    $In_Message = 1;
 	    $Param_Num = 1;
@@ -908,10 +1004,10 @@ sub symbol {
 	    $Params[0] = $token;
 	} elsif ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token}
 		 && $Vpm_Chiponly_Rename{$token}) {
-	    $Sendout .= $since . $Vpm_Chiponly_Rename{$token};
+	    push @Sendout, $since . $Vpm_Chiponly_Rename{$token};
 	} else {
 	    # Actually a keyword; we check for that too
-	    $Sendout .= $since . $token;
+	    push @Sendout, $since . $token;
 	}
     }
 
@@ -939,7 +1035,7 @@ sub number {
 	print "Callback NUMBER $token\n"    if ($Debug);
 	$Params[$Param_Num] .= $since . $token;
     } else {
-	$Sendout .= $since . $token;
+	push @Sendout, $since . $token;
     }
     push @Last_Number_Ops, $token;
 }
@@ -1004,10 +1100,10 @@ sub operator {
     elsif ($Need_Vpm_Symbols && ($token eq ';')) {
 	$Need_Vpm_Symbols = 0;
 	# Squeeze it after module (..);
-	$Sendout .= $since . $token . '/*vpm symbols ' . $Last_Module . '*/';
+	push @Sendout, $since . $token . '/*vpm beginmodule ' . $Last_Module . '*/';
     }
     else {
-	$Sendout .= $since . $token;
+	push @Sendout, $since . $token;
     }
 
     # Track parens
@@ -1030,7 +1126,7 @@ sub string {
 	print "Callback STRING $token\n"    if ($Debug);
 	$Params[$Param_Num] .= $since . $token;
     } else {
-	$Sendout .= $since . $token;
+	push @Sendout, $since . $token;
 	if (($Last_Keyword eq "`include")
 	    && ($token =~ /\//)) {
 	    print STDERR "%Warning: ".$parser->fileline.": `include has directory,"
@@ -1059,7 +1155,7 @@ sub comment {
 	$Vericov_Enabled = 0;
     }
 
-    $Sendout .= $since . $token;
+    push @Sendout, $since . $token;
 }
 
 package main;
@@ -1135,6 +1231,12 @@ Exclude processing any files which begin with the specified prefix.
 =item --help
 
 Displays this message and program version and exits.
+
+=item --language <1364-1995|1364-2001|1364-2005|1800-2005>
+
+Set the language standard for the files.  This determines which tokens are
+signals versus keywords, such as the ever-common "do" (data-out signal,
+versus a do-while loop keyword).
 
 =item --minimum
 
@@ -1224,6 +1326,12 @@ between the request and acknowledgement.
 Return true if the __message level is greater or equal to the given
 level, and that global messages are turned on.
 
+=item $ucover_clk (I<clock>, I<label>)
+
+Similar to $uerror_clk, add a SystemVerilog assertion at the next specified
+clock's edge, with the label specified. This allowes cover properties to be
+specified "inline" with normal RTL code.
+
 =item $uinfo (I<level>, "message", [I<vars>...] )
 
 Report a informational message in standard form.  End test if warning
@@ -1233,9 +1341,24 @@ limit exceeded.
 
 Report a error message in standard form.  End test if error limit exceeded.
 
+=item $uerror_clk (I<clock>, "message", [I<vars>...] )
+
+Report a error message in standard form at the next clock edge.  If you
+place a $uerror etc in a combo logic block (always @*), event based
+simulators may misfire the assertion due to glitches.  $uerror_clk fixes
+this by instead creating a temporary signal and then moving the assert
+itself to a new clocked block at the specified edge.  Note any variables
+printed will be the values at the time of the next clock edge, which may
+differ from the value where the $uerror_clk is assigned.
+
 =item $uwarn ("message", [I<vars>...] )
 
 Report a warning message in standard form.
+
+=item $uwarn_clk (I<clock> "message", [I<vars>...] )
+
+Report a warning message in standard form at the next clock edge.  See
+$uerror_clk.
 
 =back
 

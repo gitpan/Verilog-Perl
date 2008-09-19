@@ -17,10 +17,12 @@ use Class::Struct;
 
 use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
+use vars qw($VERSION @ISA);
+use strict;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.041';
-use strict;
+
+$VERSION = '3.042';
 
 structs('new',
 	'Verilog::Netlist::Port::Struct'
@@ -40,6 +42,15 @@ structs('new',
 	   # below only after autos()
 	   sp_autocreated	=> '$', #'	# Created by /*AUTOINOUT*/
 	   ]);
+
+sub delete {
+    my $self = shift;
+    my $h = $self->module->_ports;
+    delete $h->{$self->name};
+    return undef;
+}
+
+######################################################################
 
 sub netlist { return $_[0]->module->netlist; }
 

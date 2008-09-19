@@ -17,10 +17,12 @@ use Class::Struct;
 
 use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
+use vars qw ($VERSION @ISA);
+use strict;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
-$VERSION = '3.041';
-use strict;
+
+$VERSION = '3.042';
 
 ######################################################################
 
@@ -52,6 +54,13 @@ structs('new',
 	   sp_autocreated	=> '$', #'	# Created by /*AUTOSIGNAL*/
 	   ]);
 
+sub delete {
+    my $self = shift;
+    my $h = $self->module->_nets;
+    delete $h->{$self->name};
+    return undef;
+}
+
 ######################################################################
 
 sub logger {
@@ -64,7 +73,7 @@ sub netlist {
 sub _used_in_inc { $_[0]->_used_in(1+($_[0]->_used_in()||0)); }
 sub _used_out_inc { $_[0]->_used_out(1+($_[0]->_used_out()||0)); }
 sub _used_inout_inc { $_[0]->_used_inout(1+($_[0]->_used_inout()||0)); }
-sub stored_lsb { $_[0]->SUPER::stored_lsb || $_[0]->lsb; }
+sub stored_lsb { defined $_[0]->SUPER::stored_lsb ? $_[0]->SUPER::stored_lsb : $_[0]->lsb; }
 
 sub width {
     my $self = shift;
@@ -108,6 +117,9 @@ sub lint {
     }
 }
 
+######################################################################
+## Outputters
+
 sub _decls {
     my $self = shift;
     my $type = $self->type;
@@ -128,6 +140,7 @@ sub verilog_text {
 	push @out, " [".$self->msb.":".$self->lsb."]" if defined $self->msb;
 	push @out, " ".$self->name;
 	push @out, " ".$self->array if $self->array;
+        push @out, " = ".$self->value if defined $self->value && $self->value ne '';
 	push @out, ";";
     }
     return (wantarray ? @out : join('',@out));

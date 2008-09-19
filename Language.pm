@@ -198,7 +198,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.041';
+$VERSION = '3.042';
 
 ######################################################################
 #### Internal Variables
@@ -384,15 +384,14 @@ sub number_value {
     }
     elsif ($number =~ /\'s?b([0-1]+)$/i) {
 	my $val = 0;
-	my $bit;
 	$number = $1;
-	foreach $bit (split(//, $number)) {
+	foreach my $bit (split(//, $number)) {
 	    $val = ($val<<1) | ($bit=='1'?1:0);
 	}
 	return ($val);
     }
     elsif ($number =~ /\'s?d?([0-9]+)$/i
-	   || $number =~ /^([0-9]+)$/i) {
+	   || $number =~ /^(-?[0-9]+)$/i) {
 	return ($1);
     }
     return undef;

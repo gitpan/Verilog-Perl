@@ -18,11 +18,11 @@ Netlist/Pin.pm
 Netlist/Port.pm
 Netlist/Subclass.pm
 Parser/.gitignore
+Parser/bisonpre
 Parser/Makefile.PL
 Parser/Parser.pm
 Parser/Parser.xs
 Parser/SigParser.pm
-Parser/bisonpre
 Parser/typemap
 Parser/VParse.cpp
 Parser/VParse.h
@@ -48,6 +48,7 @@ t/00_pod.t
 t/01_manifest.t
 t/02_help.t
 t/03_spaces.t
+t/04_critic.t
 t/10_keywords.t
 t/12_splitbus.t
 t/14_numbers.t
@@ -66,6 +67,7 @@ t/35_sigparser.out
 t/35_sigparser.t
 t/36_sigmany.t
 t/40_netlist.t
+t/41_example.t
 t/42_dumpcheck.t
 t/42_dumpcheck_1.out
 t/42_dumpcheck_2.out

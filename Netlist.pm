@@ -19,11 +19,11 @@ use IO::File;
 use Verilog::Netlist::Module;
 use Verilog::Netlist::File;
 use Verilog::Netlist::Subclass;
-@ISA = qw(Verilog::Netlist::Subclass);
+use base qw(Verilog::Netlist::Subclass);
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.041';
+$VERSION = '3.042';
 
 ######################################################################
 #### Error Handling
@@ -155,7 +155,14 @@ sub modules {
 sub modules_sorted {
     my $self = shift;
     # Return all modules
-    return (sort {$a->name() cmp $b->name()} (values %{$self->{_modules}}));
+    return (sort {$a->name cmp $b->name} (values %{$self->{_modules}}));
+}
+
+sub modules_sorted_level {
+    my $self = shift;
+    # Return all modules
+    return (sort {$a->level <=> $b->level || $a->name cmp $b->name}
+	    (values %{$self->{_modules}}));
 }
 
 sub top_modules_sorted {
@@ -436,6 +443,11 @@ Returns list of Verilog::Netlist::Module.
 =item $netlist->modules_sorted
 
 Returns name sorted list of Verilog::Netlist::Module.
+
+=item $netlist->modules_sorted_level
+
+Returns level sorted list of Verilog::Netlist::Module.  Leaf modules will
+be first, the top most module will be last.
 
 =item $netlist->new_module
 
