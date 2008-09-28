@@ -44,7 +44,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     %File_Dest
 	     );
-$VERSION = '3.042';
+$VERSION = '3.043';
 
 ######################################################################
 # configuration
@@ -128,7 +128,7 @@ if (! GetOptions (
 		  "timeformat-units=s"	=> \$Opt_Timeformat_Units,
 		  "vericov!"	=> \$Opt_Vericov,
 		  "verilator!"	=> \$Opt_Verilator,
-		  "version"	=> sub { print "Version $VERSION\n"; },
+		  "version"	=> sub { print "Version $VERSION\n"; exit(0); },
 		  "<>"		=> \&parameter,
 		  )) {
     die "%Error: Bad usage, try 'vpm --help'\n";
