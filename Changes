@@ -3,6 +3,18 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.044 2008/11/10
+
+***	Support SystemVerilog unique and priority case, bug33. [by Nicky Ayoub]
+
+***	Support SystemVerilog timeunit and timeprecision, bug34. [by Nicky Ayoub]
+
+***	Support SystemVerilog package items, bug39. [by Nick Ayoub]
+
+****	Expand environment variables in Verilog::Getopt.  [Lawrence Butcher]
+
+****	Fix Verilog::EditModules when modules wrapped in ifdef.  [Mat Zeno]
+
 * Verilog::Language 3.043 2008/09/28
 
 ***	Ignore Verilog-XL defines (suppress_faults, etc).  [Nicky Ayoub]

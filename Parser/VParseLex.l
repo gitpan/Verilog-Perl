@@ -266,13 +266,17 @@ escid	\\[^ \t\f\r\n]+
   "logic"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
   "longint"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTEGER; }
   "modport"		{ FL; VALTEXT; CALLBACK(keywordCb); return yMODPORT; }
+  "priority"		{ FL; VALTEXT; CALLBACK(keywordCb); return yPRIORITY; }
   "property"		{ FL; VALTEXT; CALLBACK(keywordCb); return yPROPERTY; }
   "ref"			{ FL; VALTEXT; CALLBACK(keywordCb); return yREF; }
   "shortint"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTEGER; }
   "shortreal"		{ FL; VALTEXT; CALLBACK(keywordCb); return yREAL; }
   "static"		{ FL; VALTEXT; CALLBACK(keywordCb); return ySTATIC; }
   "string"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
+  "timeprecision"	{ FL; VALTEXT; CALLBACK(keywordCb); return yTIMEPRECISION; }
+  "timeunit"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTIMEUNIT; }
   "typedef"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTYPEDEF; }
+  "unique"		{ FL; VALTEXT; CALLBACK(keywordCb); return yUNIQUE; }
   /*     Generic unsupported keywords */
   "alias"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "assume"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -310,7 +314,6 @@ escid	\\[^ \t\f\r\n]+
   "null"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "package"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "packed"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "priority"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "program"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "protected"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "pure"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
@@ -326,11 +329,8 @@ escid	\\[^ \t\f\r\n]+
   "tagged"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "this"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "throughout"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "timeprecision"	{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "timeunit"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "type"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "union"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
-  "unique"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "var"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "virtual"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
   "void"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; }
