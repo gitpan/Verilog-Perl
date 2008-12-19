@@ -3,6 +3,16 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.045 2008/12/19
+
+***     Add vpm --noline option. [Vasu Arasanipalai]
+
+***     Add vpm --realintent option. [Vasu Arasanipalai]
+
+***	Fix vpm making long lines that upset Cadence's NC-Verilog. [Soon Koh]
+
+****	Fix Makefile issues with ActivePerl.  [Jose Ochoa]
+
 * Verilog::Language 3.044 2008/11/10
 
 ***	Support SystemVerilog unique and priority case, bug33. [by Nicky Ayoub]

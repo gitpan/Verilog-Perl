@@ -44,7 +44,7 @@ use vars qw ($VERSION $Debug $Opt %Vpm_Conversions
 	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
 	     %File_Dest
 	     );
-$VERSION = '3.044';
+$VERSION = '3.045';
 
 ######################################################################
 # configuration
@@ -89,14 +89,15 @@ my $Opt_Date = 0;	# Check dates
 my $Opt_NoPli = 0;	# Delete all pli calls
 $Opt_Vericov = 0;	# Add vericov on/off comments (messes up line # counts)
 $Opt_Chiponly = 0;	# Only chip model; apply Vpm_Chiponly_Rename's
+my $Opt_RealIntent;	# RealIntent
 my $Opt_Stop = 1;	# Put $stop in error messages
-my $Opt_Verilator = 0;	# Verilator
-my $Last_Vericov = 0;	# Last run's Opt_Vericov
-my $Last_Chiponly = 0;	# Last run's Opt_Chiponly
+my $Opt_Verilator;	# Verilator
+my $Last_ArgsDiffer;	# Last run's Opt_* mismatch
 my $Opt_Minimum;	# Include `__message_minimum
 my @Opt_Exclude;
 my $Opt_Timeformat_Units = undef;
 my $Opt_Timeformat_Precision = 0;
+my $Opt_Line;
 
 my $Total_Files = 0;
 my @files = ();
@@ -120,8 +121,10 @@ if (! GetOptions (
 		  "exclude=s"	=> sub {shift; push @Opt_Exclude, shift;},
 		  "help"	=> \&usage,
 		  "language=s"	=> sub { shift; Verilog::Language::language_standard(shift); },
+	  	  "line!"	=> \$Opt_Line,
 		  "minimum!"	=> \$Opt_Minimum,
 		  "nopli!"	=> \$Opt_NoPli,
+		  "realintent!"	=> \$Opt_RealIntent,
 		  "quiet!"	=> \$Opt_Quiet,
 		  "stop!"	=> \$Opt_Stop,
 		  "timeformat-precision=s" => \$Opt_Timeformat_Precision,
@@ -133,8 +136,23 @@ if (! GetOptions (
 		  )) {
     die "%Error: Bad usage, try 'vpm --help'\n";
 }
+sub _switch_line {
+    # If any of these flags change, we must regenerate output
+    my $sw = "";
+    $sw .= " --chiponly" if $Opt_Chiponly;
+    $sw .= " --line" if $Opt_Line;
+    $sw .= " --minimum=$Opt_Minimum" if defined $Opt_Minimum;
+    $sw .= " --nopli" if $Opt_NoPli;
+    $sw .= " --realintent" if $Opt_RealIntent;
+    $sw .= " --stop" if $Opt_Stop;
+    $sw .= " --vericov" if $Opt_Vericov;
+    $sw .= " --verilator" if $Opt_Verilator;
+    return $sw;
+}
 
-our $Line_Supported = $Opt_Verilator || Verilog::Language::language_standard() ne '1364-1995';
+if (!defined $Opt_Line) {
+    $Opt_Line = $Opt_Verilator || Verilog::Language::is_compdirect("`line"); # uses language_standard()
+}
 
 push @files, ($Opt->incdir(), $Opt->library(), $Opt->module_dir());
 
@@ -373,9 +391,14 @@ sub ucover_clk {
     _insert_always_begin('cover', "/*vpm*/ $sig=1'b0; /*vpm*/");
 
     # Alas, `line is required to see correct cover point
-    my $bot = ("\n`line ".$Last_Parser->lineno." \"".$Last_Parser->filename."\" 0\n"
-	       ." $label: cover property (@(posedge $clk) ($sig));\n"
-	       ."`line /*vpm_endmod_line*/ \"".$Last_Parser->filename."\" 0\n");
+    my $bot = "";
+    if ($Opt_Line) {
+	$bot .= "\n`line ".$Last_Parser->lineno." \"".$Last_Parser->filename."\" 0\n";
+    }
+    $bot .= " $label: cover property (@(posedge $clk) ($sig));\n";
+    if ($Opt_Line) {
+	$bot .= "`line /*vpm_endmod_line*/ \"".$Last_Parser->filename."\" 0\n";
+    }
     push @Endmodule_Inserts, $bot;
 }
 
@@ -384,7 +407,7 @@ sub _insert_always_begin {
     my $text = shift;
     my $beginl;
     for (my $l = $#Sendout; $l>=0; $l--) {
-	my $tok = $Sendout[$l];
+	my $tok = $Sendout[$l][1];
 	#print "HUNT $l: ".($beginl||"").": $tok\n";
 	# Fortunately all comments must be a single array entry
 	$tok =~ s!//.*?\n!!go;
@@ -402,7 +425,11 @@ sub _insert_always_begin {
 	}
 	if ($tok =~ /\balways\b/) {
 	    last if !defined $beginl;  # And die below
-	    $Sendout[$beginl] =~ s/(\bbegin\b)/$1$text/;
+	    my $insert = "";
+	    $insert .= "\n" if $Opt_Line;
+	    $insert .= $text;
+	    $insert .= "\n`line ".$Sendout[$l][0]." \"".$Last_Parser->filename."\" 0\n" if $Opt_Line;
+	    $Sendout[$beginl][1] =~ s/(\bbegin\b)/$1$insert/;
 	    return;
 	}
     }
@@ -423,6 +450,7 @@ sub message_header {
     my $out = "";
     if (!$Msg_Header_Level) {
 	$out .= "\n/*summit modcovoff -bpen*/\n" if $Vericov_Enabled;
+	$out .= "\n/*ri userpass BE on*/\n" if $Opt_RealIntent;
 	$out .= "/*vpm*/";
     }
     $out .= "begin ";
@@ -435,6 +463,7 @@ sub message_trailer {
     my $out = 'end ';
     $out .= '/*vpm*/' if ((--$Msg_Header_Level)==0);
     $out .= "\n/*summit modcovon -bpen*/\n" if $Vericov_Enabled;
+    $out .= "\n/*ri userpass BE off*/\n" if $Opt_RealIntent;
     return $out;
 }
 
@@ -564,14 +593,18 @@ sub convert_concat_string {
 sub sendout {
     # Send out the string to the output file, consider this a change.
     my $string = shift;
-    push @Sendout, $string;
+    push @Sendout, [0, $string];
     $Got_Change = 1;
 }
 
 sub sendout_orig {
     # Send out the string to the output file, not a change.
+    # The first argument is the line number.  Right now only certain things
+    # need to set it.  In the future we may adopt a more general scheme
+    # whereby all original text sets it, the autos indicate "-1" and the
+    # outputter does the appropriate `lines for us.
     my $string = shift;
-    push @Sendout, $string;
+    push @Sendout, [0, $string];
 }
 
 ######################################################################
@@ -651,17 +684,34 @@ sub vpm_process {
     # Hack the output text to add in the messages variable
     foreach my $mod (keys %Insure_Symbols) {
 	my $insert="";
+	my $n=0;  # Some compilers choke if lines get too long;
 	foreach my $sym (keys %{$Insure_Symbols{$mod}}) {
 	    #if ! $module_symbols{$sym} 	# For now always put it in
 	    my $type = $Insure_Symbols{$mod}{$sym}[0];
 	    my $value = $Insure_Symbols{$mod}{$sym}[1];
 	    $insert .= "$type $sym; initial $sym = $value;";
+	    if (++$n > 10) {
+		$insert .= "\n";
+		$n=0;
+	    }
 	}
 	if ($insert) {
-	    my $sendout = join('',@Sendout);
-	    $sendout =~ s%/\*vpm beginmodule $mod\*/%/*vpm*/$insert/*vpm*/%g
-		or die "vpm %Error: $filename: Couldn't find symbol insertion point in $mod\n";
-	    @Sendout = ($sendout);
+	    my $hit;
+	    for (my $l = $#Sendout; $l>=0; $l--) {
+		my $tok = $Sendout[$l][1];
+		if ($tok =~ m%/\*vpm beginmodule $mod\*/%) {
+		    my $lineno = $Sendout[$l][0];
+		    if ($Opt_Line) {
+			$insert .= "\n`line ".$lineno." \"".$Last_Parser->filename."\" 0\n";
+		    }
+		    $tok =~ s%/\*vpm beginmodule $mod\*/%/*vpm*/$insert%g or die;  # Must exist, found above!
+		    $Sendout[$l][1] = $tok;
+		    $hit = 1;
+		    # Don't exit the loop, keep looking for more.
+		    # It's possible there's a `ifdef with multiple "module x" headers
+		}
+	    }
+	    $hit or die "vpm %Error: $filename: Couldn't find symbol insertion point in $mod\n";
 	}
     }
 
@@ -673,12 +723,15 @@ sub vpm_process {
     if ($Got_Change) {
 	my $date = localtime;
 	$fh->open(">$outname") or die "%Error: Can't write $outname.";
-	if ($Line_Supported) {
+	if ($Opt_Line) {
 	    print $fh "`line 1 \"$filename\" 0\n";
 	}
 	# No newline so line counts not affected
 	print $fh "/* Generated by vpm; File:\"$filename\" */";
-	print $fh join('',@Sendout);
+	my $out = join('',map {$_->[1]} @Sendout);
+	# Simplify redundant `lines to save space
+	$out =~ s%(`line[^\n]*)\n[ \t\n]*(`line[^\n]*\n)%$2%mg;
+	print $fh $out;
 	$fh->close;
 	if (defined $File_Mtime{$filename}) {
 	    utime $File_Mtime{$filename}, $File_Mtime{$filename}, $outname;
@@ -714,16 +767,15 @@ sub vpm_db_read_file {
     my $fh = IO::File->new("<$filename") or return;  # no error if fails
     while (my $line = $fh->getline) {
 	chomp $line;
-	my ($tt_cmd, $tt_file, $tt_mtime) = split(/\t/,$line);
-	$tt_cmd .= "";	# Warning removal
-	if ($tt_cmd eq "switch") {
-	    if ($tt_file =~ /vericov/) {
-		$Last_Vericov = 1;
-	    }
-	    if ($tt_file =~ /chiponly/) {
-		$Last_Chiponly = 1;
-	    }
+	if ($line =~ /^switch\s*(.*$)/) {
+	    my $old = $1;
+	    my $now = _switch_line();
+	    $old =~ s/\s+//g;
+	    $now =~ s/\s+//g;
+	    $Last_ArgsDiffer = ($old ne $now);
 	} else {
+	    my ($tt_cmd, $tt_file, $tt_mtime) = split(/\t/,$line);
+	    $tt_cmd .= "";	# Warning removal
 	    $File_Mtime_Read{$tt_file} = $tt_mtime;
 	    $File_Mtime_Read_Used{$tt_file} = 0;
 	}
@@ -735,14 +787,12 @@ sub vpm_db_write_file {
     # Save which unprocessed files did not need processing
     my $filename = shift;
     my $fh = IO::File->new(">$filename") or die "%Error: $! $filename.\n";
-    $fh->print ("switch\tvericov\n") if $Opt_Vericov;
-    $fh->print ("switch\tchiponly\n") if $Opt_Chiponly;
+    $fh->print ("switch\t"._switch_line()."\n");
     foreach my $file (sort (keys %File_Mtime)) {
 	$fh->print ("unproc\t$file\t$File_Mtime{$file}\n");
     }
     $fh->close;
 }
-
 
 #----------------------------------------------------------------------
 
@@ -765,8 +815,7 @@ sub vpm_recursive_prelude {
     my $dest_mtime = $File_Mtime_Read{"vpm"} || 0;
     if (!$Opt_Date
 	|| ($Prog_Mtime > $dest_mtime)
-	|| ($Opt_Chiponly != $Last_Chiponly)
-	|| ($Opt_Vericov != $Last_Vericov)) {
+	|| $Last_ArgsDiffer) {
 	# Flush the whole read cache
 	%File_Mtime_Read = ();
 	print "\t    VPM (or overall flags) changed... Two minutes...\n";
@@ -959,12 +1008,12 @@ sub keyword {
     @Last_Number_Ops = ();
 
     if ($Opt_Vericov && (($token eq "case") || ($token eq "casex") || ($token eq "casez"))) {
-	push @Sendout, $since;
+	push @Sendout, [$parser->lineno, $since];
 	::sendout ("\n/*summit implicit off*/\n") if $Vericov_Enabled;
-	push @Sendout, $token;
+	push @Sendout, [$parser->lineno, $token];
     }
     elsif ($Opt_Vericov && ($token eq "endcase")) {
-	push @Sendout, $since . $token;
+	push @Sendout, [$parser->lineno, $since . $token];
 	::sendout ("\n/*summit implicit on*/\n") if $Vericov_Enabled;
     }
     elsif ($token eq "endmodule") {
@@ -975,10 +1024,10 @@ sub keyword {
 	    ::sendout ("/*vpm*/ ".$ins." /*vpm*/");
 	    @Endmodule_Inserts = ();
 	}
-	push @Sendout, $since . $token;
+	push @Sendout, [$parser->lineno, $since . $token];
     }
     else {
-	push @Sendout, $since . $token;
+	push @Sendout, [$parser->lineno, $since . $token];
     }
 }
 
@@ -996,7 +1045,7 @@ sub symbol {
 	if ($Vpm_Conversions {$token}
 		 || ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token} && !$Vpm_Chiponly_Rename{$token})
 		 || ($Opt_NoPli && $token =~ /^\$/ && $Parens==0)) {
-	    push @Sendout, $since;
+	    push @Sendout, [$parser->lineno, $since];
 	    print "Callback SYMBOL $token\n"    if ($Debug);
 	    $In_Message = 1;
 	    $Param_Num = 1;
@@ -1004,10 +1053,10 @@ sub symbol {
 	    $Params[0] = $token;
 	} elsif ($Opt_Chiponly && defined $Vpm_Chiponly_Rename{$token}
 		 && $Vpm_Chiponly_Rename{$token}) {
-	    push @Sendout, $since . $Vpm_Chiponly_Rename{$token};
+	    push @Sendout, [$parser->lineno, $since . $Vpm_Chiponly_Rename{$token}];
 	} else {
 	    # Actually a keyword; we check for that too
-	    push @Sendout, $since . $token;
+	    push @Sendout, [$parser->lineno, $since . $token];
 	}
     }
 
@@ -1035,7 +1084,7 @@ sub number {
 	print "Callback NUMBER $token\n"    if ($Debug);
 	$Params[$Param_Num] .= $since . $token;
     } else {
-	push @Sendout, $since . $token;
+	push @Sendout, [0, $since . $token];
     }
     push @Last_Number_Ops, $token;
 }
@@ -1100,10 +1149,10 @@ sub operator {
     elsif ($Need_Vpm_Symbols && ($token eq ';')) {
 	$Need_Vpm_Symbols = 0;
 	# Squeeze it after module (..);
-	push @Sendout, $since . $token . '/*vpm beginmodule ' . $Last_Module . '*/';
+	push @Sendout, [$parser->lineno, $since . $token . '/*vpm beginmodule '.$Last_Module.'*/'];
     }
     else {
-	push @Sendout, $since . $token;
+	push @Sendout, [$parser->lineno, $since . $token];
     }
 
     # Track parens
@@ -1126,7 +1175,7 @@ sub string {
 	print "Callback STRING $token\n"    if ($Debug);
 	$Params[$Param_Num] .= $since . $token;
     } else {
-	push @Sendout, $since . $token;
+	push @Sendout, [0, $since . $token];
 	if (($Last_Keyword eq "`include")
 	    && ($token =~ /\//)) {
 	    print STDERR "%Warning: ".$parser->fileline.": `include has directory,"
@@ -1155,7 +1204,7 @@ sub comment {
 	$Vericov_Enabled = 0;
     }
 
-    push @Sendout, $since . $token;
+    push @Sendout, [0, $since . $token];
 }
 
 package main;
@@ -1243,6 +1292,11 @@ versus a do-while loop keyword).
 Include `__message_minimum in the $uinfo test, so that by defining
 __message_minimum=1 some uinfos may be optimized away at compile time.
 
+=item --noline
+
+Do not emit `line directives.  If not specified they will be used under
+--language 1364-2001 and later.
+
 =item --nopli
 
 Delete all 'simple' PLI calls.  PLI function calls inside parenthesis will
@@ -1265,6 +1319,10 @@ conditionally halt simulation.
 Use the given filename for output instead of the input name .vpm.  If the
 name ends in a / it is used as a output directory with the default name.
 
+=item --realintent
+
+Special RealIntent enable/disables added around unreachable code.
+
 =item --timeformat-units I<units>
 
 If specified, include Verilog $timeformat calls before all messages.  Use
@@ -1278,11 +1336,11 @@ of digits after the decimal point.  Defaults to zero.
 
 =item --vericov
 
-Special vericov enable/disables added.
+Special Vericov enable/disables added around unreachable code.
 
 =item --verilator
 
-Special verilator translation enabled.
+Special Verilator translations enabled.
 
 =item --version
 
@@ -1292,7 +1350,7 @@ Displays program version and exits.
 
 =head1 FUNCTIONS
 
-These verilog pseudo-pli calls are expanded:
+These Verilog pseudo-pli calls are expanded:
 
 =over 4
 
