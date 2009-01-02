@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2008 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 ######################################################################
@@ -84,7 +84,7 @@ sub one_parse {
     print "="x70,"\n";
     print "read $filename\n";
     my $opt = new Verilog::Getopt;
-    $opt->define('__message_on',"1'b0");  # So we can read pre-vpm'ed files
+    $opt->define('__message_on',"1'b0");  # So we can read pre-vpassert'ed files
 
     my $pp = Verilog::Preproc->new(keep_comments=>0,
 				   include_open_nonfatal=>1,

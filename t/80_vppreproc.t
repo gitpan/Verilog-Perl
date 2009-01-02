@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2008 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
@@ -12,18 +12,18 @@ use Test;
 BEGIN { plan tests => 6 }
 BEGIN { require "t/test_utils.pl"; }
 
-print "Checking vppp...\n";
+print "Checking vppreproc...\n";
 
-vppp ("t/80_vppp_none.out",   "test_dir/vppp_none.v",	"");
-vppp ("t/80_vppp_cmped.out",  "test_dir/vppp_cmped.v",	"--nocomment --pedantic");
-vppp ("t/80_vppp_simple.out", "test_dir/vppp_simple.v",	"--simple");
+vppreproc ("t/80_vppreproc_none.out",   "test_dir/vppreproc_none.v",	"");
+vppreproc ("t/80_vppreproc_cmped.out",  "test_dir/vppreproc_cmped.v",	"--nocomment --pedantic");
+vppreproc ("t/80_vppreproc_simple.out", "test_dir/vppreproc_simple.v", "--simple");
 
-sub vppp {
+sub vppreproc {
     my $checkname = shift;
     my $out = shift;
     my $flags = shift;
 
-    run_system ("${PERL} vppp ${flags} -y verilog inc2.v > $out");
+    run_system ("${PERL} vppreproc ${flags} -y verilog inc2.v > $out");
     ok(-r $out);
     ok(files_identical ($out, $checkname));
 }

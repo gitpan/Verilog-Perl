@@ -1,12 +1,12 @@
-// DESCRIPTION: vpm: Example pli file for vpm program
+// DESCRIPTION: Example pli file for vpassert program
 // This file ONLY is placed into the Public Domain, for any use,
-// without warranty, 2000-2008 by Wilson Snyder.
+// without warranty, 2000-2009 by Wilson Snyder.
 
 `timescale 1ns/1ns
 
 module pli;
    // A module called PLI is required, to contain the error counts
-   // This is required with the vpm --nostop option, which this example uses
+   // This is required with the vpassert --nostop option, which this example uses
    // By default (--stop), this file isn't needed at all
 
    integer errors; initial errors = 0;

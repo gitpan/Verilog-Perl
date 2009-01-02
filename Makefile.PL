@@ -1,6 +1,6 @@
 # DESCRIPTION: Perl ExtUtils: Type 'perl Makefile.PL' to create a Makefile for this package
 #
-# Copyright 2000-2008 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
@@ -29,7 +29,7 @@ README: Verilog-Perl.pod
 	pod2text --loose $< > $@
 
 clean::
-	-$(RM_RF) simv .vpm test_dir *.tmp
+	-$(RM_RF) simv .vpassert test_dir *.tmp
 
 dist: maintainer-copy distcheck README
 
@@ -76,11 +76,16 @@ WriteMakefile(
 	      VERSION_FROM  => 'Language.pm',
 	      NO_META	=> 1,
 	      #OPTIMIZE	=> '-ggdb',
-	      PREREQ_PM => {'Pod::Usage' => 0,
+	      PREREQ_PM => {'Pod::Usage' => 1,
+			    'Data::Dumper' => 1,
+			    'Test' => 1,
+			    'warnings' => 1,
+			    #'Test::Pod' => 1,  # Required only for author tests
+			    #'Test::Perl::Critic' => 1,  # Required only for author tests
 			},
 	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
-	      EXE_FILES => [qw( vrename vpm vppp vhier vsplitmodule )],
-	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpm simv ),},
+	      EXE_FILES => [qw( vrename vpassert vppreproc vhier vsplitmodule )],
+	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpassert simv ),},
 	      'dist'    => {COMPRESS => 'gzip -9f',
 			    SUFFIX   => '.gz',
 			    DIST_DEFAULT => 'README all tardist',

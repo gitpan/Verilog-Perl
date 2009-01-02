@@ -1,6 +1,6 @@
 ######################################################################
 #
-# Copyright 2001-2008 by Wilson Snyder.  This program is free software;
+# Copyright 2001-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 #
@@ -20,7 +20,7 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '3.045';
+$VERSION = '3.100';
 
 ######################################################################
 #### Configuration Section
@@ -188,7 +188,7 @@ Verilog::Preproc - Preprocess Verilog files
 =head1 EXAMPLE
 
     # This is a complete verilog pre-parser!
-    # For a command line version, see vppp
+    # For a command line version, see vppreproc
     use Verilog::Getopt;
     use Verilog::Preproc;
 
@@ -377,7 +377,7 @@ Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.org/verilog-perl>.
 
-Copyright 2000-2008 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2009 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License or the Perl Artistic License.
 

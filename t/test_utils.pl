@@ -1,6 +1,6 @@
 # DESCRIPTION: Perl ExtUtils: Common routines required by package tests
 #
-# Copyright 2000-2008 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # General Public License or the Perl Artistic License.
 
@@ -10,7 +10,7 @@ use vars qw($PERL);
 $PERL = "$^X -Iblib/arch -Iblib/lib -IPreproc/blib/arch -IPreproc/blib/lib";
 
 mkdir 'test_dir',0777;
-unlink "test_dir/verilog";   # Symlink made in vpm test will mess up others
+unlink "test_dir/verilog";   # Symlink made in vpassert test will mess up others
 
 if (!$ENV{HARNESS_ACTIVE}) {
     use lib '.';

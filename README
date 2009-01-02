@@ -65,12 +65,13 @@ SCRIPTS
         a tree of all of the filenames, modules, and cells referenced by
         that file.
 
-    vpm Vpm will read the specified Verilog files and preprocess special PLI
-        assertions.
+    vpassert
+        Vpassert will read the specified Verilog files and preprocess
+        special PLI assertions.
 
-    vppp
-        Vppp reads the Verilog files passed on the command line and outputs
-        preprocessed output.
+    vppreproc
+        Vppreproc (Verilog-Perl Pre Processor) reads the Verilog files
+        passed on the command line and outputs preprocessed output.
 
     vrename
         Vrename will allow a signal to be changed across all levels of the
@@ -181,7 +182,7 @@ DISTRIBUTION
     software tool suite. The latest version is available from CPAN and from
     <http://www.veripool.org/verilog-perl>.
 
-    Copyright 2000-2008 by Wilson Snyder. This package is free software; you
+    Copyright 2000-2009 by Wilson Snyder. This package is free software; you
     can redistribute it and/or modify it under the terms of either the GNU
     Lesser General Public License or the Perl Artistic License.
 
@@ -194,7 +195,7 @@ AUTHORS
 
 SEE ALSO
 
-    vhier, vpm, vppp, vrename
+    vhier, vpassert, vppreproc, vrename
 
     Verilog::EditFiles, Verilog::Getopt, Verilog::Language Verilog::Netlist,
     Verilog::Parser, Verilog::Preproc, Verilog::SigParser
