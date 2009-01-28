@@ -3,6 +3,19 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.110 2009/1/28
+
+**	Support interface and import. [by Sandeep Gor]
+	Add new SigParser::interface, endinterface and import callbacks.
+
+***	Add vhier --top-module option, bug49.  [John Busco]
+
+***	Add vpassert $ucover_bits_clk. [Mahesh Kumashikar, et al]
+
+***	Add comments to Netlist::Net::verilog_text. [by Jeff Short]
+
+***	Support `pragma and `default_nettype.
+
 * Verilog::Language 3.100 2009/1/2
 
 **	Vppp is now renamed vppreproc; vpm is renamed vpassert.
@@ -683,7 +696,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 Copyright 2001-2009 by Wilson Snyder.  This program is free software;
 you can redistribute it and/or modify it under the terms of either the GNU
-General Public License or the Perl Artistic License.
+Lesser General Public License or the Perl Artistic License.
 
 Local variables:
 mode: outline

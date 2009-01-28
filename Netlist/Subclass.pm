@@ -1,15 +1,5 @@
 # Verilog - Verilog Perl Interface
-######################################################################
-#
-# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
-# you can redistribute it and/or modify it under the terms of either the GNU
-# General Public License or the Perl Artistic License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
+# See copyright, etc in below POD section.
 ######################################################################
 
 package Verilog::Netlist::Subclass;
@@ -20,7 +10,7 @@ use base qw(Exporter);
 use vars qw($VERSION @EXPORT);
 use strict;
 
-$VERSION = '3.100';
+$VERSION = '3.110';
 @EXPORT = qw(structs);
 
 # Maybe in the future.  For now all users of this must do it themselves

@@ -1,15 +1,4 @@
-# Verilog::Getopt.pm -- Verilog command line parsing
-######################################################################
-#
-# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
-# you can redistribute it and/or modify it under the terms of either the GNU
-# General Public License or the Perl Artistic License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
+# See copyright, etc in below POD section.
 ######################################################################
 
 package Verilog::Getopt;
@@ -27,7 +16,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.100';
+$VERSION = '3.110';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance
@@ -59,6 +48,7 @@ sub new {
 		fileline => 'Command_Line',
 		unparsed => [],
 		define_warnings => 1,
+		depend_files => {},
 		@_
 		};
     bless $self, $class;

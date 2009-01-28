@@ -3,20 +3,21 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# General Public License or the Perl Artistic License.
+# Lesser General Public License or the Perl Artistic License.
 
 use IO::File;
 use strict;
 use Test;
 
-BEGIN { plan tests => 6 }
+BEGIN { plan tests => 8 }
 BEGIN { require "t/test_utils.pl"; }
 
 print "Checking vhier...\n";
 
-vhier ("t/85_vhier_cells.out",   "--cells");
+vhier ("t/85_vhier_cells.out",	    "--cells");
 vhier ("t/85_vhier_inpfiles.out",   "--input-files");
 vhier ("t/85_vhier_modfiles.out",   "--module-files");
+vhier ("t/85_vhier_topmodule.out",  "--module-files --top-module v_hier_sub");
 
 sub vhier {
     my $checkname = shift;

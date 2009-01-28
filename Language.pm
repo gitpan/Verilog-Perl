@@ -1,15 +1,4 @@
-# Verilog::Language.pm -- Verilog language keywords, etc
-######################################################################
-#
-# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
-# you can redistribute it and/or modify it under the terms of either the GNU
-# General Public License or the Perl Artistic License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
+# See copyright, etc in below POD section.
 ######################################################################
 
 =pod
@@ -198,7 +187,7 @@ use Carp;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.100';
+$VERSION = '3.110';
 
 ######################################################################
 #### Internal Variables
@@ -298,6 +287,10 @@ foreach my $kwd (
 		 "`default_nettype", "`elsif", "`undef", "`ifndef",
 		 "`file", "`line",
 		 ) { $Keywords{$kwd}{'1364-2001'} = $Compdirect{$kwd} = '1364-2001'; }
+
+foreach my $kwd (
+		 "`pragma",
+		 ) { $Keywords{$kwd}{'1364-2005'} = $Compdirect{$kwd} = '1364-2005'; }
 
 language_standard ('1800-2005');  # Default standard
 

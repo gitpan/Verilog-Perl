@@ -3,7 +3,7 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# General Public License or the Perl Artistic License.
+# Lesser General Public License or the Perl Artistic License.
 
 use strict;
 use Test;
@@ -43,11 +43,14 @@ sub endcell    { $_[0]->_common('endcell', @_); }
 sub endinterface { $_[0]->_common('endinterface', @_); }
 sub endtaskfunc{ $_[0]->_common('endtaskfunc', @_); }
 sub endmodule  { $_[0]->_common('endmodule', @_); }
+sub endpackage { $_[0]->_common('endpackage', @_); }
 sub funcsignal { $_[0]->_common('funcsignal', @_); }
 sub function {	$_[0]->_common('function', @_); }
+sub import {	$_[0]->_common('import', @_); }
 sub instant {	$_[0]->_common('instant', @_); }
 sub interface { $_[0]->_common('interface', @_); }
 sub module {	$_[0]->_common('module', @_); }
+sub package {	$_[0]->_common('package', @_); }
 sub parampin {	$_[0]->_common('parampin', @_); }
 sub pin {	$_[0]->_common('pin', @_); }
 sub port {	$_[0]->_common('port', @_); }

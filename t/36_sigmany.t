@@ -3,7 +3,7 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# General Public License or the Perl Artistic License.
+# Lesser General Public License or the Perl Artistic License.
 ######################################################################
 # VERILOG_TEST_FILES="$V4/test_regress/t/t_case*.v" VERILOG_TEST_DEBUGIF=1 t/36_sigmany.t
 #  (delete-matching-lines "^#\\|^ok \\|^1\\.\\.\\|^not ok")
@@ -15,6 +15,7 @@ BEGIN { plan tests => 3 }
 BEGIN { require "t/test_utils.pl"; }
 
 our $Any_Error;
+our $Got_Eof_Module;
 
 ######################################################################
 
@@ -26,13 +27,30 @@ use base qw(Verilog::SigParser);
 sub _common {
 }
 
+sub module {
+    my ($self,$kwd,$name)=@_;
+    $Got_Eof_Module = 1 if $name eq '_GOT_EOF_MODULE';
+}
+
 sub error {
     my ($self,$text,$token)=@_;
     my $fileline = $self->filename.":".$self->lineno;
     if ($text !~ /\`math/) {
-	warn ("%Warning: $fileline: $text\n");
-	$self->{_errored} = 1;
-	$::Any_Error = 1;
+	if (!$ENV{VERILOG_TEST_SILENT}) {
+	    warn ("%Warning: $fileline: $text\n");
+	    $self->{_errored} = 1;
+	    $::Any_Error = 1;
+	} else {
+	    warn ("-Silent-Warning: $fileline: $text\n");
+	}
+	# Try to print source line
+	if (my $fh=IO::File->new("<".$self->filename)) {
+	    my @lines = $fh->getlines;
+	    my $line = $lines[$self->lineno-1] || "";
+	    $line =~ s/^\s+//;
+	    warn ("\t".$line) if $line;
+	    $fh->close();
+	}
     }
 }
 
@@ -81,6 +99,8 @@ sub one_parse {
     my $filename = shift;
     my $debug = shift;
 
+    $Got_Eof_Module = undef;
+
     print "="x70,"\n";
     print "read $filename\n";
     my $opt = new Verilog::Getopt;
@@ -96,6 +116,20 @@ sub one_parse {
     if ($ENV{VERILOG_TEST_KEYWORDS}) {
 	$parser->parse("`begin_keywords \"1364-2001\" ");
     }
-    $parser->parse_preproc_file($pp);
+    $parser->reset;
+    # Similar to $parser->parse_preproc_file($pp);
+    # but we want to stuff a module before the EOF
+    while (defined(my $line = $pp->getline())) {
+	$parser->parse ($line);
+    }
+    $parser->parse("module _GOT_EOF_MODULE; endmodule\n");
+    $parser->eof;
+
+    if (!$Any_Error && !$Got_Eof_Module) {
+	warn "%Warning: $filename: Never parsed fake module at EOF\n";
+	$parser->{_errored} = 1;
+	$::Any_Error = 1;
+    }
+
     return $parser;
 }
