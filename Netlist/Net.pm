@@ -12,7 +12,31 @@ use strict;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.110';
+$VERSION = '3.120';
+
+my %_Type_Widths = (
+    'bit'	=> 1,
+    'byte'	=> 1,
+    'genvar'	=> 32,
+    'integer'	=> 32,
+    'localparam'=> 32,
+    'logic'	=> 1,
+    'longint'	=> 64,
+    'parameter'	=> 32,
+    'reg'	=> 1,
+    'shortint'	=> 16,
+    'supply0'	=> 1,
+    'supply1'	=> 1,
+    'tri'	=> 1,
+    'tri0'	=> 1,
+    'tri1'	=> 1,
+    'triand'	=> 1,
+    'trior'	=> 1,
+    'trireg'	=> 1,
+    'wand'	=> 1,
+    'wire'	=> 1,
+    'wor'	=> 1,
+    );
 
 ######################################################################
 
@@ -69,7 +93,9 @@ sub width {
     my $self = shift;
     # Return bit width (if known)
     if (defined $self->msb && defined $self->lsb) {
-	return ($self->msb - $self->lsb + 1);
+	return (abs($self->msb - $self->lsb) + 1);
+    } elsif (my $width = $_Type_Widths{$self->type}) {
+	return $width;
     }
     return undef;
 }

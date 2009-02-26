@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <iostream>
 #include <cstdarg>
+#include <cstring>
 
 #include "VParseGrammar.h"
 #include "VParseBison.h"
@@ -42,27 +43,27 @@ VParseLex* VParseLex::s_currentLexp = NULL;	// Current lexing point
 VParseBisonYYSType* VParseLex::s_yylvalp = NULL;		// LValue for current bison object
 
 #define LEXP (VParseLex::s_currentLexp)
-#define PARSEP (LEXP->m_parsep)
+#define LPARSEP (LEXP->m_parsep)
 
-#define NEXTLINE()  { PARSEP->inFilelineInc(); }
+#define NEXTLINE()  { LPARSEP->inFilelineInc(); }
 
-#define FL { VParseLex::s_yylvalp->fl = PARSEP->inFilelinep(); }
+#define FL { VParseLex::s_yylvalp->fl = LPARSEP->inFilelinep(); }
 
 // lval.fileline not used yet; here for Verilator parser compatibility
 #define VALTEXTS(strg) VParseLex::s_yylvalp->str = strg
 #define VALTEXT   VALTEXTS(string(yytext,yyleng))
-#define CALLBACKS(whichCb,strg) {PARSEP->whichCb(VParseLex::s_yylvalp->fl, strg); }
+#define CALLBACKS(whichCb,strg) {LPARSEP->whichCb(VParseLex::s_yylvalp->fl, strg); }
 #define CALLBACK(whichCb) CALLBACKS(whichCb,string(yytext,yyleng))
 
 #define YY_INPUT(buf,result,max_size) \
-    result = PARSEP->inputToLex(buf,max_size);
+    result = LPARSEP->inputToLex(buf,max_size);
 
-int yywrap() { return PARSEP->eofToLex(); }
+int yywrap() { return LPARSEP->eofToLex(); }
 
-#define StashPrefix PARSEP->unreadbackCat(yytext,yyleng)
+#define StashPrefix LPARSEP->unreadbackCat(yytext,yyleng)
 
 void yyerror(char* errmsg) {
-    PARSEP->inFilelinep()->error(errmsg);
+    LPARSEP->inFilelinep()->error(errmsg);
 }
 
 void yyerrorf(const char* format, ...) {
@@ -416,6 +417,7 @@ escid	\\[^ \t\f\r\n]+
   /* SystemVerilog Operators */
 <S05>{
   "'"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_TICK; }
+  "'{"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_TICKBRA; }
   "==?"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_WILDEQUAL; }
   "!=?"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_WILDNOTEQUAL; }
   "++"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_PLUSPLUS; }
@@ -546,7 +548,7 @@ escid	\\[^ \t\f\r\n]+
   "`endprotect"			{ FL; VALTEXT; CALLBACK(preprocCb); }
   "`expand_vectornets"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`inline"			{ FL; VALTEXT; CALLBACK(preprocCb); }
-  "`line"{ws}+[^\n]*\n		{ PARSEP->inLineDirective(yytext); FL; VALTEXT; CALLBACK(preprocCb); }
+  "`line"{ws}+[^\n]*\n		{ LPARSEP->inLineDirective(yytext); FL; VALTEXT; CALLBACK(preprocCb); }
   "`noaccelerate"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`noexpand_vectornets"	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`noremove_gatenames"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
@@ -577,7 +579,7 @@ escid	\\[^ \t\f\r\n]+
 
 <V95,V01,V05,S05>{
   "`"[a-zA-Z_0-9]+	{ FL; VALTEXT;
-			  if (PARSEP->sigParser()) { yyerrorf("Define or directive not defined: %s",yytext); }
+			  if (LPARSEP->sigParser()) { yyerrorf("Define or directive not defined: %s",yytext); }
 			  else { CALLBACK(preprocCb); } }
   "//"[^\n]*		{ FL; VALTEXT; CALLBACK(commentCb); }
   "/*"		       	{ yy_push_state(CMTMODE); yymore(); }
@@ -606,6 +608,7 @@ void VParseLex::unused() {
 }
 
 int VParseLex::lexToken(VParseBisonYYSType* yylvalp) {
+    // Fetch next token from prefetch or real lexer
     s_currentLexp = this;
     if (m_ahead) {
 	// We prefetched a extra token, give it back

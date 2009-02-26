@@ -3,6 +3,26 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.120 2009/2/25
+
+***	Add vhier --resolve-files option. [by Vasu Arasanipalai]
+
+***     Support "parameter integer" etc, bug64. [Jeff Kurtze]
+
+***	Support big-endian bit vectors, i.e. [0:2], bug65. [Devendra Singh]
+
+***	Return width() of 1 for non-vectored signals, bug65. [Devendra Singh]
+
+***	Add "'{" as an operator.
+
+****	Fix "assign {{x,y},z}", bugrt43138. [Devendra Singh]
+
+****	Fix documentation on ports_ordered, bug66.  [Nicky Ayoub]
+
+****	Fix compile issues with GCC 4.3.  [Donavan Miller]
+
+****	Fix Bison 2.4 compile issues.
+
 * Verilog::Language 3.110 2009/1/28
 
 **	Support interface and import. [by Sandeep Gor]

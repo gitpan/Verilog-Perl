@@ -58,25 +58,25 @@ VFileLine.o:	        VFileLine.cpp     VFileLine.h
 VFileLine.o: $(PPSRC)/VFileLine.cpp
 	$(CCCMD) $(CCCDLFLAGS) "-I$(PERL_INC)" $(PASTHRU_DEFINE) $(DEFINE) $<
 
-VParseLex_prefix.cpp: VParseLex.l
+VParseLex_pretmp.cpp: VParseLex.l
 	$(LEX) $(LEXFLAGS) -o$@ $<
 
-VParseLex.cpp: $(FLEXFIX) VParseLex_prefix.cpp
-	$(PERL) $(FLEXFIX) < VParseLex_prefix.cpp > $@
+VParseLex.cpp: $(FLEXFIX) VParseLex_pretmp.cpp
+	$(PERL) $(FLEXFIX) < VParseLex_pretmp.cpp > $@
 
 VParseBison.h: VParseBison.cpp
 
 VParseBison.cpp:	VParseBison.y bisonpre
 	-$(RM_RF) VParseBison.c VParseBison.cpp
 	@echo "If the next command fails, you probably need to install Bison 1.875 or newer"
-	$(PERL) bisonpre --yacc ${YACC} --debug --verbose --d -k VParseBison.y -p VParseBison -o VParseBison.c
+	$(PERL) bisonpre --yacc ${YACC} --debug --verbose --d -k VParseBison.y -o VParseBison.c
 	mv VParseBison.c VParseBison.cpp
 
 Parser_cleaned.c: Parser.c
 	$(PERL) $(XSUBPPFIX) < Parser.c > Parser_cleaned.c
 
 clean::
-	-$(RM_RF) test *.d *.o *.output *.pre.*
+	-$(RM_RF) test *.d *.o *.output *.pre.* *_pretmp.*
 	-$(RM_RF) VParseLex*.cpp VParseBison.h VParseBison.cpp Parser_cleaned.c
 ';
     return $out;
