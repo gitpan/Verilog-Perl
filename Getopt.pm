@@ -16,7 +16,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.120';
+$VERSION = '3.121';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance
@@ -362,6 +362,7 @@ sub file_path {
     } elsif ($lookup_type eq 'include') {
 	@dirlist = $self->incdir();
     } else {  # all
+	# Might be more obvious if -y had priority, but we'll remain back compatible
 	@dirlist = ($self->incdir(), $self->module_dir());
     }
     # Expand any envvars in incdir/moduledir
@@ -535,12 +536,12 @@ Create a new Getopt.  If gcc_style=>0 is passed as a parameter, parsing of
 GCC-like parameters is disabled.  If vcs_style=>0 is passed as a parameter,
 parsing of VCS-like parameters is disabled.
 
-=item $self->file_path ( I<filename>, [I<lookup-type>] )
+=item $self->file_path ( I<filename>, [I<lookup_type>] )
 
 Returns a new path to the filename, using the library directories and
-search paths to resolve the file.  Optional lookup-type is
-'module','include', or 'all', to use only module_dirs, incdirs, or both for
-the lookup.
+search paths to resolve the file.  Optional lookup_type is 'module',
+'include', or 'all', to use only module_dirs, incdirs, or both for the
+lookup.
 
 =item $self->get_parameters ( )
 

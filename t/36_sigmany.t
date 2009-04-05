@@ -10,6 +10,7 @@
 
 use strict;
 use Test;
+use Data::Dumper; $Data::Dumper::Indent = 1;
 
 BEGIN { plan tests => 3 }
 BEGIN { require "t/test_utils.pl"; }
@@ -23,9 +24,6 @@ package MyParser;
 use Verilog::SigParser;
 use strict;
 use base qw(Verilog::SigParser);
-
-sub _common {
-}
 
 sub module {
     my ($self,$kwd,$name)=@_;
@@ -67,12 +65,14 @@ my @files;
 if (!$ENV{VERILOG_TEST_FILES}) {
     skip("VERILOG_TEST_FILES not set (harmless)",1);
     # export VERILOG_TEST_FILES="$V4/test_regress/t/t_case*.v"
-    @files = ("verilog/*.v");
+    @files = glob("verilog/*.v");
+    @files = grep {!m!/inc!} @files;
 } else {
     ok(1);
     @files = split(/:/,$ENV{VERILOG_TEST_FILES});
+    @files = map {glob $_} @files;
 }
-check_series(map {glob $_} @files);
+check_series(@files);
 
 ######################################################################
 
@@ -80,7 +80,6 @@ sub check_series {
     my @files = @_;
     $Any_Error = 0;
     foreach my $file (@files) {
-	next if $file =~ m!/inc!;
 	read_test($file);
     }
     ok(!$Any_Error);
@@ -104,10 +103,20 @@ sub one_parse {
     print "="x70,"\n";
     print "read $filename\n";
     my $opt = new Verilog::Getopt;
-    $opt->define('__message_on',"1'b0");  # So we can read pre-vpassert'ed files
+    # Used to do this so we can read pre-vpassert'ed files,
+    # but now we require a `include std_defines in all sources
+    # even though a lint run may not indicate it's needed
+    # (since lint runs pre-vpassert.)
+    # $opt->define('__message_on',"1'b0");
+    if ($filename =~ m!(.*)/!) {
+	# Allow includes in same dir as the test
+	my $fdir = $1;
+	$opt->incdir($fdir);
+	$opt->module_dir ($fdir);
+    }
 
     my $pp = Verilog::Preproc->new(keep_comments=>0,
-				   include_open_nonfatal=>1,
+				   include_open_nonfatal=>0,
 				   options=>$opt);
 
     my $parser = new MyParser();

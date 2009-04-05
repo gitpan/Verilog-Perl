@@ -146,7 +146,9 @@ WHICH PARSER PACKAGE?
         Verilog::Preproc is useful when you need only text out, or a list of
         defines, etc. It can preprocess a file, or be used to provide the
         Verilog macro language on top of synthesis scripts. It understands
-        the full SystemVerilog 2005 preprocessor syntax.
+        the full SystemVerilog 2005 preprocessor syntax, and parts of the
+        SystemVerilog 2009 draft standard (the rest will be supported when
+        the standard is approved.)
 
     Verilog::Parser
         Verilog::Parser is useful when you need to tokenize or write source
@@ -175,6 +177,20 @@ WHICH PARSER PACKAGE?
         language as the simulator supports. This allows writing lint checks
         and full knowledge of all parts of the code, but generally requires
         the most work (short of writing a parser from scratch.)
+
+    Verilator
+        The Verilator program also contains a very similar front end as
+        Verilog-Perl. It also understands how to elaborate and connect
+        complex pins and types. If you're looking to add some lint like
+        checks against netlists, this may be a better starting point.
+
+    Verilog-Mode for Emacs
+        Although not a parser, a common requested use of Verilog-Perl is to
+        automatically make shell modules and interconnect modules.
+        Verilog-Mode is a better solution to this problem, as it results in
+        completely portable code; the program (Verilog-Mode) isn't needed
+        for others to update the design. It's also in very common usage,
+        including by many IP providers.
 
 DISTRIBUTION
 

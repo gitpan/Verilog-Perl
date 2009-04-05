@@ -6,14 +6,14 @@ package Verilog::Netlist;
 use Carp;
 use IO::File;
 
-use Verilog::Netlist::Module;
 use Verilog::Netlist::File;
+use Verilog::Netlist::Module;
 use Verilog::Netlist::Subclass;
 use base qw(Verilog::Netlist::Subclass);
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.120';
+$VERSION = '3.121';
 
 ######################################################################
 #### Error Handling
@@ -51,35 +51,35 @@ sub link {
     $self->{_relink} = 1;
     while ($self->{_relink}) {
 	$self->{_relink} = 0;
-	foreach my $modref ($self->modules) {
-	    $modref->link();
+	foreach my $subref ($self->modules) {
+	    $subref->link();
 	}
-	foreach my $fileref ($self->files) {
-	    $fileref->_link();
+	foreach my $subref ($self->files) {
+	    $subref->_link();
 	}
     }
 }
 sub lint {
     my $self = shift;
-    foreach my $modref ($self->modules_sorted) {
-	next if $modref->is_libcell();
-	$modref->lint();
+    foreach my $subref ($self->modules_sorted) {
+	next if $subref->is_libcell();
+	$subref->lint();
     }
 }
 
 sub verilog_text {
     my $self = shift;
     my @out;
-    foreach my $modref ($self->modules_sorted) {
-	push @out, $modref->verilog_text, "\n";
+    foreach my $subref ($self->modules_sorted) {
+	push @out, $subref->verilog_text, "\n";
     }
     return (wantarray ? @out : join('',@out));
 }
 
 sub dump {
     my $self = shift;
-    foreach my $modref ($self->modules_sorted) {
-	$modref->dump();
+    foreach my $subref ($self->modules_sorted) {
+	$subref->dump();
     }
 }
 
@@ -410,6 +410,11 @@ Indicates that include files that do not exist should be ignored.
 
 Indicates that comments should be preserved in the structure (slower).
 
+=item link_read_nonfatal => $true_or_false
+
+Indicates that modules that referenced but not found should be ignored,
+rather than causing an error message.
+
 =back
 
 =item $netlist->dump
@@ -502,11 +507,11 @@ a module that wasn't found, and thus might be inside the libraries.
 Expand any `defines in the string and return the results.  Undefined
 defines will remain in the returned string.
 
-=item $netlist->resolve_filename (I<string>, [I<lookup-type>])
+=item $netlist->resolve_filename (I<string>, [I<lookup_type>])
 
-Convert a module name to a filename.  Optional lookup-type is
-'module','include', or 'all', to use only module_dirs, incdirs, or both for
-the lookup.  Return undef if not found.
+Convert a module name to a filename.  Optional lookup_type is 'module',
+'include', or 'all', to use only module_dirs, incdirs, or both for the
+lookup.  Return undef if not found.
 
 =item $self->verilog_text
 

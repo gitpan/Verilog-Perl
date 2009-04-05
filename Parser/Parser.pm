@@ -13,9 +13,20 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.120';
+$VERSION = '3.121';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
+
+our @_Callback_Names = qw(
+  attribute
+  endparse
+  keyword
+  number
+  operator
+  preproc
+  string
+  symbol
+  );
 
 ######################################################################
 #### Configuration Section
@@ -40,7 +51,9 @@ sub new {
     my $class = shift;  $class = ref $class if ref $class;
     my $self = {_sigparser=>0,
 		use_unreadback => 1,   # Backward compatibility
+		#_debug		# Don't set, use debug() accessor to change level
 		@_};
+
     bless $self, $class;
     # Sets $self->{_cthis}
     $self->_new($self,
@@ -56,10 +69,18 @@ sub new {
 ######################################################################
 ####  Accessors
 
+sub callback_names {
+    return sort @_Callback_Names;
+}
+
 sub debug {
     my $self = shift;
     my $level = shift;
-    $self->_debug($level) if defined $level;
+    if (defined $level) {
+	$self->{_debug} = $level;
+	$self->_debug($level);
+    }
+    return $self->{_debug};
 }
 
 sub fileline {
@@ -70,7 +91,7 @@ sub fileline {
 sub line { return lineno(@_); }  # Old, now undocumented
 
 #######################################################################
-#### Called by the parser
+#### Methods
 
 sub reset {
     my $self = shift;
@@ -223,6 +244,11 @@ like extractions, see L<Verilog::Netlist>.
 See the "Which Package" section of L<Verilog::Language> if you are unsure
 which parsing package to use for a new application.
 
+Note the parser allows some constructs that are syntax errors according to
+the specification (for example "foo.bar(1)++".) This is done when the
+parser can't easily detect these cases.  It's up to the consumer of the
+parser to filter out such errors if it cares.
+
 =head1 METHODS
 
 =over 4
@@ -231,6 +257,12 @@ which parsing package to use for a new application.
 
 Create a new Parser. Passing the named argument "use_unreadback => 0" will
 disable later use of the unreadback method, which may improve performance.
+
+=item $parser->callback_names ()
+
+Return an array of callback function names.  This may be used to
+automatically create callbacks for all functions, or to test for different
+callback functionality between versions of Verilog-Perl.
 
 =item $parser->eof ()
 
@@ -286,7 +318,7 @@ than using "$parser->unreadback($parser->unreadback . $text)".
 
 In order to make the parser do anything interesting, you must make a
 subclass where you override one or more of the following callback methods
-as appropriate:
+as appropriate.
 
 =over 4
 

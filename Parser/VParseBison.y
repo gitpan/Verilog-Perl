@@ -74,7 +74,7 @@ static void PINPARAMS() {
     // Throw out all the pins we found before we could do instanceCb
     while (!GRAMMARP->m_pinStack.empty()) {
 	VParseGPin& pinr = GRAMMARP->m_pinStack.front();
-	PARSEP->paramPinCb(pinr.m_fl, pinr.m_name, pinr.m_conn, pinr.m_number);
+	PARSEP->parampinCb(pinr.m_fl, pinr.m_name, pinr.m_conn, pinr.m_number);
 	GRAMMARP->m_pinStack.pop_front();
     }
 }
@@ -111,8 +111,7 @@ static void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yaTIMINGSPEC	"TIMING SPEC ELEMENT"
 
 %token<str>		ygenGATE	"GATE keyword"
-%token<str>		ygenKEYWORD	"KEYWORD"
-%token<str>		ygenNETTYPE	"NETTYPE keyword (tri0/wand/etc)"
+%token<str>		ygenCONFIGKEYWORD "CONFIG keyword (cell/use/design/etc)"
 %token<str>		ygenOPERATOR	"OPERATOR"
 %token<str>		ygenSTRENGTH	"STRENGTH keyword (strong1/etc)"
 %token<str>		ygenSYSCALL	"SYSCALL"
@@ -294,6 +293,11 @@ static void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yTIMEPRECISION	"timeprecision"
 %token<str>		yTIMEUNIT	"timeunit"
 %token<str>		yTRI		"tri"
+%token<str>		yTRI0		"tri0"
+%token<str>		yTRI1		"tri1"
+%token<str>		yTRIAND		"triand"
+%token<str>		yTRIOR		"trior"
+%token<str>		yTRIREG		"trireg"
 %token<str>		yTYPE		"type"
 %token<str>		yTYPEDEF	"typedef"
 %token<str>		yUNION		"union"
@@ -306,11 +310,13 @@ static void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yVOID		"void"
 %token<str>		yWAIT		"wait"
 %token<str>		yWAIT_ORDER	"wait_order"
+%token<str>		yWAND		"wand"
 %token<str>		yWHILE		"while"
 %token<str>		yWILDCARD	"wildcard"
 %token<str>		yWIRE		"wire"
 %token<str>		yWITH		"with"
 %token<str>		yWITHIN		"within"
+%token<str>		yWOR		"wor"
 %token<str>		yXNOR		"xnor"
 %token<str>		yXOR		"xor"
 
@@ -514,8 +520,8 @@ package_import_itemList:
 	;
 
 package_import_item:		// ==IEEE: package_import_item
-		yaID yP_COLONCOLON yaID			{ PARSEP->importCb($<fl>1,$1);}
-	|	yaID yP_COLONCOLON '*'			{ }
+		yaID yP_COLONCOLON yaID			{ PARSEP->importCb($<fl>1,$1); }
+	|	yaID yP_COLONCOLON '*'			{ PARSEP->importCb($<fl>1,$1); }
 	;
 
 //**********************************************************************
@@ -533,7 +539,7 @@ modHeader:			// IEEE: module_nonansi_header + module_ansi_header
 
 modHdr:
 		yMODULE lifetimeE yaID
-			{ PARSEP->moduleCb($<fl>1,$1,$3,PARSEP->inCellDefine()); }
+			{ PARSEP->moduleCb($<fl>1,$1,$3,false,PARSEP->inCellDefine()); }
 	;
 
 parameter_port_listE:		// IEEE: parameter_port_list + empty == parameter_value_assignment
@@ -617,7 +623,7 @@ portIfList:
 portIf:
 		yaID yaID				{ PARSEP->instantCb($<fl>1, $1, $2, ""); PARSEP->portCb($<fl>1, $2); }
 	|	yINTERFACE yaID				{ PARSEP->portCb($<fl>1, $2); }
-	|	yaID '.' yaID yaID			{ PARSEP->instantCb($<fl>1, $1, "*", ""); PARSEP->portCb($<fl>1, $3); }
+	|	yaID '.' yaID yaID			{ PARSEP->instantCb($<fl>1, $1, $4, ""); PARSEP->portCb($<fl>1, $4); }
 	;
 
 //**********************************************************************
@@ -670,6 +676,7 @@ modportItemList:
 
 modport_item:			// ==IEEE: modport_item
 		yaID '(' modportPortsDeclList ')'	{ }
+	;
 
 modportPortsDeclList:
 		modportPortsDecl			{ }
@@ -694,6 +701,7 @@ modportSimplePort:
 		yaID					{ }
 	|	'.' yaID '(' ')'			{ }
 	|	'.' yaID '(' expr ')'			{ }
+	;
 
 modport_tf_port:		// ==IEEE: modport_tf_port
 		yaID					{ }
@@ -755,17 +763,27 @@ varRESET:
 net_type:			// ==IEEE: net_type
 		ySUPPLY0				{ VARDECL($1); }
 	|	ySUPPLY1				{ VARDECL($1); }
-	|	yWIRE 					{ VARDECL($1); }
 	|	yTRI 					{ VARDECL($1); }
-	|	ygenNETTYPE				{ VARDECL($1); }
+	|	yTRI0 					{ VARDECL($1); }
+	|	yTRI1 					{ VARDECL($1); }
+	|	yTRIAND 				{ VARDECL($1); }
+	|	yTRIOR 					{ VARDECL($1); }
+	|	yTRIREG 				{ VARDECL($1); }
+	|	yWAND 					{ VARDECL($1); }
+	|	yWIRE 					{ VARDECL($1); }
+	|	yWOR 					{ VARDECL($1); }
 	;
-varGParam:	yPARAMETER				{ VARDECL($1); }
+varGParam:
+		yPARAMETER				{ VARDECL($1); }
 	;
-varLParam:	yLOCALPARAM				{ VARDECL($1); }
+varLParam:
+		yLOCALPARAM				{ VARDECL($1); }
 	;
-varGenVar:	yGENVAR					{ VARDECL($1); }
+varGenVar:
+		yGENVAR					{ VARDECL($1); }
 	;
-varReg:		varTypeKwds				{ VARDECL($1); }
+varReg:
+		varTypeKwds				{ VARDECL($1); }
 	;
 
 port_direction:			// ==IEEE: port_direction

@@ -16,7 +16,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.120';
+$VERSION = '3.121';
 
 structs('new',
 	'Verilog::Netlist::Module::Struct'
@@ -171,10 +171,19 @@ sub new_port {
 
 sub new_cell {
     my $self = shift;
-    # @_ params
+    my %params = @_; # name=>, filename=>, lineno=>, submodname=>, params=>
     # Create a new cell under this module
-    my $cellref = new Verilog::Netlist::Cell (@_, module=>$self,);
-    $self->_cells ($cellref->name(), $cellref);
+    if (!defined $params{name} || $params{name} eq '') {
+	# Blank instance name; invent a new one; use the next instance number in this module t$
+	$params{name} = '__unnamed_instance_' . (scalar $self->cells() + 1);
+    }
+    if (my $preexist = $self->find_cell($params{name})) {
+	$params{name} .= '__duplicate_' . (scalar $self->cells() + 1);
+    }
+    # Create a new cell; pass the potentially modified options
+    my $cellref = new Verilog::Netlist::Cell(%params, module=>$self,);
+    # Add the new cell to the hash of cells in this module
+    $self->_cells($params{name}, $cellref);
     return $cellref;
 }
 

@@ -158,10 +158,17 @@ escid	\\[^ \t\f\r\n]+
   "task"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTASK; }
   "time"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTIME; }
   "tri"			{ FL; VALTEXT; CALLBACK(keywordCb); return yTRI; }
+  "tri0"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTRI0; }
+  "tri1"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTRI1; }
+  "triand"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTRIAND; }
+  "trior"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTRIOR; }
+  "trireg"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTRIREG; }
   "vectored"		{ FL; VALTEXT; CALLBACK(keywordCb); return yVECTORED; }
   "wait"		{ FL; VALTEXT; CALLBACK(keywordCb); return yWAIT; }
+  "wand"		{ FL; VALTEXT; CALLBACK(keywordCb); return yWAND; }
   "while"		{ FL; VALTEXT; CALLBACK(keywordCb); return yWHILE; }
   "wire"		{ FL; VALTEXT; CALLBACK(keywordCb); return yWIRE; }
+  "wor"			{ FL; VALTEXT; CALLBACK(keywordCb); return yWOR; }
   "xnor"		{ FL; VALTEXT; CALLBACK(keywordCb); return yXNOR; }
   "xor"			{ FL; VALTEXT; CALLBACK(keywordCb); return yXOR; }
   /*     Types Verilator doesn't support but we do generically here */
@@ -192,15 +199,8 @@ escid	\\[^ \t\f\r\n]+
   "tran"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenGATE; }
   "tranif0"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenGATE; }
   "tranif1"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenGATE; }
-  "tri0"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
-  "tri1"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
-  "triand"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
-  "trior"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
-  "trireg"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
-  "wand"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
   "weak0"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenSTRENGTH; }
   "weak1"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenSTRENGTH; }
-  "wor"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenNETTYPE; }
   /*     Generic unsupported warnings */
 }
 
@@ -220,16 +220,16 @@ escid	\\[^ \t\f\r\n]+
   "signed"		{ FL; VALTEXT; CALLBACK(keywordCb); return ySIGNED; }
   "unsigned"		{ FL; VALTEXT; CALLBACK(keywordCb); return yUNSIGNED; }
   /*     Generic unsupported keywords */
-  "cell"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "config"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "design"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "endconfig"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "incdir"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "include"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "instance"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "liblist"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "library"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
-  "use"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenKEYWORD; } // config
+  "cell"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "config"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "design"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "endconfig"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "incdir"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "include"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "instance"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "liblist"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "library"		{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
+  "use"			{ FL; VALTEXT; CALLBACK(keywordCb); return ygenCONFIGKEYWORD; }
 }
 
   /* Verilog 2005 */
@@ -474,7 +474,14 @@ escid	\\[^ \t\f\r\n]+
   [0-9]*?['']s?[01xXzZ]	{	/* SystemVerilog */
 			  FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
 			}
-  [0-9][_0-9]*[ \t]*['']s?[bcodhBCODH]?[ \t]*[A-Fa-f0-9xXzZ_?]*	{
+  /* Note below is constructed to not match the ' that begins a '(  or '{ */
+  [0-9][_0-9]*[ \t]*['']s?[bcodhBCODH]?[ \t]*[A-Fa-f0-9xXzZ_?]+	{
+			  FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
+			}
+  [0-9][_0-9]*[ \t]*['']s?[bcodhBCODH]	{
+			  FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
+			}
+  [0-9][_0-9]*[ \t]*['']s	{
 			  FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
 			}
   [0-9][_0-9]*		{ FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
