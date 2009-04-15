@@ -3,10 +3,11 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# Lesser General Public License or the Perl Artistic License.
+# Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 use strict;
 use Test;
+use Data::Dumper; $Data::Dumper::Indent = 1;
 
 BEGIN { plan tests => 4 }
 BEGIN { require "t/test_utils.pl"; }
@@ -100,4 +101,6 @@ sub read_test {
     # Preprocess
     $pp->open($filename);
     $parser->parse_preproc_file($pp);
+
+    print Dumper($parser->{symbol_table}) if ($parser->debug());
 }

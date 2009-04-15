@@ -3,7 +3,7 @@
 //
 // Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
-// Lesser General Public License or the Perl Artistic License.
+// Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,6 +24,7 @@
 #define _VFILELINE_H_ 1
 #include <string>
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 //============================================================================
@@ -71,5 +72,9 @@ ostream& operator<<(ostream& os, VFileLine* fileline);
 
 /// Use this instead of fatal() to mention the source code line.
 #define fatalSrc(msg) fatal((string)"Internal Error: "+__FILE__+":"+VFileLine::itoa(__LINE__)+": "+(msg))
+
+template< class T> std::string cvtToStr (const T& t) {
+    ostringstream os; os<<t; return os.str();
+}
 
 #endif // Guard

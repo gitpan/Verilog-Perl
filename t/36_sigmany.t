@@ -3,7 +3,7 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# Lesser General Public License or the Perl Artistic License.
+# Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 ######################################################################
 # VERILOG_TEST_FILES="$V4/test_regress/t/t_case*.v" VERILOG_TEST_DEBUGIF=1 t/36_sigmany.t
 #  (delete-matching-lines "^#\\|^ok \\|^1\\.\\.\\|^not ok")
@@ -120,6 +120,9 @@ sub one_parse {
 				   options=>$opt);
 
     my $parser = new MyParser();
+    # Suck in std:: before enabling debug dumps
+    $parser->std;
+
     $parser->debug($debug || $ENV{VERILOG_TEST_DEBUG});
     $pp->open($filename);
     if ($ENV{VERILOG_TEST_KEYWORDS}) {
@@ -139,6 +142,8 @@ sub one_parse {
 	$parser->{_errored} = 1;
 	$::Any_Error = 1;
     }
+
+    print Dumper($parser->{symbol_table}) if $parser->debug;
 
     return $parser;
 }

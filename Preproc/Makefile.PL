@@ -2,7 +2,7 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# Lesser General Public License or the Perl Artistic License.
+# Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 use ExtUtils::MakeMaker;
 use Config;
@@ -55,6 +55,7 @@ VPreproc.o:	VPreprocLex.h VPreproc.h VFileLine.h
 VFileLine.o:	                         VFileLine.h
 
 VPreprocLex_pretmp.cpp: VPreprocLex.l
+	$(LEX) --version
 	$(LEX) $(LEXFLAGS) -o$@ $<
 
 VPreprocLex.cpp: $(FLEXFIX) VPreprocLex_pretmp.cpp

@@ -16,7 +16,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Module::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.121';
+$VERSION = '3.200';
 
 structs('new',
 	'Verilog::Netlist::Module::Struct'
@@ -24,6 +24,7 @@ structs('new',
 	   filename 	=> '$', #'	# Filename this came from
 	   lineno	=> '$', #'	# Linenumber this came from
 	   netlist	=> '$', #'	# Netlist is a member of
+	   keyword	=> '$', #'	# Type of module
 	   userdata	=> '%',		# User information
 	   attributes	=> '%', #'	# Misc attributes for systemperl or other processors
 	   #
@@ -122,7 +123,8 @@ sub ports_sorted {
     return (sort {$a->name() cmp $b->name()} (values %{$_[0]->_ports}));
 }
 sub ports_ordered {
-    return ( @{$_[0]->_portsordered});
+    my $self = shift;
+    return map {$self->_ports->{$_}} @{$self->_portsordered};
 }
 sub cells {
     return (values %{$_[0]->_cells});
@@ -147,7 +149,7 @@ sub new_net {
     my $self = shift;
     # @_ params
     # Create a new net under this module
-    my $netref = new Verilog::Netlist::Net (direction=>'net', type=>'wire',
+    my $netref = new Verilog::Netlist::Net (direction=>'net', data_type=>'wire',
 					    @_,
 					    module=>$self, );
     $self->_nets ($netref->name(), $netref);
@@ -232,7 +234,7 @@ sub lint {
 
 sub verilog_text {
     my $self = shift;
-    my @out = "module ".$self->name." (\n";
+    my @out = ($self->keyword||'module')." ".$self->name." (\n";
     my $indent = "   ";
     # Port list
     my $comma="";
@@ -252,7 +254,7 @@ sub verilog_text {
     foreach my $cellref ($self->cells_sorted) {
 	push @out, $indent, $cellref->verilog_text, "\n";
     }
-    push @out, "endmodule\n";
+    push @out, "end".($self->keyword||'module')."\n";
     return (wantarray ? @out : join('',@out));
 }
 
@@ -260,7 +262,7 @@ sub dump {
     my $self = shift;
     my $indent = shift||0;
     my $norecurse = shift;
-    print " "x$indent,"Module:",$self->name(),"  File:",$self->filename(),"\n";
+    print " "x$indent,"Module:",$self->name(),"  Kwd:",($self->keyword||''),"  File:",$self->filename(),"\n";
     if (!$norecurse) {
 	foreach my $portref ($self->ports_sorted) {
 	    $portref->dump($indent+2);
@@ -298,7 +300,7 @@ Verilog::Netlist::Module - Module within a Verilog Netlist
 =head1 DESCRIPTION
 
 A Verilog::Netlist::Module object is created by Verilog::Netlist for every
-module in the design.
+module, macromodule, primitive or program in the design.
 
 =head1 ACCESSORS
 
@@ -321,11 +323,20 @@ passed to Verilog::Netlist::new for comments to be retained.
 
 =item $self->find_port_by_index
 
-Returns the port name associated with the given index.
+Returns the port name associated with the given index.  Indexes start at 1
+(pin numbers are traditionally counted from pin 1..pin N, not starting at
+zero.  This was probably an unfortunate choice, sorry.)
 
 =item $self->is_top
 
 Returns true if the module has no cells referencing it (is at the top of the hierarchy.)
+
+=item $self->keyword
+
+Returns the keyword used to declare the module ("module", "macromodule",
+"primitive" or "program".)  It might at first not seem obvious that
+programs are considered modules, but in most cases they contain the same
+type of objects so can be handled identically.
 
 =item $self->name
 
@@ -354,13 +365,13 @@ Returns list of references to Verilog::Netlist::Port in the module.
 
 =item $self->ports_ordered
 
-Returns list of textual port names in the order the ports were declared in
-the module's port list.  For references to the ports in the same order, use
-find_port_by_index.
+Returns list of references to Verilog::Netlist::Port in the module sorted
+by pin number.
 
 =item $self->ports_sorted
 
-Returns list of name sorted references to Verilog::Netlist::Port in the module.
+Returns list of references to Verilog::Netlist::Port in the module sorted
+by name.
 
 =back
 
@@ -437,7 +448,7 @@ L<http://www.veripool.org/verilog-perl>.
 
 Copyright 2000-2009 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
-Lesser General Public License or the Perl Artistic License.
+Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 =head1 AUTHORS
 

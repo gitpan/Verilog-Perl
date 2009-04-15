@@ -3,13 +3,13 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# Lesser General Public License or the Perl Artistic License.
+# Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 use strict;
 use Test;
 use Data::Dumper; $Data::Dumper::Indent = 1; #Debug
 
-BEGIN { plan tests => 6 }
+BEGIN { plan tests => 7 }
 BEGIN { require "t/test_utils.pl"; }
 
 our %_TestCoverage;
@@ -65,6 +65,9 @@ my $dump_fh = new IO::File(">test_dir/34.dmp") or die "%Error: $! test_dir/34.dm
 
 my $p = new Verilog::Parser;
 ok($p);
+$p->selftest();
+ok(1);
+
 $p->lineno(100);
 $p->filename("XXX");
 ok($p->lineno == 100);

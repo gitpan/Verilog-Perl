@@ -3,6 +3,43 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.200 2009/4/15
+
+**	This is a major release that may break some scripts that worked with
+	earlier versions.  Some scripts may need modification to work with
+ 	this version of Verilog-Perl.
+
+**	This package is now licensed under LGPL v3 and/or Artistic v2.0.
+
+**	Verilog::Parser, SigParser and Netlist now support SystemVerilog.
+
+***	Verilog::SigParser's signal_decl and funcsignal callbacks no longer
+	work.  They are replaced by the "var" callback.
+
+***	Added Verilog::SigParser program and endprogram callbacks.
+
+***	Calling Verilog::SigParser->new now requires a symbol_table parameter,
+	if multiple modules are to be parsed as part of one compilation unit.
+
+***	Netlist::Port->type accessor is renamed data_type. [Horia Toma]
+
+***	Netlist::Net->type accessor is split into data_type,
+	decl_type and net_type accessors.
+
+***	Netlist::Module->ports_ordered now returns objects. [Horia Toma]
+
+***	Added Netlist::Interface and related accessors.
+
+***	Added Netlist::Module->keyword accessor, and use it for "program"s.
+
+****	Fix Macintosh BSD build error.  [Otacilio de Arujo Ramos Neto]
+
+****	Fix parallel make rule build error.  [Chitlesh Goorah]
+
+****	Fix const compile warning in VPreproc.cpp. [Chitlesh Goorah]
+
+****	Fix logic MSBs not being reported in 3.200 beta.  [Horia Toma]
+
 * Verilog::Language 3.121 2009/4/5
 
 ****	Make cell names unique when duplicate cells encountered. [Paul Janson]
@@ -724,7 +761,7 @@ This uses outline mode in Emacs.  See C-h m [M-x describe-mode].
 
 Copyright 2001-2009 by Wilson Snyder.  This program is free software;
 you can redistribute it and/or modify it under the terms of either the GNU
-Lesser General Public License or the Perl Artistic License.
+Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 Local variables:
 mode: outline

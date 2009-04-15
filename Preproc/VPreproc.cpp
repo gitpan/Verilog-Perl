@@ -3,7 +3,7 @@
 //
 // Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
-// Lesser General Public License or the Perl Artistic License.
+// Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -813,7 +813,7 @@ string VPreprocImp::getline() {
     // Get a single line from the parse stream.  Buffer unreturned text until the newline.
     if (isEof()) return "";
     while (1) {
-	char* rtnp;
+	const char* rtnp;
 	bool gotEof = false;
 	while (NULL==(rtnp=strchr(m_lineChars.c_str(),'\n')) && !gotEof) {
 	    int tok = getToken();

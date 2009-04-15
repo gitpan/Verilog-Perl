@@ -2,7 +2,7 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# Lesser General Public License or the Perl Artistic License.
+# Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 use ExtUtils::MakeMaker;
 use Config;
@@ -50,19 +50,22 @@ LEXFLAGS += -d
 
 VPATH += . $(PPSRC)
 
-# Prep work
-config ::
-	$(PERL) callbackgen
+VHEADERS = VParseLex.h VParseGrammar.h VParse.h VFileLine.h VParseBison.h \
+	VSymTable.h VAst.h Parser_callbackgen.cpp
 
-VParseLex.o:		VParseLex.cpp     VParseLex.h VParseGrammar.h VParse.h VFileLine.h VParseBison.h
-VParseGrammar.o:	VParseGrammar.cpp VParseLex.h VParseGrammar.h VParse.h VFileLine.h VParseBison.h
-VParse.o:		VParse.cpp        VParseLex.h VParseGrammar.h VParse.h VFileLine.h VParseBison.h
-VFileLine.o:	        VFileLine.cpp     VFileLine.h
+VParseLex.o:		VParseLex.cpp     $(VHEADERS)
+VParseGrammar.o:	VParseGrammar.cpp $(VHEADERS)
+VParseBison.o:		VParseBison.cpp   $(VHEADERS)
+VParse.o:		VParse.cpp        $(VHEADERS)
+VFileLine.o:	        VFileLine.cpp     $(VHEADERS)
+VAst.o:		        VAst.cpp	  $(VHEADERS)
+VSymTable.o:	        VSymTable.cpp     $(VHEADERS)
 
 VFileLine.o: $(PPSRC)/VFileLine.cpp
 	$(CCCMD) $(CCCDLFLAGS) "-I$(PERL_INC)" $(PASTHRU_DEFINE) $(DEFINE) $<
 
 VParseLex_pretmp.cpp: VParseLex.l
+	$(LEX) --version
 	$(LEX) $(LEXFLAGS) -o$@ $<
 
 VParseLex.cpp: $(FLEXFIX) VParseLex_pretmp.cpp
@@ -76,12 +79,16 @@ VParseBison.cpp:	VParseBison.y bisonpre
 	$(PERL) bisonpre --yacc ${YACC} --debug --verbose --d -k VParseBison.y -o VParseBison.c
 	mv VParseBison.c VParseBison.cpp
 
-Parser_cleaned.c: Parser.c
+Parser_callbackgen.cpp: callbackgen
+	$(PERL) callbackgen
+
+Parser_cleaned.c: Parser.c $(VHEADERS)
 	$(PERL) $(XSUBPPFIX) < Parser.c > Parser_cleaned.c
 
 clean::
 	-$(RM_RF) test *.d *.o *.output *.pre.* *_pretmp.*
 	-$(RM_RF) VParseLex*.cpp VParseBison.h VParseBison.cpp Parser_cleaned.c
+	-$(RM_RF) Parser_callbackgen.cpp
 ';
     return $out;
 }
@@ -95,6 +102,6 @@ WriteMakefile(
 	      VERSION_FROM  => 'Parser.pm',
 	      XSOPT => '-C++',
 	      CCFLAGS	=> $ccflags,
-	      OBJECT   => 'VFileLine.o VParseLex.o VParse.o VParseBison.o',
+	      OBJECT   => 'VFileLine.o VParseLex.o VParse.o VParseBison.o VSymTable.o VAst.o ',
 	      MYEXTLIB => 'Parser_cleaned.o',
 	      );

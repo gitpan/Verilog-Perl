@@ -2,7 +2,7 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# Lesser General Public License or the Perl Artistic License.
+# Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 require 5.005;
 use ExtUtils::MakeMaker;
@@ -22,6 +22,7 @@ sub MY::postamble {
     $out .= "CCFLAGS += -Wall -Wno-unused -Werror\n" if $ENV{VERILATOR_AUTHOR_SITE};
     $out .= "CCFLAGS  += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
+    #$out .= "OPTIMIZE += -O0 -ggdb\n" if $ENV{VERILATOR_AUTHOR_SITE};  print "%Warning: -O0 --gdb on, also FLEX -d on\n";
     $out .= "OPTIMIZE += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= '
 all:: README
@@ -85,7 +86,7 @@ WriteMakefile(
 			    #'Test::Pod' => 1,  # Required only for author tests
 			    #'Test::Perl::Critic' => 1,  # Required only for author tests
 			},
-	      PMLIBDIRS => ['lib', 'Verilog', 'Netlist',],
+	      PMLIBDIRS => ['lib', 'Parser', 'Preproc', 'Netlist',],
 	      EXE_FILES => [qw( vrename vpassert vppreproc vhier vsplitmodule )],
 	      'clean'	=> {FILES => qw (test_dir signals.vrename .vpassert simv ),},
 	      'dist'    => {COMPRESS => 'gzip -9f',
@@ -94,3 +95,8 @@ WriteMakefile(
 			},
 	      );
 
+my $mkv = `make --version`;
+if ($? || $mkv !~ /GNU Make/i) {
+    warn "-Important: Now type 'gmake MAKE=gmake' as this package requires GNU Make\n";
+}
+1;

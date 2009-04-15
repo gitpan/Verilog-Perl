@@ -3,12 +3,12 @@
 #
 # Copyright 2000-2009 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
-# Lesser General Public License or the Perl Artistic License.
+# Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 use strict;
 use Test;
 
-BEGIN { plan tests => 10 }
+BEGIN { plan tests => 12 }
 BEGIN { require "t/test_utils.pl"; }
 
 #$Verilog::SigParser::Debug = $Verilog::Parser::Debug = 1;
@@ -40,6 +40,11 @@ $n2->find_module("foo2")->delete;
 vwrite($n2, "test_dir/42.ed.v");
 ok(1);
 ok(files_identical("test_dir/42.ed.v", "t/42_dumpcheck_2e.out"));
+
+check ('test_dir/42_sv.dmp', ['verilog/v_sv_mod.v'],
+       [link_read_nonfatal=>0, keep_comments => 1,]);
+ok(1);
+ok(files_identical("test_dir/42_sv.dmp", "t/42_dumpcheck_sv.out"));
 
 sub check {
     my $outfilename = shift;
