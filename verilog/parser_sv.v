@@ -35,14 +35,14 @@ module test (
       else     d_out <= d_int;
    end
 
-//   property p1;
-//      @(posedge clk)
-//	disable iff(!rst)
-//	  $rose(d_int) |-> ##1 d_int;
-//   endproperty
-//
-//   a1:     assert property(p1) else $warning("\nProperty violated\n");
-//   c1:     cover  property(p1)  $display("\np1_cover\n");
+   property p1;
+      @(posedge clk)
+	disable iff(!rst)
+	  $rose(d_int) |-> ##1 d_int;
+   endproperty
+
+   //a1:   assert property(p1) else $warning("\nProperty violated\n");
+   c1:     cover  property(p1)  $display("\np1_cover\n");
 endmodule : test
 
 // Different ways of declaring pins/vars
@@ -202,4 +202,64 @@ endclass
 module sized_out
   #( parameter SZ = 4 )
    ( output logic [SZ-1:0] o_sized );
+endmodule
+
+class solve_size;
+   rand byte arrayed[];
+   rand bit b;
+   // The dot below doesn't seem legal according to grammar, but
+   // the intent makes sense, and it appears in the VMM
+   constraint solve_a_b { solve arrayed.size before b; }
+endclass
+
+class vmm_stuff;
+   task examples;
+      void'(this.a.funccall(x));
+      this.a.taskcall();
+      super.new(name2);
+   endtask
+   extern static local function bit foo1();
+   extern virtual protected function void foo2();
+   protected static string foo3;
+   extern function bit foo4();
+   static local bit foo5[string];
+endclass
+
+class vmm_cl_func_colon;
+   typedef enum int unsigned {FIRM} restart_e;
+   function void do_all(vmm_cl_func_colon::restart_e kind = vmm_cl_func_colon::FIRM);
+   endfunction
+   extern function int uses_class_type();
+endclass
+
+class vmm_cl_subenv;
+   extern protected virtual task do_reset(vmm_cl_func_colon::restart_e kind = vmm_cl_func_colon::FIRM);
+endclass
+
+task empty_comma;
+   extracomma1(,);
+   extracomma2("a",);
+   extracomma3("a",,"c");
+   extracomma4(,"b");
+endtask
+
+task vmm_more;
+   file_is_a_string(`__FILE__,`__LINE__);
+   foreach(this.text[i]) begin $display("%s\n", this.text[i]); end
+   // Not part of 1800-2005 grammar, but likely in 1800-2009
+   queue = '{};
+   -> this.item_taken;
+endtask
+
+// Extern Functions/tasks when defined must scope to the class they're in to get appropriate types
+function int vmm_cl_func_colon::uses_class_type(restart_e note_uses_class_type);
+   var restart_e also_uses_class_type;
+endfunction
+
+module hidden_checks;
+   typedef int T;
+   sub (.T(123));  // Different T
+   task hidden;
+      typedef bit T;  // Different T
+   endtask
 endmodule

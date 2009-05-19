@@ -3,7 +3,7 @@
 %option noc++
 %option prefix="VParseLex"
 %{
-/******************************************************************************
+/**************************************************************************
  * DESCRIPTION: Verilog Parser Lexer
  *
  * This file is part of Verilog-Perl.
@@ -12,21 +12,22 @@
  *
  * Code available from: http://www.veripool.org/systemperl
  *
- ******************************************************************************
+ **************************************************************************
  *
  * Copyright 2000-2009 by Wilson Snyder.  This program is free software;
- * you can redistribute it and/or modify it under the terms of either the GNU
- * Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
+ * you can redistribute it and/or modify it under the terms of either the
+ * GNU Lesser General Public License Version 3 or the Perl Artistic License
+ * Version 2.0.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- *****************************************************************************
+ **************************************************************************
  * Do not use Flex in C++ mode.  It has bugs with yyunput() which result in
  * lost characters.
- *****************************************************************************/
+ *************************************************************************/
 
 #include "VParseLex.h"
 #include <cstdio>
@@ -81,7 +82,8 @@ void yyerrorf(const char* format, ...) {
 %}
 
 %s V95 V01 V05 S05
-%s STRING CMTMODE PROTMODE ATTRMODE
+%s STRING ATTRMODE
+%s CMTMODE PROTMODE
 
 space	[ ]
 ws	[ \t\f\r]+
@@ -97,7 +99,7 @@ escid	\\[^ \t\f\r\n]+
   /* Verilog 1995 */
 <V95,V01,V05,S05>{
   {ws}			{ StashPrefix; }	/* otherwise ignore white-space */
-  \n			{ StashPrefix; NEXTLINE();}		/* Count line numbers */
+  \n			{ StashPrefix; NEXTLINE(); }		/* Count line numbers */
   /*     Keywords */
   "always"		{ FL; VALTEXT; CALLBACK(keywordCb); return yALWAYS; }
   "and"			{ FL; VALTEXT; CALLBACK(keywordCb); return yAND; }
@@ -350,7 +352,12 @@ escid	\\[^ \t\f\r\n]+
 }
 
   /************************************************************************/
+
   /* Single character operator thingies */
+<V95,V01,V05,S05>{
+  "{"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
+  "}"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
+}
 <V95,V01,V05,S05>{
   "!"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "#"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
@@ -375,14 +382,14 @@ escid	\\[^ \t\f\r\n]+
   "["			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "]"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "^"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
-  "{"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "|"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
-  "}"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "~"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
 }
 
   /************************************************************************/
   /* Operators and multi-character symbols */
+
+  /* Verilog 1995 Operators */
 <V95,V01,V05,S05>{
   "&&"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ANDAND; }
   "||"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_OROR; }
@@ -488,7 +495,8 @@ escid	\\[^ \t\f\r\n]+
   [0-9][_0-9]*[ \t]*['']s	{
 			  FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
 			}
-  [0-9][_0-9]*		{ FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
+  [0-9][_0-9]*		{
+			  FL; VALTEXT; CALLBACK(numberCb); return yaINTNUM;
 			}
   [0-9][_0-9]*(\.[_0-9]+)([eE][-+]?[_0-9]+)? {
                           FL; VALTEXT; CALLBACK(numberCb); return yaFLOATNUM;
@@ -592,7 +600,7 @@ escid	\\[^ \t\f\r\n]+
   "`"[a-zA-Z_0-9]+	{ FL; VALTEXT;
 			  if (LPARSEP->sigParser()) { yyerrorf("Define or directive not defined: %s",yytext); }
 			  else { CALLBACK(preprocCb); } }
-  "//"[^\n]*		{ FL; VALTEXT; CALLBACK(commentCb); }
+  "//"[^\n]*		{ FL; VALTEXT; CALLBACK(commentCb); }  /* throw away single line comments */
   "/*"		       	{ yy_push_state(CMTMODE); yymore(); }
   .			{ FL; VALTEXT; CALLBACK(operatorCb); return ygenOPERATOR; } /* return single char ops. */
 }
@@ -670,11 +678,12 @@ int VParseLex::lexToken(VParseBisonYYSType* yylvalp) {
 #ifdef FLEX_DEBUG
 	if (yy_flex_debug) { cout<<"   lexToken: reading ahead to find possible strength"<<endl; }
 #endif
-	s_yylvalp = &m_aheadVal;  // Read by yylex
-	s_yylvalp->entp = NULL;
+	VParseBisonYYSType curValue = *s_yylvalp;  // Remember value, as about to read ahead
 	int nexttok = yylex();
 	m_ahead = true;
 	m_aheadToken = nexttok;
+	m_aheadVal = *s_yylvalp;
+	*s_yylvalp = curValue;
 	// Now potentially munge the current token
 	if (token == '(' && (nexttok == ygenSTRENGTH
 			     || nexttok == ySUPPLY0
@@ -683,7 +692,6 @@ int VParseLex::lexToken(VParseBisonYYSType* yylvalp) {
 	}
 	else if (token == yCONST__LEX) {
 	    if (nexttok == yREF) token = yCONST__REF;
-	    else if (nexttok == yLOCAL || nexttok == yPROTECTED) token = yCONST__LOCAL;
 	    else token = yCONST__ETC;
 	}
 	else if (token == yNEW__LEX) {
@@ -692,12 +700,14 @@ int VParseLex::lexToken(VParseBisonYYSType* yylvalp) {
 	}
 	else if (token == ySTATIC__LEX) {
 	    if (nexttok == yCONSTRAINT) token = ySTATIC__CONSTRAINT;
-	    else if (nexttok == yFUNCTION || nexttok == yTASK) token = ySTATIC__TF;
 	    else token = ySTATIC__ETC;
 	}
 	else if (token == yVIRTUAL__LEX) {
 	    if (nexttok == yCLASS) token = yVIRTUAL__CLASS;
-	    else if (nexttok == yFUNCTION || nexttok == yTASK) token = yVIRTUAL__TF;
+	    else if (nexttok == yINTERFACE) token = yVIRTUAL__INTERFACE;
+	    else if (nexttok == yaID__ETC || nexttok == yaID__LEX)
+		     // || nexttok == yaID__aINTERFACE	// but we may not know interfaces yet.
+		token = yVIRTUAL__anyID;
 	    else token = yVIRTUAL__ETC;
 	}
 	else if (token == yWITH__LEX) {

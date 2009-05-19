@@ -1,5 +1,5 @@
 // -*- C++ -*-
-//*****************************************************************************
+//*************************************************************************
 // DESCRIPTION: SystemC bison parser
 //
 // This file is part of SystemC-Perl.
@@ -8,7 +8,7 @@
 //
 // Code available from: http://www.veripool.org/systemperl
 //
-//*****************************************************************************
+//*************************************************************************
 //
 // Copyright 2001-2009 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
@@ -19,7 +19,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-//****************************************************************************/
+//*************************************************************************
 
 %{
 
@@ -59,6 +59,8 @@
 #define VARIO(type)	 { GRAMMARP->m_varIO   = (type); }  // input, output, inout, ref, const ref
 #define VARNET(type)	 { GRAMMARP->m_varNet  = (type); }  // supply*,wire,tri
 #define VARTYPE(type)	 { GRAMMARP->m_varType = (type); }  // "signed", "int", etc
+
+#define PINNUMINC()	{ GRAMMARP->pinNumInc(); }
 
 #define INSTPREP(cellmod,cellparam) { GRAMMARP->pinNum(1); GRAMMARP->m_cellMod=(cellmod); GRAMMARP->m_cellParam=(cellparam); }
 
@@ -319,7 +321,6 @@ static void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		ySTATIC__CONSTRAINT "static-then-constraint"
 %token<str>		ySTATIC__ETC	"static"
 %token<str>		ySTATIC__LEX	"static-in-lex"
-%token<str>		ySTATIC__TF	"static-then-taskf"
 %token<str>		ySTRING		"string"
 %token<str>		ySTRUCT		"struct"
 %token<str>		ySUPER		"super"
@@ -349,7 +350,8 @@ static void VParseBisonerror(const char *s) { VParseGrammar::bisonError(s); }
 %token<str>		yVIRTUAL__CLASS	"virtual-then-class"
 %token<str>		yVIRTUAL__ETC	"virtual"
 %token<str>		yVIRTUAL__LEX	"virtual-in-lex"
-%token<str>		yVIRTUAL__TF	"virtual-then-taskf"
+%token<str>		yVIRTUAL__INTERFACE	"virtual-then-interface"
+%token<str>		yVIRTUAL__anyID	"virtual-then-identifier"
 %token<str>		yVOID		"void"
 %token<str>		yWAIT		"wait"
 %token<str>		yWAIT_ORDER	"wait_order"
@@ -673,10 +675,10 @@ port:				// ==IEEE: port
 	//			// IEEE: interface_port_header port_identifier { unpacked_dimension }
 	//			// Expanded interface_port_header
 	//			// We use instantCb here because the non-port form looks just like a module instantiation
-		portDirNetE id/*interface*/                   id/*port*/ regArRangeE	{ VARTYPE($2); VARDONE($<fl>2, $3, $4, ""); PARSEP->instantCb($<fl>2, $2, $3, $4); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yINTERFACE                        id/*port*/ regArRangeE	{ VARTYPE($2); VARDONE($<fl>2, $3, $4, ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE id/*interface*/ '.' id/*modport*/ id/*port*/ regArRangeE	{ VARTYPE($2); VARDONE($<fl>2, $5, $6, ""); PARSEP->instantCb($<fl>2, $2, $5, $6); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yINTERFACE      '.' id/*modport*/ id/*port*/ regArRangeE	{ VARTYPE($2); VARDONE($<fl>2, $5, $6, ""); GRAMMARP->pinNumInc(); }
+		portDirNetE id/*interface*/                   idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $3, $4, ""); PARSEP->instantCb($<fl>2, $2, $3, $4); PINNUMINC(); }
+	|	portDirNetE yINTERFACE                        idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $3, $4, ""); PINNUMINC(); }
+	|	portDirNetE id/*interface*/ '.' idAny/*modport*/ idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $5, $6, ""); PARSEP->instantCb($<fl>2, $2, $5, $6); PINNUMINC(); }
+	|	portDirNetE yINTERFACE      '.' idAny/*modport*/ idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $5, $6, ""); PINNUMINC(); }
 	//
 	//			// IEEE: ansi_port_declaration, with [port_direction] removed
 	//			//   IEEE: [ net_port_header | interface_port_header ] port_identifier { unpacked_dimension }
@@ -703,22 +705,22 @@ port:				// ==IEEE: port
 	//
 	//			// Note implicit rules looks just line declaring additional followon port
 	//			// No VARDECL("port") for implicit, as we don't want to declare variables for them
-	|	portDirNetE data_type	       '.' portSig '(' portAssignExprE ')'	{ VARTYPE($2); VARDONE($<fl>4, $4, "", ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yVAR data_type     '.' portSig '(' portAssignExprE ')'	{ VARTYPE($3); VARDONE($<fl>5, $5, "", ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yVAR implicit_type '.' portSig '(' portAssignExprE ')'	{ VARTYPE($3); VARDONE($<fl>5, $5, "", ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE signingE rangeList '.' portSig '(' portAssignExprE ')'	{ VARTYPE(SPACED($2,$3)); VARDONE($<fl>5, $5, "", ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE /*implicit*/       '.' portSig '(' portAssignExprE ')'	{ /*VARTYPE-same*/ VARDONE($<fl>3, $3, "", ""); GRAMMARP->pinNumInc(); }
+	|	portDirNetE data_type	       '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE($2); VARDONE($<fl>4, $4, "", ""); PINNUMINC(); }
+	|	portDirNetE yVAR data_type     '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE($3); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
+	|	portDirNetE yVAR implicit_type '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE($3); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
+	|	portDirNetE signingE rangeList '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE(SPACED($2,$3)); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
+	|	portDirNetE /*implicit*/       '.' portSig '(' portAssignExprE ')' sigAttrListE	{ /*VARTYPE-same*/ VARDONE($<fl>3, $3, "", ""); PINNUMINC(); }
 	//
-	|	portDirNetE data_type          portSig variable_dimensionListE	{ VARTYPE($2); VARDONE($<fl>3, $3, $4, ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yVAR data_type     portSig variable_dimensionListE	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE signingE rangeList portSig variable_dimensionListE	{ VARTYPE(SPACED($2,$3)); VARDONE($<fl>4, $4, $5, ""); GRAMMARP->pinNumInc(); }
-	|	portDirNetE /*implicit*/       portSig variable_dimensionListE	{ /*VARTYPE-same*/ VARDONE($<fl>2, $2, $3, ""); GRAMMARP->pinNumInc(); }
+	|	portDirNetE data_type          portSig variable_dimensionListE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>3, $3, $4, ""); PINNUMINC(); }
+	|	portDirNetE yVAR data_type     portSig variable_dimensionListE sigAttrListE	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
+	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE sigAttrListE	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
+	|	portDirNetE signingE rangeList portSig variable_dimensionListE sigAttrListE	{ VARTYPE(SPACED($2,$3)); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
+	|	portDirNetE /*implicit*/       portSig variable_dimensionListE sigAttrListE	{ /*VARTYPE-same*/ VARDONE($<fl>2, $2, $3, ""); PINNUMINC(); }
 	//
-	|	portDirNetE data_type          portSig variable_dimensionListE '=' constExpr	{ VARTYPE($2); VARDONE($<fl>3, $3, $4, $6); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yVAR data_type     portSig variable_dimensionListE '=' constExpr	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, $7); GRAMMARP->pinNumInc(); }
-	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE '=' constExpr	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, $7); GRAMMARP->pinNumInc(); }
-	|	portDirNetE /*implicit*/       portSig variable_dimensionListE '=' constExpr	{ /*VARTYPE-same*/ VARDONE($<fl>2, $2, $3, $5); GRAMMARP->pinNumInc(); }
+	|	portDirNetE data_type          portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARTYPE($2); VARDONE($<fl>3, $3, $4, $7); PINNUMINC(); }
+	|	portDirNetE yVAR data_type     portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
+	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
+	|	portDirNetE /*implicit*/       portSig variable_dimensionListE sigAttrListE '=' constExpr	{ /*VARTYPE-same*/ VARDONE($<fl>2, $2, $3, $6); PINNUMINC(); }
 	;
 
 portDirNetE:			// IEEE: part of port, optional net type and/or direction
@@ -741,7 +743,7 @@ portAssignExprE:		// IEEE: part of port, optional expression
 	;
 
 portSig<str>:
-		id/*port*/ sigAttrListE			{ $<fl>$=$<fl>1; $$=$1; }
+		id/*port*/				{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 //**********************************************************************
@@ -882,7 +884,7 @@ modport_itemList:		// IEEE: part of modport_declaration
 	;
 
 modport_item:			// ==IEEE: modport_item
-		id/*new modport*/ '(' modportPortsDeclList ')'		{ }
+		id/*new-modport*/ '(' modportPortsDeclList ')'		{ }
 	;
 
 modportPortsDeclList:
@@ -908,8 +910,8 @@ modportPortsDecl:
 
 modportSimplePort:		// IEEE: modport_simple_port or modport_tf_port, depending what keyword was earlier
 		id					{ }
-	|	'.' id '(' ')'				{ }
-	|	'.' id '(' expr ')'			{ }
+	|	'.' idAny '(' ')'			{ }
+	|	'.' idAny '(' expr ')'			{ }
 	;
 
 modport_tf_port:		// ==IEEE: modport_tf_port
@@ -930,7 +932,7 @@ list_of_genvar_identifiers:	// IEEE: list_of_genvar_identifiers (for declaration
 	;
 
 genvar_identifierDecl:		// IEEE: genvar_identifier (for declaration)
-		id/*genvar_identifier*/			{ VARRESET_NONLIST("genvar"); VARDONE($<fl>1, $1, "", ""); }
+		id/*new-genvar_identifier*/ sigAttrListE	{ VARRESET_NONLIST("genvar"); VARDONE($<fl>1, $1, "", ""); }
 	;
 
 local_parameter_declaration:	// IEEE: local_parameter_declaration
@@ -947,15 +949,15 @@ parameter_declaration:		// IEEE: parameter_declaration
 	;
 
 local_parameter_declarationFront: // IEEE: local_parameter_declaration w/o assignment
-		varLParam implicit_type 		{ VARTYPE($2); }
-	|	varLParam data_type			{ VARTYPE($2); }
-	|	varLParam yTYPE				{ VARTYPE($2); }
+		varLParamReset implicit_type 		{ VARRESET(); VARDECL("localparam"); VARTYPE($2); }
+	|	varLParamReset data_type		{ VARRESET(); VARDECL("localparam"); VARTYPE($2); }
+	|	varLParamReset yTYPE			{ VARRESET(); VARDECL("localparam"); VARTYPE($2); }
 	;
 
 parameter_declarationFront:	// IEEE: parameter_declaration w/o assignment
-		varGParam implicit_type 		{ VARTYPE($2); }
-	|	varGParam data_type			{ VARTYPE($2); }
-	|	varGParam yTYPE				{ VARTYPE($2); }
+		varGParamReset implicit_type 		{ VARRESET(); VARDECL("parameter"); VARTYPE($2); }
+	|	varGParamReset data_type		{ VARRESET(); VARDECL("parameter"); VARTYPE($2); }
+	|	varGParamReset yTYPE			{ VARRESET(); VARDECL("parameter"); VARTYPE($2); }
 	;
 
 parameter_port_declarationFront: // IEEE: parameter_port_declaration w/o assignment
@@ -991,10 +993,12 @@ net_type:			// ==IEEE: net_type
 	|	yWIRE 					{ VARNET($1); }
 	|	yWOR 					{ VARNET($1); }
 	;
-varGParam:
+
+varGParamReset:
 		yPARAMETER				{ VARRESET_NONLIST($1); }
 	;
-varLParam:
+
+varLParamReset:
 		yLOCALPARAM				{ VARRESET_NONLIST($1); }
 	;
 
@@ -1007,7 +1011,7 @@ port_direction:			// ==IEEE: port_direction + tf_port_direction
 	|	yCONST__REF yREF			{ VARIO($1); }
 	;
 
-port_directionDecl:		// IEEE: port_direction that starts a port_declaraiton
+port_directionReset:		// IEEE: port_direction that starts a port_declaraiton
 	//			// Used only for declarations outside the port list
 		yINPUT					{ VARRESET_NONLIST(""); VARIO($1); }
 	|	yOUTPUT					{ VARRESET_NONLIST(""); VARIO($1); }
@@ -1024,37 +1028,35 @@ port_declaration:		// ==IEEE: port_declaration
 	//			// IEEE: input_declaration
 	//			// IEEE: output_declaration
 	//			// IEEE: ref_declaration
-		port_directionDecl port_declNetE data_type          { VARTYPE($3); } list_of_variable_decl_assignments	{ }
-	|	port_directionDecl port_declNetE yVAR data_type     { VARTYPE($4); } list_of_variable_decl_assignments	{ }
-	|	port_directionDecl port_declNetE yVAR implicit_type { VARTYPE($4); } list_of_variable_decl_assignments	{ }
-	|	port_directionDecl port_declNetE signingE rangeList { VARTYPE(SPACED($3,$4)); } list_of_variable_decl_assignments	{ }
-	|	port_directionDecl port_declNetE signing	    { VARTYPE($3); } list_of_variable_decl_assignments	{ }
-	|	port_directionDecl port_declNetE /*implicit*/       { VARTYPE("");/*default_nettype*/} list_of_variable_decl_assignments	{ }
+		port_directionReset port_declNetE data_type          { VARTYPE($3); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE yVAR data_type     { VARTYPE($4); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE yVAR implicit_type { VARTYPE($4); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE signingE rangeList { VARTYPE(SPACED($3,$4)); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE signing	     { VARTYPE($3); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE /*implicit*/       { VARTYPE("");/*default_nettype*/} list_of_variable_decl_assignments	{ }
 	;
 
 tf_port_declaration:		// ==IEEE: tf_port_declaration
 	//			// Used inside function; followed by ';'
 	//			// SIMILAR to port_declaration
 	//
-		port_directionDecl      data_type     { VARTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
-	|	port_directionDecl      implicit_type { VARTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
-	|	port_directionDecl yVAR data_type     { VARTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
-	|	port_directionDecl yVAR implicit_type { VARTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
+		port_directionReset      data_type     { VARTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
+	|	port_directionReset      implicit_type { VARTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
+	|	port_directionReset yVAR data_type     { VARTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
+	|	port_directionReset yVAR implicit_type { VARTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
 	;
 
-// There's no point in subdividing the integer types into atom/vector
-// because once we go through a typedef we can't tell them apart.
-// Later parsing needs to determine if a range is appropriate or not.
-integer_type<str>:		// ==IEEE: integer_type
-	//			// IEEE: integer_atom_type
+integer_atom_type<str>:		// ==IEEE: integer_atom_type
 		yBYTE					{ $<fl>$=$<fl>1; $$=$1; }
 	|	ySHORTINT				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yINT					{ $<fl>$=$<fl>1; $$=$1; }
 	|	yLONGINT				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yINTEGER				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yTIME					{ $<fl>$=$<fl>1; $$=$1; }
-	//			// IEEE: integer_vector_type
-	|	yBIT					{ $<fl>$=$<fl>1; $$=$1; }
+	;
+
+integer_vector_type<str>:	// ==IEEE: integer_atom_type
+		yBIT					{ $<fl>$=$<fl>1; $$=$1; }
 	|	yLOGIC					{ $<fl>$=$<fl>1; $$=$1; }
 	|	yREG					{ $<fl>$=$<fl>1; $$=$1; }
 	;
@@ -1076,7 +1078,7 @@ signing<str>:			// ==IEEE: signing
 	;
 
 //************************************************
-// Enums
+// Data Types
 
 casting_type<str>:		// IEEE: casting_type
 	//			// IEEE: signing
@@ -1086,7 +1088,9 @@ casting_type<str>:		// IEEE: casting_type
 	;
 
 simple_type<str>:		// ==IEEE: simple_type
-		integer_type				{ $<fl>$=$<fl>1; $$=$1; }
+	//			// IEEE: integer_type
+		integer_atom_type			{ $<fl>$=$<fl>1; $$=$1; }
+	|	integer_vector_type			{ $<fl>$=$<fl>1; $$=$1; }
 	|	non_integer_type			{ $<fl>$=$<fl>1; $$=$1; }
 	//			// IEEE: ps_type_identifier
 	//			// IEEE: ps_parameter_identifier (presumably a PARAMETER TYPE)
@@ -1108,7 +1112,8 @@ data_type<str>:			// ==IEEE: data_type
 	;
 
 data_typeNoRef<str>:		// ==IEEE: data_type, excluding class_type etc references
-		integer_type signingE regArRangeE	{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
+		integer_vector_type signingE regArRangeE	{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
+	|	integer_atom_type signingE			{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
 	|	non_integer_type			{ $<fl>$=$<fl>1; $$=$1; }
 	|	ySTRUCT        packedSigningE '{' struct_union_memberList '}' packed_dimensionE	{ $<fl>$=$<fl>1; $$=$1; }
 	|	yUNION taggedE packedSigningE '{' struct_union_memberList '}' packed_dimensionE	{ $<fl>$=$<fl>1; $$=$1; }
@@ -1116,8 +1121,8 @@ data_typeNoRef<str>:		// ==IEEE: data_type, excluding class_type etc references
 	|	ySTRING					{ $<fl>$=$<fl>1; $$=$1; }
 	|	yCHANDLE				{ $<fl>$=$<fl>1; $$=$1; }
 	|	yEVENT					{ $<fl>$=$<fl>1; $$=$1; }
-	|	yVIRTUAL__ETC yINTERFACE id/*interface*/	{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
-	|	yVIRTUAL__ETC            id/*interface*/	{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
+	|	yVIRTUAL__INTERFACE yINTERFACE id/*interface*/	{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
+	|	yVIRTUAL__anyID                id/*interface*/	{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
 	|	type_reference				{ $<fl>$=$<fl>1; $$=$1; }
 	//			// IEEE: class_scope: see data_type above
 	//			// IEEE: class_type: see data_type above
@@ -1156,10 +1161,10 @@ list_of_variable_decl_assignments:	// ==IEEE: list_of_variable_decl_assignments
 	;
 
 variable_decl_assignment:	// ==IEEE: variable_decl_assignment
-		id sigAttrListE variable_dimensionListE
-			{ VARDONE($<fl>1, $1, $3, ""); }
-	|	id sigAttrListE variable_dimensionListE '=' variable_declExpr
-			{ VARDONE($<fl>1, $1, $3, $5); }
+		id variable_dimensionListE sigAttrListE
+			{ VARDONE($<fl>1, $1, $2, ""); }
+	|	id variable_dimensionListE sigAttrListE '=' variable_declExpr
+			{ VARDONE($<fl>1, $1, $2, $5); }
 	//
 	//			// IEEE: "dynamic_array_variable_identifier '[' ']' [ '=' dynamic_array_new ]"
 	//			// Matches above with variable_dimensionE = "[]"
@@ -1172,11 +1177,16 @@ variable_decl_assignment:	// ==IEEE: variable_decl_assignment
 	|	'=' class_new				{ }
 	;
 
+list_of_tf_variable_identifiers: // ==IEEE: list_of_tf_variable_identifiers
+		tf_variable_identifier			{ }
+	|	list_of_tf_variable_identifiers ',' tf_variable_identifier	{ }
+	;
+
 tf_variable_identifier:		// IEEE: part of list_of_tf_variable_identifiers
-		yaID__ETC sigAttrListE variable_dimensionListE
-			{ VARDONE($<fl>1, $1, $3, ""); }
-	|	yaID__ETC sigAttrListE variable_dimensionListE '=' expr
-			{ VARDONE($<fl>1, $1, $3, $5); }
+		id variable_dimensionListE sigAttrListE
+			{ VARDONE($<fl>1, $1, $2, ""); }
+	|	id variable_dimensionListE sigAttrListE '=' expr
+			{ VARDONE($<fl>1, $1, $2, $5); }
 	;
 
 variable_declExpr<str>:		// IEEE: part of variable_decl_assignment - rhs of expr
@@ -1199,11 +1209,10 @@ variable_dimension<str>:	// ==IEEE: variable_dimension
 	//			// IEEE: unsized_dimension
 		'[' ']'					{ $<fl>$=$<fl>1; $$=""; }
 	//			// IEEE: unpacked_dimension
-	//			// "'[' constExpr ']'" merged with associative_dimension
-	|	'[' exprOrDataType ']'			{ $<fl>$=$<fl>1; $$="["+$2+"]"; }
 	|	anyrange				{ $<fl>$=$<fl>1; $$=$1; }
+	|	'[' constExpr ']'			{ $<fl>$=$<fl>1; $$="["+$2+"]"; }
 	//			// IEEE: associative_dimension
-	//			// '[' data_type ']' is above
+	|	'[' data_type ']'			{ $<fl>$=$<fl>1; $$="["+$2+"]"; }
 	|	yP_BRASTAR ']'				{ $<fl>$=$<fl>1; $$="[*]"; }
 	|	'[' '*' ']'				{ $<fl>$=$<fl>1; $$="[*]"; }
 	//			// IEEE: queue_dimension
@@ -1213,8 +1222,12 @@ variable_dimension<str>:	// ==IEEE: variable_dimension
 
 random_qualifierE:		// IEEE: random_qualifier + empty
 		/*empty*/				{ }
-	|	yRAND					{ }
-	|	yRANDC					{ }
+	|	random_qualifier			{ }
+	;
+
+random_qualifier<str>:		// ==IEEE: random_qualifier
+		yRAND					{ $<fl>$=$<fl>1; $$=$1; }
+	|	yRANDC					{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 taggedE:
@@ -1234,7 +1247,8 @@ enumDecl<str>:
 
 enum_base_typeE<str>:	// IEEE: enum_base_type
 		/* empty */				{ $$="enum"; }
-	|	integer_type signingE regrangeE		{ $<fl>$=$<fl>1; $$=$1; }
+	|	integer_atom_type signingE		{ $<fl>$=$<fl>1; $$=$1; }
+	|	integer_vector_type signingE regrangeE	{ $<fl>$=$<fl>1; $$=$1; }
 	|	yaID__aTYPE regrangeE			{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
@@ -1263,6 +1277,7 @@ enumNameStartE:			// IEEE: third part of enum_name_declaration
 // Typedef
 
 data_declaration:		// ==IEEE: data_declaration
+	//			// VARRESET can't be called here - conflicts
 		data_declarationVar			{ }
 	|	type_declaration			{ }
 	|	package_import_declaration		{ }
@@ -1271,12 +1286,26 @@ data_declaration:		// ==IEEE: data_declaration
 	//			// Therefore the virtual_interface_declaration term isn't used
 	;
 
-data_declarationVar:		// IEEE: part of data_declaration (called elsewhere)
+class_property:			// ==IEEE: class_property, which is {property_qualifier} data_declaration
+		memberQualResetListE data_declarationVarClass		{ }
+	|	yCONST__ETC memberQualResetListE data_declarationVarClass	{ }
+	|	memberQualResetListE type_declaration			{ }
+	|	memberQualResetListE package_import_declaration	{ }
+	//			// IEEE: virtual_interface_declaration
+	//			// "yVIRTUAL yID yID" looks just like a data_declaration
+	//			// Therefore the virtual_interface_declaration term isn't used
+	;
+
+data_declarationVar:		// IEEE: part of data_declaration
 	//			// The first declaration has complications between assuming what's the type vs ID declaring
 		data_declarationVarFront list_of_variable_decl_assignments ';'	{ }
 	;
 
-// NOTE implicit_type is expanded
+data_declarationVarClass:	// IEEE: part of data_declaration (for class_property)
+	//			// The first declaration has complications between assuming what's the type vs ID declaring
+		data_declarationVarFrontClass list_of_variable_decl_assignments ';'	{ }
+	;
+
 data_declarationVarFront:	// IEEE: part of data_declaration
 	//			// implicit_type expanded into /*empty*/ or "signingE rangeList"
 		constE yVAR lifetimeE data_type	 { VARRESET(); VARDECL("var"); VARTYPE(SPACED($1,$4)); }
@@ -1287,6 +1316,21 @@ data_declarationVarFront:	// IEEE: part of data_declaration
 	|	/**/		      data_type	{ VARRESET(); VARDECL("var"); VARTYPE($1); }
 	|	/**/	    lifetime  data_type	{ VARRESET(); VARDECL("var"); VARTYPE($2); }
 	|	yCONST__ETC lifetimeE data_type	{ VARRESET(); VARDECL("var"); VARTYPE(SPACED($1,$3)); }
+	//			// = class_new is in variable_decl_assignment
+	;
+
+data_declarationVarFrontClass:	// IEEE: part of data_declaration (for class_property)
+	//			// VARRESET called before this rule
+	//			// yCONST is removed, added to memberQual rules
+	//			// implicit_type expanded into /*empty*/ or "signingE rangeList"
+		yVAR lifetimeE data_type	 { VARDECL("var"); VARTYPE(SPACED(GRAMMARP->m_varType,$3)); }
+	|	yVAR lifetimeE			 { VARDECL("var"); VARTYPE(GRAMMARP->m_varType); }
+	|	yVAR lifetimeE signingE rangeList { VARDECL("var"); VARTYPE(SPACED(GRAMMARP->m_varType,SPACED($3,$4))); }
+	//
+	//			// Expanded: "constE lifetimeE data_type"
+	|	/**/		      data_type	{ VARDECL("var"); VARTYPE(SPACED(GRAMMARP->m_varType,$1)); }
+	//			// lifetime is removed, added to memberQual rules to avoid conflict
+	//			// yCONST is removed, added to memberQual rules to avoid conflict
 	//			// = class_new is in variable_decl_assignment
 	;
 
@@ -1404,7 +1448,7 @@ module_or_generate_item_declaration:	// ==IEEE: module_or_generate_item_declarat
 		package_or_generate_item_declaration	{ }
 	| 	genvar_declaration			{ }
 	|	clocking_declaration			{ }
-	|	yDEFAULT yCLOCKING id/*clocking_identifier*/ ';'	{ }
+	|	yDEFAULT yCLOCKING idAny/*new-clocking_identifier*/ ';'	{ }
 	;
 
 aliasEqList:			// IEEE: part of net_alias
@@ -1455,8 +1499,8 @@ genItemBegin:			// IEEE: part of generate_block
 	|	yBEGIN yEND				{ }
 	|	id ':' yBEGIN genItemList yEND endLabelE	{ }
 	|	id ':' yBEGIN             yEND endLabelE	{ }
-	|	yBEGIN ':' id genItemList yEND endLabelE	{ }
-	|	yBEGIN ':' id             yEND endLabelE	{ }
+	|	yBEGIN ':' idAny genItemList yEND endLabelE	{ }
+	|	yBEGIN ':' idAny             yEND endLabelE	{ }
 	;
 
 genItemList:
@@ -1561,9 +1605,13 @@ delay_value:			// ==IEEE:delay_value
 	|	yaTIMENUM 				{ }
 	;
 
+delayExpr:
+		expr					{ }
+	;
+
 minTypMax:			// IEEE: mintypmax_expression and constant_mintypmax_expression
-		expr 					{ }
-	|	expr ':' expr ':' expr			{ }
+		delayExpr				{ }
+	|	delayExpr ':' delayExpr ':' delayExpr	{ }
 	;
 
 netSigList:			// IEEE: list_of_port_identifiers
@@ -1574,23 +1622,23 @@ netSigList:			// IEEE: list_of_port_identifiers
 netSig:				// IEEE: net_decl_assignment -  one element from list_of_port_identifiers
 		netId sigAttrListE			{ VARDONE($<fl>1, $1, "", ""); }
 	|	netId sigAttrListE '=' expr		{ VARDONE($<fl>1, $1, "", $4); }
-	|	id rangeList sigAttrListE		{ VARDONE($<fl>1, $1, $2, ""); }
+	|	netId rangeList sigAttrListE		{ VARDONE($<fl>1, $1, $2, ""); }
 	;
 
 netId<str>:
-		id/*net*/				{ $<fl>$=$<fl>1; $$=$1; }
+		id/*new-net*/				{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 sigAttrListE:
 		/* empty */				{ }
 	;
 
-rangeListE<str>:			// IEEE: packed_dimension + ...
+rangeListE<str>:		// IEEE: [{packed_dimension}]
 		/* empty */				{ $$=""; }
 	|	rangeList				{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
-rangeList<str>:			// IEEE: packed_dimension + ...
+rangeList<str>:			// IEEE: {packed_dimension}
 		anyrange				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	rangeList anyrange			{ $<fl>$=$<fl>1; $$ = $1+$2; }
 	;
@@ -1645,7 +1693,7 @@ delayrange<str>:
 param_assignment:		// ==IEEE: param_assignment
 	//			// IEEE: constant_param_expression
 	//			// constant_param_expression: '$' is in expr
-		id/*parameter*/ sigAttrListE '=' exprOrDataType
+		id/*new-parameter*/ sigAttrListE '=' exprOrDataType
 			{ $<fl>$=$<fl>1; VARDONE($<fl>1, $1, "", $4); }
 	;
 
@@ -1705,6 +1753,7 @@ instname:
 
 instRangeE<str>:
 		/* empty */				{ $$ = ""; }
+	|	'[' constExpr ']'			{ $<fl>$=$<fl>1; $$ = "["+$2+"]"; }
 	|	'[' constExpr ':' constExpr ']'		{ $<fl>$=$<fl>1; $$ = "["+$2+":"+$4+"]"; }
 	;
 
@@ -1718,17 +1767,17 @@ cellpinItList:			// IEEE: list_of_port_connections + list_of_parameter_assignmen
 	;
 
 cellpinItemE:			// IEEE: named_port_connection + named_parameter_assignment + empty
-		/* empty: ',,' is legal */		{ GRAMMARP->pinNumInc(); }  /*PINDONE(yylval.fl,"",""); <- No, as then () implys a pin*/
-	|	yP_DOTSTAR				{ PINDONE($<fl>1,"*","*");GRAMMARP->pinNumInc(); }
-	|	'.' id					{ PINDONE($<fl>1,$2,$2);  GRAMMARP->pinNumInc(); }
-	|	'.' id '(' ')'				{ PINDONE($<fl>1,$2,"");  GRAMMARP->pinNumInc(); }
-	|	'.' id '(' expr ')'			{ PINDONE($<fl>1,$2,$4);  GRAMMARP->pinNumInc(); }
+		/* empty: ',,' is legal */		{ PINNUMINC(); }  /*PINDONE(yylval.fl,"",""); <- No, as then () implies a pin*/
+	|	yP_DOTSTAR				{ PINDONE($<fl>1,"*","*");PINNUMINC(); }
+	|	'.' idAny				{ PINDONE($<fl>1,$2,$2);  PINNUMINC(); }
+	|	'.' idAny '(' ')'			{ PINDONE($<fl>1,$2,"");  PINNUMINC(); }
+	|	'.' idAny '(' expr ')'			{ PINDONE($<fl>1,$2,$4);  PINNUMINC(); }
 	//			// For parameters
-	|	'.' id '(' data_type ')'		{ PINDONE($<fl>1,$2,$4);  GRAMMARP->pinNumInc(); }
+	|	'.' idAny '(' data_type ')'		{ PINDONE($<fl>1,$2,$4);  PINNUMINC(); }
 	//			// For parameters
-	|	data_type				{ PINDONE($<fl>1,"",$1);  GRAMMARP->pinNumInc(); }
+	|	data_type				{ PINDONE($<fl>1,"",$1);  PINNUMINC(); }
 	//
-	|	expr					{ PINDONE($<fl>1,"",$1);  GRAMMARP->pinNumInc(); }
+	|	expr					{ PINDONE($<fl>1,"",$1);  PINNUMINC(); }
 	;
 
 //************************************************
@@ -1739,15 +1788,15 @@ event_control:			// ==IEEE: event_control
 	|	'@' '(' '*' ')'				{ }
 	|	'@' '*'					{ }
 	//			// IEEE: hierarchical_event_identifier
-	|	'@' idClass/*event_id*/			{ }
+	|	'@' idClassSel/*event_id*/			{ }
 	//			// IEEE: sequence_instance
-	//			// sequence_instance without parens matches idClass above.
+	//			// sequence_instance without parens matches idClassSel above.
 	//			// Ambiguity: "'@' sequence (-for-sequence" versus expr:delay_or_event_controlE "'@' id (-for-expr
 	//			// For now we avoid this, as it's very unlikely someone would mix
 	//			// 1995 delay with a sequence with parameters.
 	//			// Alternatively split this out of event_control, and delay_or_event_controlE
 	//			// and anywhere delay_or_event_controlE is called allow two expressions
-	//|	'@' idClass '(' list_of_argumentsE ')'	{ }
+	//|	'@' idClassSel '(' list_of_argumentsE ')'	{ }
 	;
 
 event_expression:		// IEEE: event_expression - split over several
@@ -1778,25 +1827,25 @@ stmtBlock:			// IEEE: statement + seq_block + par_block
 
 seq_block:			// ==IEEE: seq_block
 	//			// IEEE doesn't allow declarations in unnamed blocks, but several simulators do.
-		yBEGIN blockDeclStmtList yEND			{ }
+		yBEGIN blockDeclStmtList yEND		{ }
 	|	yBEGIN /**/	yEND			{ }
 	|	yBEGIN ':' seq_blockId blockDeclStmtList yEND endLabelE	{ PARSEP->symPopScope(VAstType::BLOCK); }
 	|	yBEGIN ':' seq_blockId /**/		 yEND endLabelE	{ PARSEP->symPopScope(VAstType::BLOCK); }
 	;
 
 seq_blockId:			// IEEE: part of seq_block
-		id/*block_identifier*/			{ PARSEP->symPushNew(VAstType::BLOCK,$1); }
+		idAny/*new-block_identifier*/		{ PARSEP->symPushNew(VAstType::BLOCK,$1); }
 	;
 
 par_block:			// ==IEEE: par_block
-		yFORK blockDeclStmtList	yJOIN			{ }
+		yFORK blockDeclStmtList	yJOIN		{ }
 	|	yFORK /**/	yJOIN			{ }
 	|	yFORK ':' par_blockId blockDeclStmtList	yJOIN endLabelE	{ PARSEP->symPopScope(VAstType::FORK); }
 	|	yFORK ':' par_blockId /**/		yJOIN endLabelE	{ PARSEP->symPopScope(VAstType::FORK); }
 	;
 
 par_blockId:			// IEEE: part of par_block
-		id/*block_identifier*/			{ PARSEP->symPushNew(VAstType::FORK,$1); }
+		idAny/*new-block_identifier*/		{ PARSEP->symPushNew(VAstType::FORK,$1); }
 	;
 
 blockDeclStmtList:		// IEEE: { block_item_declaration } { statement or null }
@@ -1831,7 +1880,7 @@ stmt:				// IEEE: statement_or_null == function_statement_or_null
 	;
 
 statement_item:			// IEEE: statement_item
-	//			// IEEE: operator_assignment ';'
+	//			// IEEE: operator_assignment
 		foperator_assignment ';'		{ }
 	//
 	//		 	// IEEE: blocking_assignment
@@ -1848,9 +1897,9 @@ statement_item:			// IEEE: statement_item
 	|	yRELEASE variable_lvalue ';'		{ }
 	//
 	//			// IEEE: case_statement
-	|	caseStart caseAttrE case_itemListE yENDCASE	{ }
-	|	caseStart caseAttrE yMATCHES case_patternListE yENDCASE	{ }
-	|	caseStart caseAttrE yINSIDE  case_insideListE yENDCASE	{ }
+	|	unique_priorityE caseStart caseAttrE case_itemListE yENDCASE	{ }
+	|	unique_priorityE caseStart caseAttrE yMATCHES case_patternListE yENDCASE	{ }
+	|	unique_priorityE caseStart caseAttrE yINSIDE  case_insideListE yENDCASE	{ }
 	//
 	//			// IEEE: conditional_statement
 	|	unique_priorityE yIF '(' expr ')' stmtBlock	%prec prLOWER_THAN_ELSE	{ }
@@ -1862,12 +1911,18 @@ statement_item:			// IEEE: statement_item
 	//
 	//			// IEEE: subroutine_call_statement
 	|	yVOID yP_TICK '(' function_subroutine_callNoMethod ')' ';' { }
+	|	yVOID yP_TICK '(' expr '.' function_subroutine_callNoMethod ')' ';' { }
 	//			// Expr included here to resolve our not knowing what is a method call
 	//			// Expr here must result in a subroutine_call
-	|	function_subroutine_callNoMethod ';'	{ }
+	|	task_subroutine_callNoMethod ';'	{ }
 	|	fexpr '.' array_methodNoRoot ';'	{ }
-	|	fexpr '.' function_subroutine_callNoMethod ';'	{ }
+	|	fexpr '.' task_subroutine_callNoMethod ';'	{ }
 	|	fexprScope ';'				{ }
+	//			// Not here in IEEE; from class_constructor_declaration
+	//			// Because we've joined class_constructor_declaration into generic functions
+	//			// Way over-permissive;
+	//			// IEEE: [ ySUPER '.' yNEW [ '(' list_of_arguments ')' ] ';' ]
+	|	fexpr '.' class_new ';'		{ }
 	//
 	//			// IEEE: disable_statement
 	|	yDISABLE hierarchical_identifier/*task_or_block*/ ';'	{ }
@@ -1881,8 +1936,10 @@ statement_item:			// IEEE: statement_item
 	|	yWHILE '(' expr ')' stmtBlock		{ }
 	//			// for's first ';' is in for_initalization
 	|	yFOR '(' for_initialization expr ';' for_stepE ')' stmtBlock
+				{ }
 	|	yDO stmtBlock yWHILE '(' expr ')'	{ }
-	|	yFOREACH '(' id/*array_identifier*/ '[' loop_variables ']' ')' stmt	{ }
+	//			// IEEE says array_identifier here, but dotted accepted in VMM
+	|	yFOREACH '(' idClassForeach/*array_id[loop_variables]*/ ')' stmt	{ }
 	//
 	//			// IEEE: jump_statement
 	|	yRETURN ';'				{ }
@@ -1919,12 +1976,12 @@ statement_item:			// IEEE: statement_item
 	//			// IEEE: randcase_statement
 	|	yRANDCASE case_itemList yENDCASE	{ }
 	//
-	|	expect_property_statement
+	|	expect_property_statement		{ }
 	//
 	|	error ';'				{ }
 	;
 
-operator_assignment:		// IEEE: operator_assignment ';'
+operator_assignment:		// IEEE: operator_assignment
 		~f~exprLvalue '=' delay_or_event_controlE expr { }
 	|	~f~exprLvalue yP_PLUSEQ    expr		{ }
 	|	~f~exprLvalue yP_MINUSEQ   expr		{ }
@@ -1992,9 +2049,9 @@ action_block:			// ==IEEE: action_block
 	;
 
 caseStart:			// IEEE: part of case_statement
-	 	unique_priorityE yCASE  '(' expr ')'	{ }
-	|	unique_priorityE yCASEX '(' expr ')'	{ }
-	|	unique_priorityE yCASEZ '(' expr ')'	{ }
+	 	yCASE  '(' expr ')'	{ }
+	|	yCASEX '(' expr ')'	{ }
+	|	yCASEZ '(' expr ')'	{ }
 	;
 
 caseAttrE:
@@ -2102,6 +2159,8 @@ assignment_pattern<str>:		// ==IEEE: assignment_pattern
 	//			// also IEEE "''{' structure_pattern_key ':' ...
 	//			// also IEEE "''{' array_pattern_key ':' ...
 	|	yP_TICKBRA patternMemberList '}'	{ $<fl>$=$<fl>1; $$="'{"+$2+"}"; }
+	//			// IEEE: Not in grammar, but in VMM
+	|	yP_TICKBRA '}'				{ $<fl>$=$<fl>1; $$="'{}"; }
 	;
 
 // "datatype id = x {, id = x }"  |  "yaId = x {, id=x}" is legal
@@ -2117,16 +2176,17 @@ for_initializationItemList:	// IEEE: [for_variable_declaration...]
 
 for_initializationItem:		// IEEE: variable_assignment + for_variable_declaration
 	//			// IEEE: for_variable_declaration
-		data_type id '=' expr			{ VARTYPE($1); }
+		data_type idAny/*new*/ '=' expr		{ VARTYPE($1); }
 	//			// IEEE: variable_assignment
 	|	variable_lvalue '=' expr		{ }
 	;
 
 for_stepE:			// IEEE: for_step + empty
-		for_step				{ }
+		/* empty */				{ }
+	|	for_step				{ }
 	;
 
-for_step:			// IEEE: for_step + empty
+for_step:			// IEEE: for_step
 		for_step_assignment			{ }
 	|	for_step ',' for_step_assignment	{ }
 	;
@@ -2142,9 +2202,9 @@ for_step_assignment:		// ==IEEE: for_step_assignment
 	|	exprScope				{ }
 	;
 
-loop_variables:			// ==IEEE: loop_variables
-		id					{ }
-	|	loop_variables ',' id			{ }
+loop_variables<str>:			// ==IEEE: loop_variables
+		id					{ $<fl>$=$<fl>1; $$=$1; }
+	|	loop_variables ',' id			{ $<fl>$=$<fl>1; $$=$1+","+$3; }
 	;
 
 //************************************************
@@ -2159,12 +2219,24 @@ funcRef<str>:			// IEEE: part of tf_call
 	|	package_scopeIdFollows id '(' list_of_argumentsE ')'	{ $<fl>$=$<fl>2; $$=$2+"("+$4+")"; }
 	;
 
-function_subroutine_callNoMethod<str>:	// IEEE: function_subroutine_call or property_instance
+task_subroutine_callNoMethod<str>:	// function_subroutine_callNoMethod (as task)
+	//			// IEEE: tf_call
+		funcRef					{ $<fl>$=$<fl>1; $$=$1; }
+	|	system_t_call				{ $<fl>$=$<fl>1; $$=$1; }
+	//			// IEEE: method_call requires a "." so is in expr
+	|	randomize_call 				{ $<fl>$=$<fl>1; $$=$1; }
+	;
+
+function_subroutine_callNoMethod<str>:	// IEEE: function_subroutine_call (as function)
 	//			// IEEE: tf_call
 		funcRef					{ $<fl>$=$<fl>1; $$=$1; }
 	|	system_f_call				{ $<fl>$=$<fl>1; $$=$1; }
 	//			// IEEE: method_call requires a "." so is in expr
 	|	randomize_call 				{ $<fl>$=$<fl>1; $$=$1; }
+	;
+
+system_t_call<str>:		// IEEE: system_tf_call (as task)
+		system_f_call				{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
 system_f_call<str>:		// IEEE: system_tf_call (as func)
@@ -2175,14 +2247,9 @@ system_f_call<str>:		// IEEE: system_tf_call (as func)
 	;
 
 list_of_argumentsE<str>:	// IEEE: [list_of_arguments]
-		/* empty */				{ $$=""; }
-	|	list_of_arguments			{ $<fl>$=$<fl>1; $$=$1; }
-	;
-
-list_of_arguments<str>:		// ==IEEE: list_of_arguments - empty (handled above)
 		argsDottedList				{ $<fl>$=$<fl>1; $$=$1; }
-	|	argsExprList				{ $<fl>$=$<fl>1; $$=$1; }
-	|	argsExprList ',' argsDottedList		{ $<fl>$=$<fl>1; $$=$1+","+$3; }
+	|	argsExprListE				{ $<fl>$=$<fl>1; $$=$1; }
+	|	argsExprListE ',' argsDottedList	{ $<fl>$=$<fl>1; $$=$1+","+$3; }
 	;
 
 task_declaration:		// ==IEEE: task_declaration
@@ -2199,10 +2266,17 @@ function_declaration:		// IEEE: function_declaration + function_body_declaration
 	 	yFUNCTION lifetimeE funcId tfGuts yENDFUNCTION endLabelE
 			{ PARSEP->endtaskfuncCb($<fl>5,$5);
 			  PARSEP->symPopScope(VAstType::FUNCTION); }
+	| 	yFUNCTION lifetimeE funcIdNew tfGuts yENDFUNCTION endLabelE
+			{ PARSEP->endtaskfuncCb($<fl>5,$5);
+			  PARSEP->symPopScope(VAstType::FUNCTION); }
 	;
 
 function_prototype:		// IEEE: function_prototype
 		yFUNCTION funcId '(' tf_port_listE ')'	{ PARSEP->symPopScope(VAstType::FUNCTION); }
+	;
+
+class_constructor_prototype:	// ==IEEE: class_constructor_prototype
+		yFUNCTION funcIdNew '(' tf_port_listE ')' ';'	{ PARSEP->symPopScope(VAstType::FUNCTION); }
 	;
 
 method_prototype:
@@ -2216,52 +2290,54 @@ lifetimeE:			// IEEE: [lifetime]
 	;
 
 lifetime:			// ==IEEE: lifetime
+	//			// Note lifetime used by members is instead under memberQual
 		ySTATIC__ETC		 		{ }
 	|	yAUTOMATIC		 		{ }
 	;
 
 taskId:
 		tfIdScoped
-			{ PARSEP->symPushNew(VAstType::TASK, $1);
-			  PARSEP->taskCb($<fl>1,"task",$1); }
+			{ PARSEP->symPushNewUnder($<entp>1, VAstType::TASK, $<str>1);
+			  PARSEP->taskCb($<fl>1,"task",$<str>1); }
 	;
 
 funcId:				// IEEE: function_data_type_or_implicit + part of function_body_declaration
 	//			// IEEE: function_data_type_or_implicit must be expanded here to prevent conflict
 	//			// function_data_type expanded here to prevent conflicts with implicit_type:empty vs data_type:ID
 		/**/			tfIdScoped
-			{ PARSEP->symPushNew(VAstType::FUNCTION, $1);
-			  PARSEP->functionCb($<fl>1,"function",$1,""); }
+			{ PARSEP->symPushNewUnder($<entp>1, VAstType::FUNCTION, $<str>1);
+			  PARSEP->functionCb($<fl>1,"function",$<str>1,""); }
 	|	signingE rangeList	tfIdScoped
-			{ PARSEP->symPushNew(VAstType::FUNCTION, $3);
-			  PARSEP->functionCb($<fl>3,"function",$3,SPACED($1,$2)); }
+			{ PARSEP->symPushNewUnder($<entp>3, VAstType::FUNCTION, $<str>3);
+			  PARSEP->functionCb($<fl>3,"function",$<str>3,SPACED($1,$2)); }
 	|	signing			tfIdScoped
-			{ PARSEP->symPushNew(VAstType::FUNCTION, $2);
-			  PARSEP->functionCb($<fl>2,"function",$2,$1); }
+			{ PARSEP->symPushNewUnder($<entp>2, VAstType::FUNCTION, $<str>2);
+			  PARSEP->functionCb($<fl>2,"function",$<str>2,$1); }
 	|	yVOID			tfIdScoped
-			{ PARSEP->symPushNew(VAstType::FUNCTION, $2);
-			  PARSEP->functionCb($<fl>2,"function",$2,$1); }
+			{ PARSEP->symPushNewUnder($<entp>2, VAstType::FUNCTION, $<str>2);
+			  PARSEP->functionCb($<fl>2,"function",$<str>2,$1); }
 	|	data_type		tfIdScoped
-			{ PARSEP->symPushNew(VAstType::FUNCTION, $2);
-			  PARSEP->functionCb($<fl>2,"function",$2,$1); }
-	//
-	//			// IEEE: from class_constructor_declaration
-	| 	yNEW__ETC
-			{ PARSEP->symPushNew(VAstType::FUNCTION, "new");
+			{ PARSEP->symPushNewUnder($<entp>2, VAstType::FUNCTION, $<str>2);
+			  PARSEP->functionCb($<fl>2,"function",$<str>2,$1); }
+	;
+
+funcIdNew:			// IEEE: from class_constructor_declaration
+	 	yNEW__ETC
+			{ PARSEP->symPushNewUnder(NULL, VAstType::FUNCTION, "new");
 			  PARSEP->functionCb($<fl>1,"function","new",""); }
 	| 	yNEW__PAREN
-			{ PARSEP->symPushNew(VAstType::FUNCTION, "new");
+			{ PARSEP->symPushNewUnder(NULL, VAstType::FUNCTION, "new");
 			  PARSEP->functionCb($<fl>1,"function","new",""); }
 	|	class_scopeWithoutId yNEW__PAREN
-			{ PARSEP->symPushNew(VAstType::FUNCTION, "new");
+			{ PARSEP->symPushNewUnder($<entp>1, VAstType::FUNCTION, "new");
 			  PARSEP->functionCb($<fl>2,"function","new",""); }
 	;
 
-tfIdScoped<str>:		// IEEE: part of function_body_declaration/task_body_declaration
-	//			// IEEE: [ interface_identifier '.' | class_scope ] function_identifier
-		id					{ $<fl>$=$<fl>1; $$ = $1; }
-	|	id/*interface_identifier*/ '.' id	{ $<fl>$=$<fl>1; $$ = $1+"."+$2; }
-	|	class_scope_id				{ $<fl>$=$<fl>1; $$ = $1; }
+tfIdScoped<str_entp>:		// IEEE: part of function_body_declaration/task_body_declaration
+ 	//			// IEEE: [ interface_identifier '.' | class_scope ] function_identifier
+		id					{ $<fl>$=$<fl>1; $<entp>$=NULL;     $<str>$ = $1; }
+	|	id/*interface_identifier*/ '.' id	{ $<fl>$=$<fl>1; $<entp>$=NULL;     $<str>$ = $1+"."+$2; }
+	|	class_scope_id				{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$ = $<str>1; }
 	;
 
 tfGuts:
@@ -2289,11 +2365,6 @@ tf_item_declarationList:
 tf_item_declaration:		// ==IEEE: tf_item_declaration
 		block_item_declaration			{ }
 	| 	tf_port_declaration			{ }
-	;
-
-list_of_tf_variable_identifiers: // ==IEEE: list_of_tf_variable_identifiers
-		tf_variable_identifier			{ }
-	|	list_of_tf_variable_identifiers ',' tf_variable_identifier	{ }
 	;
 
 tf_port_listE:			// IEEE: tf_port_list + empty
@@ -2329,14 +2400,14 @@ tf_port_itemFront:		// IEEE: part of tf_port_item, which has the data type
 	;
 
 tf_port_itemDir:		// IEEE: part of tf_port_item, direction
-		port_direction				{ }
+		port_direction				{ }  // port_direction sets VARIO
 	;
 
 tf_port_itemAssignment:		// IEEE: part of tf_port_item, which has assignment
-		yaID__ETC variable_dimensionListE
+		id variable_dimensionListE sigAttrListE
 			{ VARDONE($<fl>1, $1, $2, ""); }
-	|	yaID__ETC variable_dimensionListE '=' expr
-			{ VARDONE($<fl>1, $1, $2, $4); }
+	|	id variable_dimensionListE sigAttrListE '=' expr
+			{ VARDONE($<fl>1, $1, $2, $5); }
 	;
 
 //	method_call:		// ==IEEE: method_call + method_call_body
@@ -2397,7 +2468,7 @@ dpi_tf_import_propertyE:	// IEEE: [ dpi_function_import_property + dpi_task_impo
 	;
 
 overload_declaration:		// ==IEEE: overload_declaration
-		yBIND overload_operator yFUNCTION data_type id/*function_identifier*/
+		yBIND overload_operator yFUNCTION data_type idAny/*new-function_identifier*/
 			'(' overload_proto_formals ')' ';'	{ }
 	;
 
@@ -2496,8 +2567,8 @@ expr<str>:			// IEEE: part of expression/constant_expression/primary
 	|	~l~expr yP_XNOR ~r~expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	~l~expr yP_NOR  ~r~expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	~l~expr yP_NAND ~r~expr			{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
-	|	~l~expr yP_SRIGHT ~r~expr		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	~l~expr yP_SLEFT ~r~expr		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
+	|	~l~expr yP_SRIGHT ~r~expr		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	~l~expr yP_SSRIGHT ~r~expr		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	//			// <= is special, as we need to disambiguate it with <= assignment
 	//			// We copy all of expr to fexpr and rename this token to a fake one.
@@ -2519,7 +2590,7 @@ expr<str>:			// IEEE: part of expression/constant_expression/primary
 	|	yaINTNUM				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	yaFLOATNUM				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	yaTIMENUM				{ $<fl>$=$<fl>1; $$ = $1; }
-	|	~noStr__IGNORE~ strAsInt		{ $<fl>$=$<fl>1; $$ = $1; }
+	|	strAsInt~noStr__IGNORE~ 		{ $<fl>$=$<fl>1; $$ = $1; }
 	//
 	//			// IEEE: "... hierarchical_identifier select"  see below
 	//
@@ -2529,7 +2600,7 @@ expr<str>:			// IEEE: part of expression/constant_expression/primary
 	//			// IEEE: concatenation/constant_concatenation
 	//			// Part of exprOkLvalue below
 	//
-	//			// IEEE: multiple_concatencation/constant_multiple_concatenation
+	//			// IEEE: multiple_concatenation/constant_multiple_concatenation
 	|	'{' constExpr '{' cateList '}' '}'	{ $<fl>$=$<fl>1; $$ = "{"+$2+"{"+$4+"}}"; }
 	//
 	|	function_subroutine_callNoMethod	{ $$ = $1; }
@@ -2539,8 +2610,8 @@ expr<str>:			// IEEE: part of expression/constant_expression/primary
 	|	~l~expr '.' array_methodNoRoot		{ $<fl>$=$<fl>1; $$ = $1+"."+$3; }
 	//
 	//			// IEEE: '(' mintypmax_expression ')'
-	|	~noPar__IGNORE~ '(' expr ')'			{ $<fl>$=$<fl>1; $$ = "("+$2+")"; }
-	|	~noPar__IGNORE~ '(' expr ':' expr ':' expr ')'	{ $<fl>$=$<fl>1; $$ = "("+$2+")"; }
+	|	~noPar__IGNORE~'(' expr ')'			{ $<fl>$=$<fl>1; $$ = "("+$2+")"; }
+	|	~noPar__IGNORE~'(' expr ':' expr ':' expr ')'	{ $<fl>$=$<fl>1; $$ = "("+$2+")"; }
 	//			// PSL rule
 	|	'_' '(' statePushVlg expr statePop ')'	{ $<fl>$=$<fl>1; $$ = "_("+$4+")"; }	// Arbitrary Verilog inside PSL
 	//
@@ -2634,6 +2705,7 @@ exprScope<str>:			// scope and variable for use to inside an expression
 		yTHIS					{ $<fl>$=$<fl>1; $$ = $1; }
 	|	idArrayed				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	package_scopeIdFollows idArrayed	{ $<fl>$=$<fl>1; $$ = $1+$2; }
+	|	class_scopeIdFollows idArrayed		{ $<fl>$=$<fl>1; $$ = $<str>1+$2; }
 	|	~l~expr '.' idArrayed			{ $<fl>$=$<fl>1; $$ = $1+"."+$2; }
 	//			// expr below must be a "yTHIS"
 	|	~l~expr '.' ySUPER			{ $<fl>$=$<fl>1; $$ = $1+"."+$2; }
@@ -2672,9 +2744,19 @@ exprOrDataTypeList<str>:
 	|	exprOrDataTypeList ','			{ $<fl>$=$<fl>1; $$ = $1+","; }   // Verilog::Parser only: ,, is ok
 	;
 
-argsExprList<str>:		// IEEE: part of list_of_arguments
+argsExprList<str>:		// IEEE: part of list_of_arguments (used where ,, isn't legal)
 		expr					{ $<fl>$=$<fl>1; $$ = $1; }
 	|	argsExprList ',' expr			{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
+	;
+
+argsExprListE<str>:		// IEEE: part of list_of_arguments
+		argsExprOneE				{ $<fl>$=$<fl>1; $$ = $1; }
+	|	argsExprListE ',' argsExprOneE		{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
+	;
+
+argsExprOneE<str>:		// IEEE: part of list_of_arguments
+		/*empty*/				{ $$ = ""; }	// ,, is legal in list_of_arguments
+	|	expr					{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
 argsDottedList<str>:		// IEEE: part of list_of_arguments
@@ -2683,7 +2765,7 @@ argsDottedList<str>:		// IEEE: part of list_of_arguments
 	;
 
 argsDotted<str>:		// IEEE: part of list_of_arguments
-		'.' id '(' expr ')'			{ $<fl>$=$<fl>1; $$=$1+$2+$3+$4+$5; }
+		'.' idAny '(' expr ')'			{ $<fl>$=$<fl>1; $$=$1+$2+$3+$4+$5; }
 	;
 
 streaming_concatenation<str>:	// ==IEEE: streaming_concatenation
@@ -2828,14 +2910,19 @@ idAny<str>:			// Any kind of identifier
 
 variable_lvalue<str>:		// IEEE: variable_lvalue or net_lvalue
 	//			// Note many variable_lvalue's must use exprOkLvalue when arbitrary expressions may also exist
-		idClass					{ $<fl>$=$<fl>1; $$ = $1; }
-	|	'{' variable_lvalueList '}'		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
+		idClassSel				{ $<fl>$=$<fl>1; $$ = $1; }
+	|	'{' variable_lvalueConcList '}'		{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	//			// IEEE: [ assignment_pattern_expression_type ] assignment_pattern_variable_lvalue
 	//			// We allow more assignment_pattern_expression_types then strictly required
-	|	data_type yP_TICKBRA variable_lvalueList '}'	{ $<fl>$=$<fl>1; $$ = $1+" "+$2+$3+$4; }
-	|	idClass   yP_TICKBRA variable_lvalueList '}'	{ $<fl>$=$<fl>1; $$ = $1+" "+$2+$3+$4; }
-	|	/**/      yP_TICKBRA variable_lvalueList '}'	{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
+	|	data_type  yP_TICKBRA variable_lvalueList '}'	{ $<fl>$=$<fl>1; $$ = $1+" "+$2+$3+$4; }
+	|	idClassSel yP_TICKBRA variable_lvalueList '}'	{ $<fl>$=$<fl>1; $$ = $1+" "+$2+$3+$4; }
+	|	/**/       yP_TICKBRA variable_lvalueList '}'	{ $<fl>$=$<fl>1; $$ = $1+$2+$3; }
 	|	streaming_concatenation			{ $<fl>$=$<fl>1; $$ = $1; }
+	;
+
+variable_lvalueConcList<str>:	// IEEE: part of variable_lvalue: '{' variable_lvalue { ',' variable_lvalue } '}'
+		variable_lvalue					{ $<fl>$=$<fl>1; $$ = $1; }
+	|	variable_lvalueConcList ',' variable_lvalue	{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
 	;
 
 variable_lvalueList<str>:	// IEEE: part of variable_lvalue: variable_lvalue { ',' variable_lvalue }
@@ -2843,7 +2930,7 @@ variable_lvalueList<str>:	// IEEE: part of variable_lvalue: variable_lvalue { ',
 	|	variable_lvalueList ',' variable_lvalue	{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
 	;
 
-idClass<str>:			// Misc Ref to dotted, and/or arrayed, and/or bit-ranged variable
+idClassSel<str>:		// Misc Ref to dotted, and/or arrayed, and/or bit-ranged variable
 		idDotted				{ $<fl>$=$<fl>1; $$ = $1; }
 	//			// IEEE: [ implicit_class_handle . | package_scope ] hierarchical_variable_identifier select
 	|	yTHIS '.' idDotted			{ $<fl>$=$<fl>1; $$ = "this."+$3; }
@@ -2853,18 +2940,30 @@ idClass<str>:			// Misc Ref to dotted, and/or arrayed, and/or bit-ranged variabl
 	|	package_scopeIdFollows idDotted		{ $<fl>$=$<fl>1; $$ = $1+$2; }
 	;
 
+idClassForeach<str>:		// Misc Ref to dotted, and/or arrayed, no bit range for foreach statement
+		idDottedForeach				{ $<fl>$=$<fl>1; $$ = $1; }
+	//			// IEEE: [ implicit_class_handle . | package_scope ] hierarchical_variable_identifier select
+	|	yTHIS '.' idDottedForeach		{ $<fl>$=$<fl>1; $$ = "this."+$3; }
+	|	ySUPER '.' idDottedForeach		{ $<fl>$=$<fl>1; $$ = "super."+$3; }
+	|	yTHIS '.' ySUPER '.' idDottedForeach	{ $<fl>$=$<fl>1; $$ = "this.super."+$3; }
+	//			// Expanded: package_scope idDotted
+	|	package_scopeIdFollows idDottedForeach	{ $<fl>$=$<fl>1; $$ = $1+$2; }
+	;
+
 hierarchical_identifierList:	// IEEE: part of wait_statement
-		hierarchical_identifier				{ }
+		hierarchical_identifier			{ }
 	|	hierarchical_identifierList ',' hierarchical_identifier		{ }
 	;
 
 hierarchical_identifierBit:	// IEEE: "hierarchical_identifier bit_select"
-		idDotted				{ }
+	//			// Not in grammar but "this." believed legal here
+		idClassSel				{ }
 	;
 
 hierarchical_identifier:	// IEEE: hierarchical_identifier, including extra bit_select
 	//			//	  +hierarchical_parameter_identifier
-		idDotted				{ }
+	//			// Not in grammar but "this." believed legal here
+		idClassSel				{ }
 	;
 
 idDotted<str>:
@@ -2872,9 +2971,19 @@ idDotted<str>:
 	|	idDottedMore		 		{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
+idDottedForeach<str>:
+		yD_ROOT '.' idDottedForeachMore		{ $<fl>$=$<fl>1; $$ = $1+"."+$3; }
+	|	idDottedForeachMore	 		{ $<fl>$=$<fl>1; $$ = $1; }
+	;
+
 idDottedMore<str>:
 		idArrayed 				{ $<fl>$=$<fl>1; $$ = $1; }
 	|	idDottedMore '.' idArrayed		{ $<fl>$=$<fl>1; $$ = $1+"."+$3; }
+	;
+
+idDottedForeachMore<str>:
+		idForeach 				{ $<fl>$=$<fl>1; $$ = $1; }
+	|	idDottedForeachMore '.' idForeach	{ $<fl>$=$<fl>1; $$ = $1+"."+$3; }
 	;
 
 // Single component of dotted path, maybe [#].
@@ -2883,26 +2992,26 @@ idDottedMore<str>:
 // id below includes:
 //	 enum_identifier
 idArrayed<str>:			// IEEE: id + select
-		id selectE				{ $<fl>$=$<fl>1; $$ = $1+$2; }
-	;
-
-selectE<str>:			// IEEE: select
-		/*empty*/				{ $$ = ""; }
-	|	selectList				{ $<fl>$=$<fl>1; $$ = $1; }
-	;
-
-selectList<str>:		// IEEE: part of select
-		selectOne				{ $<fl>$=$<fl>1; $$ = $1; }
-	|	selectList selectOne			{ $<fl>$=$<fl>1; $$ = $1+$2; }
-	;
-
-selectOne<str>:			// IEEE: part of select
+		id					{ $<fl>$=$<fl>1; $$ = $1; }
 	//			// IEEE: part_select_range/constant_part_select_range
-		'[' expr ']'				{ $<fl>$=$<fl>1; $$ = "["+$2+"]"; }
-	|	'[' constExpr ':' constExpr ']'		{ $<fl>$=$<fl>1; $$ = "["+$2+":"+$4+"]"; }
-	//			// IEEE: indexed_range/constant_indexed_range
-	|	'[' expr yP_PLUSCOLON  constExpr ']'	{ $<fl>$=$<fl>1; $$ = "["+$2+"+:"+$4+"]"; }
-	|	'[' expr yP_MINUSCOLON constExpr ']'	{ $<fl>$=$<fl>1; $$ = "["+$2+"-:"+$4+"]"; }
+	|	idArrayed '[' expr ']'				{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"]"; }
+	|	idArrayed '[' constExpr ':' constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+":"+$5+"]"; }
+	//	 		// IEEE: indexed_range/constant_indexed_range
+	|	idArrayed '[' expr yP_PLUSCOLON  constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"+:"+$5+"]"; }
+	|	idArrayed '[' expr yP_MINUSCOLON constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"-:"+$5+"]"; }
+	;
+
+idForeach<str>:			// IEEE: id + select + [loop_variables]
+	//			// Merge of foreach and idArrayed to prevent conflict
+		id					{ $<fl>$=$<fl>1; $$ = $1; }
+	//			// IEEE: part_select_range/constant_part_select_range
+	|	idForeach '[' expr ']'				{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"]"; }
+	|	idForeach '[' constExpr ':' constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+":"+$5+"]"; }
+	//	 		// IEEE: indexed_range/constant_indexed_range
+	|	idForeach '[' expr yP_PLUSCOLON  constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"+:"+$5+"]"; }
+	|	idForeach '[' expr yP_MINUSCOLON constExpr ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+"-:"+$5+"]"; }
+	//			// IEEE: part of foreach: [ loop_variables ]
+	|	idForeach '[' expr ',' loop_variables ']'	{ $<fl>$=$<fl>1; $$ = $1+"["+$3+","+$5+"]"; }
 	;
 
 strAsInt<str>:
@@ -2910,8 +3019,11 @@ strAsInt<str>:
 	;
 
 identifier_list<str>:		// ==IEEE: identifier_list
-		id					{ $<fl>$=$<fl>1; $$ = $1; }
-	|	identifier_list ',' id			{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
+	//			// Used by ySOLVE and yRANDOMIZE;
+	//			// IEEE: uses id below, but,
+	//			// VMM suggests idDotted is legal in many cases
+		idDotted				{ $<fl>$=$<fl>1; $$ = $1; }
+	|	identifier_list ',' idDotted		{ $<fl>$=$<fl>1; $$ = $1+","+$3; }
 	;
 
 endLabelE:
@@ -2975,8 +3087,8 @@ list_of_clocking_decl_assign:	// ==IEEE: list_of_clocking_decl_assign
 	;
 
 clocking_decl_assign:		// ==IEEE: clocking_decl_assign
-		id/*signal_identifier*/			{ }
-	|	id/*signal_identifier*/ '=' expr	{ }
+		idAny/*new-signal_identifier*/		{ }
+	|	idAny/*new-signal_identifier*/ '=' expr	{ }
 	;
 
 clocking_skewE:			// IEEE: [clocking_skew]
@@ -3137,7 +3249,7 @@ pexpr<str>:			// IEEE: property_expr  (The name pexpr is important as regexps ju
 	//
 	//============= expr rules copied for property_expr
 	//			// ********* RULES COPIED FROM expr
-	|	BISONPRE_COPY(expr,{s/~l~/p/g; s/~p~/p/g; s/~noPar__IGNORE~/yP_PAR__IGNORE/g; })	// {copied}
+	|	BISONPRE_COPY(expr,{s/~l~/p/g; s/~p~/p/g; s/~noPar__IGNORE~/yP_PAR__IGNORE /g; })	// {copied}
 	;
 
 
@@ -3180,7 +3292,7 @@ sexpr<str>:			// ==IEEE: sequence_expr  (The name sexpr is important as regexps 
 	//
 	//============= expr rules copied for sequence_expr
 	//			// ********* RULES COPIED FROM expr
-	|	BISONPRE_COPY(expr,{s/~l~/s/g; s/~p~/s/g; s/~noPar__IGNORE~/yP_PAR__IGNORE/g; })	// {copied}
+	|	BISONPRE_COPY(expr,{s/~l~/s/g; s/~p~/s/g; s/~noPar__IGNORE~/yP_PAR__IGNORE /g; })	// {copied}
 	;
 
 cycle_delay_range:		// IEEE: ==cycle_delay_range
@@ -3196,7 +3308,7 @@ sequence_match_itemList:	// IEEE: [sequence_match_item] part of sequence_expr
 	;
 
 sequence_match_item:		// ==IEEE: sequence_match_item
-	//			// IEEE says: operator_assignment			{ }
+	//			// IEEE says: operator_assignment
 	//			// IEEE says: inc_or_dec_expression
 	//			// IEEE says: subroutine_call
 	//			// This is the same list as...
@@ -3264,7 +3376,7 @@ coverage_spec_or_option:	// ==IEEE: coverage_spec_or_option
 
 coverage_option:		// ==IEEE: coverage_option
 	//			// option/type_option aren't really keywords
-		id/*yOPTION | yTYPE_OPTION*/ '.' id/*member_identifier*/ '=' expr	{ }
+		id/*yOPTION | yTYPE_OPTION*/ '.' idAny/*member_identifier*/ '=' expr	{ }
 	;
 
 cover_point:			// ==IEEE: cover_point
@@ -3385,7 +3497,7 @@ bins_selection_or_option:	// ==IEEE: bins_selection_or_option
 	;
 
 bins_selection:			// ==IEEE: bins_selection
-		bins_keyword id/*bin_identifier*/ '=' select_expression iffE	{ }
+		bins_keyword idAny/*new-bin_identifier*/ '=' select_expression iffE	{ }
 	;
 
 select_expression:		// ==IEEE: select_expression
@@ -3404,7 +3516,7 @@ select_condition:		// ==IEEE: select_condition
 bins_expression:		// ==IEEE: bins_expression
 	//			// "cover_point_identifier" and "variable_identifier" look identical
 		id/*variable_identifier or cover_point_identifier*/	{ }
-	|	id/*cover_point_identifier*/ '.' id/*bins_identifier*/	{ }
+	|	id/*cover_point_identifier*/ '.' idAny/*bins_identifier*/	{ }
 	;
 
 coverage_eventE:		// IEEE: [ coverage_event ]
@@ -3474,7 +3586,7 @@ rs_production_list:		// ==IEEE: rs_production_list
 
 weight_specification:		// ==IEEE: weight_specification
 		yaINTNUM				{ }
-	|	idClass/*ps_identifier*/		{ }
+	|	idClassSel/*ps_identifier*/		{ }
 	|	'(' expr ')'				{ }
 	;
 
@@ -3574,11 +3686,11 @@ ps_covergroup_identifier<str>:	// ==IEEE: ps_covergroup_identifier
 	;
 
 class_scope_type<str>:		// class_scope + type
-		class_scopeIdFollows yaID__aTYPE	{ $<fl>$=$<fl>1; $$=$1+$2; }
+		class_scopeIdFollows yaID__aTYPE	{ $<fl>$=$<fl>1; $$=$<str>1+$2; }
 	;
 
-class_scope_id<str>:		// class_scope + id etc
-		class_scopeIdFollows id			{ $<fl>$=$<fl>1; $$=$1+$2; }
+class_scope_id<str_entp>:	// class_scope + id etc
+		class_scopeIdFollows id			{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1+$<str>2; }
 	;
 
 //=== Below rules assume special scoping per above
@@ -3590,31 +3702,31 @@ class_typeWithoutId<str>:	// class_type standalone without following id
 
 class_scopeWithoutId<str>:	// class_type standalone without following id
 	//			// and we thus don't need to resolve it in specified package
-		class_scopeIdFollows			{ $<fl>$=$<fl>1; $$=$1; PARSEP->symTableNextId(NULL); }
+		class_scopeIdFollows			{ $<fl>$=$<fl>1; $$=$<str>1; PARSEP->symTableNextId(NULL); }
 	;
 
-class_scopeIdFollows<str>:	// IEEE: class_scope
+class_scopeIdFollows<str_entp>:	// IEEE: class_scope
 	//			// IEEE: "class_type yP_COLONCOLON"
 	//			// IMPORTANT: The lexer will parse the following ID to be in the found package
 	//			// But class_type:'::' conflicts with class_scope:'::' so expand here
-		package_scopeIdFollowsE class_typeOneListColonIdFollows	{ $<fl>$=$<fl>2; $$=$1+$<str>2; }
+		package_scopeIdFollowsE class_typeOneListColonIdFollows	{ $<fl>$=$<fl>2; $<entp>$=$<entp>2; $<str>$=$1+$<str>2; }
 	;
 
 class_typeOneListColonIdFollows<str_entp>: // IEEE: class_type ::
-		class_typeOneList yP_COLONCOLON 	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>2; $<entp>$=$<entp>1; PARSEP->symTableNextId($<entp>1); }
+		class_typeOneList yP_COLONCOLON 	{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1+$<str>2; PARSEP->symTableNextId($<entp>1); }
 	;
 
 class_typeOneList<str_entp>: // IEEE: class_type: "id [ parameter_value_assignment ]"
 	//			// If you follow the rules down, class_type is really a list via ps_class_identifier
 	//			// Must propagate entp up for next id
-		class_typeOne				{ $<fl>$=$<fl>1; $<str>$=$<str>1; $<entp>$=$<entp>1; }
-	|	class_typeOneListColonIdFollows class_typeOne	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>2; $<entp>$=$<entp>2; }
+		class_typeOne					{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1; }
+	|	class_typeOneListColonIdFollows class_typeOne	{ $<fl>$=$<fl>1; $<entp>$=$<entp>2; $<str>$=$<str>1+$<str>2; }
 	;
 
 class_typeOne<str_entp>:	// IEEE: class_type: "id [ parameter_value_assignment ]"
 	//			// If you follow the rules down, class_type is really a list via ps_class_identifier
 		yaID__aCLASS parameter_value_assignmentE
-			{ $<fl>$=$<fl>1; $<str>$=$<str>1; $<entp>$=$<entp>1; }
+			{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1; }
 	;
 
 package_scopeIdFollowsE<str>:	// IEEE: [package_scope]
@@ -3626,8 +3738,10 @@ package_scopeIdFollowsE<str>:	// IEEE: [package_scope]
 package_scopeIdFollows<str>:	// IEEE: package_scope
 	//			// IMPORTANT: The lexer will parse the following ID to be in the found package
 	//			//vv mid rule action needed otherwise we might not have NextId in time to parse the id token
-		yD_UNIT        { PARSEP->symTableNextId(PARSEP->syms().netlistSymp()); } yP_COLONCOLON	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>3; }
-	|	yaID__aPACKAGE { PARSEP->symTableNextId($<entp>1); }			 yP_COLONCOLON	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>3; }
+		yD_UNIT        { PARSEP->symTableNextId(PARSEP->syms().netlistSymp()); }
+	/*cont*/	yP_COLONCOLON	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>3; }
+	|	yaID__aPACKAGE { PARSEP->symTableNextId($<entp>1); }
+	/*cont*/	yP_COLONCOLON	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>3; }
 	;
 
 //^^^=========
@@ -3653,41 +3767,46 @@ class_item:			// ==IEEE: class_item
 	|	';'					{ }
 	;
 
-class_property:			// ==IEEE: class_property
-	//			// property_qualifier == random_qualifier
-	//			// data_declaration includes [yCONST] [ySTATIC|yAUTOMATIC] var
-		random_qualifierE data_declaration	{ }
-	//			// yCONST {no-qualifier} data_type id" is part of data_declaration
-	//			// yCONST ySTATIC        data_type id" is part of data_declaration
-	|	yCONST__LOCAL class_item_qualifierNoStatic data_type id ';'		{ }
-	|	yCONST__LOCAL class_item_qualifierNoStatic data_type id '=' constExpr ';'	{ }
-	;
-
 class_method:			// ==IEEE: class_method
-		method_qualifierE task_declaration			{ }
-	|	method_qualifierE function_declaration			{ }
-	|	yEXTERN method_qualifierE method_prototype ';'		{ }
-	//			// IEEE: "method_qualifierE class_constructor_declaration"		{ }
-	//			// IEEE: "yEXTERN method_qualifierE class_constructor_prototype"
-	//			// Both part of function_declaration
+		memberQualResetListE task_declaration			{ }
+	|	memberQualResetListE function_declaration		{ }
+	|	yEXTERN memberQualResetListE method_prototype ';'	{ }
+	//			// IEEE: "method_qualifierE class_constructor_declaration"
+	//			// part of function_declaration
+	|	yEXTERN memberQualResetListE class_constructor_prototype	{ }
 	;
 
 // IEEE: class_constructor_prototype
 // See function_declaration
 
-class_item_qualifierNoStatic:	// IEEE: class_item_qualifier minus ySTATIC
+class_item_qualifier<str>:	// IEEE: class_item_qualifier minus ySTATIC
 	//			// IMPORTANT: yPROTECTED | yLOCAL is in a lex rule
-		yPROTECTED				{ }
-	|	yLOCAL					{ }
+		yPROTECTED				{ $<fl>$=$<fl>1; $$=$1; }
+	|	yLOCAL					{ $<fl>$=$<fl>1; $$=$1; }
+	|	ySTATIC__ETC				{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
-method_qualifierE:
-		/* empty */				{ }
-	|	yVIRTUAL__TF				{ }
-	//			// IEEE: class_item_qualifier
-	|	ySTATIC__TF				{ }
-	|	yPROTECTED				{ }
-	|	yLOCAL					{ }
+memberQualResetListE:		// Called from class_property for all qualifiers before yVAR
+	//			// Also before method declarations, to prevent grammar conflict
+	//			// Thus both types of qualifiers (method/property) are here
+		/*empty*/				{ VARRESET(); VARTYPE(""); }
+	|	memberQualList				{ VARRESET(); VARTYPE($1); }
+	;
+
+memberQualList<str>:
+		memberQualOne				{ $<fl>$=$<fl>1; $$=$1; }
+	|	memberQualList memberQualOne		{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
+	;
+
+memberQualOne<str>:			// IEEE: property_qualifier + method_qualifier
+	//			// Part of method_qualifier and property_qualifier
+		class_item_qualifier			{ $<fl>$=$<fl>1; $$=$1; }
+	//			// Part of method_qualifier only
+	|	yVIRTUAL__ETC				{ $<fl>$=$<fl>1; $$=$1; }
+	//			// Part of property_qualifier only
+	|	random_qualifier			{ $<fl>$=$<fl>1; $$=$1; }
+	//			// Part of lifetime, but here as ySTATIC can be in different positions
+	|	yAUTOMATIC		 		{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 //**********************************************************************
@@ -3724,7 +3843,8 @@ constraint_expression:		// ==IEEE: constraint_expression
 	|	expr yP_MINUSGT constraint_set		{ }
 	|	yIF '(' expr ')' constraint_set	%prec prLOWER_THAN_ELSE	{ }
 	|	yIF '(' expr ')' constraint_set	yELSE constraint_set	{ }
-	|	yFOREACH '(' id/*array_identifier*/ '[' loop_variables ']' ')' constraint_set	{ }
+	//			// IEEE says array_identifier here, but dotted accepted in VMM
+	|	yFOREACH '(' idClassForeach/*array_id[loop_variables]*/ ')' constraint_set	{ }
 	;
 
 constraint_set:			// ==IEEE: constraint_set

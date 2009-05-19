@@ -13,11 +13,11 @@ verilog/inc_ifdef.v:26: `line 26 "verilog/inc_ifdef.v" 0
 verilog/inc_ifdef.v:40: `line 40 "verilog/inc_ifdef.v" 0
 verilog/inc_ifdef.v:41: `line 41 "verilog/inc_ifdef.v" 2
 verilog/inc_ifdef.v:41: `line 1 "verilog/inc2.v" 0
-verilog/inc2.v:4: At file verilog/inc2.v line 4
+verilog/inc2.v:4: At file "verilog/inc2.v" line 4
 verilog/inc3.v:1: `line 5 "verilog/inc2.v" 0
 verilog/inc3.v:1: `line 1 "verilog/inc3.v" 1
 verilog/inc3.v:1: `line 2 "inc3_a_filename_from_line_directive" 0
-inc3_a_filename_from_line_directive:10:  At file inc3_a_filename_from_line_directive line 10
+inc3_a_filename_from_line_directive:10:  At file "inc3_a_filename_from_line_directive" line 10
 inc3_a_filename_from_line_directive:13: `line 13 "inc3_a_filename_from_line_directive" 0
 inc3_a_filename_from_line_directive:17: `line 17 "inc3_a_filename_from_line_directive" 0
 inc3_a_filename_from_line_directive:18: `line 18 "inc3_a_filename_from_line_directive" 2
@@ -80,10 +80,13 @@ verilog/inc4.v:6: `line 134 "verilog/inc1.v" 0
 verilog/inc1.v:137: `line 137 "verilog/inc1.v" 0
 verilog/inc1.v:142: `line 142 "verilog/inc1.v" 0
 verilog/inc1.v:148: $blah("ab,cd","e,f");
-verilog/inc1.v:149: $blah(this.log,vec);
-verilog/inc1.v:150: $blah(this.log,vec[1,2,3]);
-verilog/inc1.v:151: $blah(this.log,{blah.name(), " is not foo"});
+verilog/inc1.v:149: $blah(this.logfile,vec);
+verilog/inc1.v:150: $blah(this.logfile,vec[1,2,3]);
+verilog/inc1.v:151: $blah(this.logfile,{blah.name(), " is not foo"});
 verilog/inc1.v:156: `pragma foo = 1
 verilog/inc1.v:157: `default_nettype none
 verilog/inc1.v:158: `default_nettype uwire
-verilog/inc1.v:159: `line 159 "verilog/inc1.v" 2
+verilog/inc1.v:166: (p,q)
+verilog/inc1.v:170: (x,y )
+verilog/inc1.v:171: Line: 171
+verilog/inc1.v:172: `line 172 "verilog/inc1.v" 2

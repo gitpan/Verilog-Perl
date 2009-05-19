@@ -14,7 +14,7 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.202';
+$VERSION = '3.210';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 
@@ -106,7 +106,7 @@ sub reset {
 sub std {
     my $self = shift;
     my $quiet = !defined $self->{use_std} && $self->{_sigparser};
-    if (!$self->{symbol_table}[1]->{std}  # Not in the symbol table yet
+    if (!$self->{symbol_table}[2]->{std}  # Not in the symbol table yet
 	&& ($self->{use_std} || $quiet)
 	) {
 	print "Including std::\n" if $self->{_debug};

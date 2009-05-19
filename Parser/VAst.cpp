@@ -67,12 +67,24 @@ HV* VAstEnt::subhash() {
     assert(this);
     AV* avp = castAVp();
     if (!avp || SvTYPE(avp) != SVt_PVAV) return NULL; /*Error*/
-    // $type_svpp = $this->[1]
-    SV** hash_svpp = av_fetch(avp, 1, 0);
+    // $type_svpp = $this->[2]
+    SV** hash_svpp = av_fetch(avp, 2, 0);
     if (!hash_svpp || !SvROK(*hash_svpp) || SvTYPE(SvRV(*hash_svpp)) != SVt_PVHV) return NULL; /*Error*/
-    // $hash_hvp = %{$this->[1]}
+    // $hash_hvp = %{$this->[2]}
     HV* hash_hvp = (HV*)(SvRV(*hash_svpp));
     return hash_hvp;
+}
+
+VAstEnt* VAstEnt::parentp() {
+    assert(this);
+    AV* avp = castAVp();
+    if (!avp || SvTYPE(avp) != SVt_PVAV) return NULL; /*Error*/
+    // $parent_svpp = $this->[1]
+    SV** parent_svpp = av_fetch(avp, 1, 0);
+    if (!parent_svpp || !SvROK(*parent_svpp) || SvTYPE(SvRV(*parent_svpp)) != SVt_PVAV) return NULL; /*Error*/
+    // $parent_svp = @{$this->[1]}
+    AV* parent_avp = (AV*)(SvRV(*parent_svpp));
+    return avToSymEnt(parent_avp);
 }
 
 // METHODS
@@ -82,26 +94,30 @@ void VAstEnt::initNetlist(VFileLine* fl) {
     AV* avp = castAVp();
     if (!avp || SvTYPE(avp) != SVt_PVAV) { fl->error("Parser->symbol_table isn't an array reference"); }
     if (type() == VAstType::ERROR) { // Need init
-	initAVEnt(avp, VAstType::NETLIST);
+	initAVEnt(avp, VAstType::NETLIST, NULL);
     } else if (type() == VAstType::NETLIST) { // Already inited
     } else { fl->error("Parser->symbol_table isn't a netlist object (not created by the parser?)"); }
 }
 
 AV* VAstEnt::newAVEnt(VAstType type) {
-    // $avp = [type, {}]
     AV* avp = newAV();
-    initAVEnt(avp, type);
+    initAVEnt(avp, type, this->castAVp());
     return avp;
 }
 
-void VAstEnt::initAVEnt(AV* avp, VAstType type) {
-    // $avp = [type, {}]
+void VAstEnt::initAVEnt(AV* avp, VAstType type, AV* parentp) {
+    // $avp = [type, parent, {}]
     av_push(avp, newSViv(type));
+    if (parentp) {
+	av_push(avp, newRV((SV*)parentp) );
+    } else { // netlist top
+	av_push(avp, &PL_sv_undef);
+    }
     av_push(avp, newRV_noinc((SV*)newHV()) );
 }
 
 void VAstEnt::insert(VAstEnt* newentp, const string& name) {
-    if (debug()) cout<<"VAstEnt::insert under="<<this<<" "<<newentp<<"-"<<newentp->type().ascii()<<"-\""<<name<<"\"\n";
+    if (debug()) cout<<"VAstEnt::insert under="<<this<<" "<<newentp->ascii(name)<<"\"\n";
 
     HV* hvp = subhash(); assert(hvp);
 
@@ -121,7 +137,7 @@ VAstEnt* VAstEnt::insert(VAstType type, const string& name) {
     SV** svpp = hv_fetch(hvp, name.c_str(), name.length(), 1/*create*/);
     if (SvROK(*svpp)) return avToSymEnt((AV*)(SvRV(*svpp)));  // Already exists
 
-    // $avp = [type, {}]
+    // $avp = [type, this, {}]
     AV* sub_avp = newAVEnt(type);
     hv_store(hvp, name.c_str(), name.length(), newRV_noinc((SV*)sub_avp), 0);
     return avToSymEnt(sub_avp);
@@ -137,7 +153,7 @@ VAstEnt* VAstEnt::findSym (const string& name) {
     // $sub_avp = @{$table{$name}}
     AV* sub_avp = (AV*)(SvRV(svp));
     VAstEnt* entp = avToSymEnt(sub_avp);
-    if (debug()) cout<<"VAstEnt::find found under="<<this<<" "<<entp<<"-"<<entp->type().ascii()<<"-\""<<name<<"\"\n";
+    if (debug()) cout<<"VAstEnt::find found under="<<this<<" "<<entp->ascii(name)<<"\n";
     return entp;
 }
 
@@ -168,6 +184,12 @@ void VAstEnt::import(VAstEnt* pkgEntp, const string& id_or_star) {
 	    insert(avToSymEnt((AV*)(SvRV(svp))), name);
 	}
     }
+}
+
+string VAstEnt::ascii(const string& name) {
+    string out = cvtToStr((void*)this)+"-"+type().ascii();
+    if (name!="") out += "-\""+name+"\"";
+    return out;
 }
 
 #undef DBG_SV_DUMP
