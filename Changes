@@ -3,6 +3,20 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.211 2009/06/17
+
+***	Add SigParser::var callbacks on struct members, bug91. [Saul Cuellar]
+
+***	Add Preproc::defSubstitute define callbacks, bug94. [by Saul Cuellar]
+
+****	Fix parsing empty commas in port lists, bug97.  [Noam Meir]
+
+****	Fix compatibility with Getopt-Long-2.38, rt47030.  [by Marek Rouchal]
+
+****	Fix compile error under GCC 3.3.5.
+
+****	Work around compiler warning when using flex 2.5.35. [Jonathan Kimmitt]
+
 * Verilog::Language 3.210 2009/05/19
 
 ***	`__FILE__ now expands to a string, per draft SystemVerilog 2010(ish).
