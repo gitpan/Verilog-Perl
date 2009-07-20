@@ -21,9 +21,11 @@ INSTALLATION
     Verilog-Perl should run on any system with Perl, G++, Flex, and Bison.
     It is known to work on at least:
 
-    * sparc-sun-solaris2.5.1
-    * i386-linux
-    * i686-w2k-cygwin
+    *   sparc-sun-solaris2.5.1
+
+    *   i386-linux
+
+    *   i686-w2k-cygwin
 
   CPAN Installation
 

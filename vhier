@@ -16,7 +16,7 @@ use Verilog::Getopt;
 use strict;
 use vars qw ($Debug $VERSION);
 
-$VERSION = '3.211';
+$VERSION = '3.212';
 
 ######################################################################
 # main
@@ -112,7 +112,9 @@ sub vhier {
     if ($Opt_ResolveFiles) {
 	$nl->read_libraries();
 	foreach my $file (@files) {
-	    print $fh $nl->resolve_filename ($file, "all"), "\n";
+	    if (my $resolved = $nl->resolve_filename ($file, "all")) {
+		print $fh $resolved, "\n";
+	    }
 	}
 	return;
     }
