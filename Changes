@@ -3,7 +3,19 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
-* Verilog::Language 3.21****
+* Verilog::Language 3.213 2009/09/10
+
+***	Improved warning when "do" used as identifier.
+
+****	Fix compilation and installation on MacOS 10.4. [Robert Guenzel]
+
+****	Fix escaped preprocessor identifiers, bug106. [Nimrod Gileadi]
+
+****	Fix Perl 5.8.8 compile error, rt48226. [Marek Rouchal]
+
+****	Fix Perl 5.8.0 compile error with callbackgen. [Kjeld Svendsen]
+
+* Verilog::Language 3.212 2009/07/20
 
 ***	Fix syntax errors when using vhier/Netlist with --language 1364-2001.
 
