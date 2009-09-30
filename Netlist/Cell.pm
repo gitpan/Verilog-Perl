@@ -12,7 +12,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.213';
+$VERSION = '3.220';
 
 structs('new',
 	'Verilog::Netlist::Cell::Struct'
@@ -59,31 +59,32 @@ sub netlist {
 
 sub _link_guts {
     my $self = shift;
-    if ($self->submodname()) {
-	my $name = $self->submodname();
-	my $sm = ($self->netlist->find_module ($self->submodname())
-		  || $self->netlist->find_interface ($self->submodname()));
-	if (!$sm) {
-	    my $name2 = $self->netlist->remove_defines($self->submodname());
-	    $sm = ($self->netlist->find_module ($name2)
-		   || $self->netlist->find_module ($name2));
+    # This function is HOT, keep simple
+    if (!$self->submod) {
+	if (my $name = $self->submodname) {
+	    my $netlist = $self->netlist;
+	    my $sm = $netlist->find_module_or_interface_for_cell ($name);
+	    if (!$sm) {
+		my $name2 = $netlist->remove_defines($name);
+		$sm = $netlist->find_module_or_inteface_for_cell ($name2)
+		    if $name ne $name2;
+	    }
+	    if ($sm) {
+		$self->submod($sm);
+		$sm->is_top(0);
+	    }
 	}
-	$self->submod($sm);
-	$sm->is_top(0) if $sm;
-    }
-    foreach my $pinref ($self->pins) {
-	$pinref->_link();
     }
 }
 sub _link {
     my $self = shift;
+    # This function is HOT, keep simple
     $self->_link_guts();
     if (!$self->submod && Verilog::Language::is_gateprim($self->submodname)) {
 	$self->gateprim(1);
     }
     if (!$self->submod()
 	&& !$self->gateprim
-	&& !$self->netlist->{_relink}
 	&& !$self->module->is_libcell()
 	&& $self->netlist->{link_read}
 	&& !$self->netlist->{_missing_submod}{$self->submodname}
@@ -92,6 +93,7 @@ sub _link {
 	# Try 1: Direct filename
 	$self->netlist->read_file(filename=>$self->submodname, error_self=>0);
 	$self->_link_guts();
+	#
 	# Try 2: Libraries
 	if (!$self->submod()) {
 	    $self->netlist->read_libraries();
@@ -102,13 +104,16 @@ sub _link {
 	    $self->netlist->read_file(filename=>$self->submodname,
 				      error_self=>($self->netlist->{link_read_nonfatal} ? 0:$self));
 	}
-	# Got it; ask for another link
-	if ($self->submod()) {
-	    $self->netlist->{_relink} = 1;
-	} else {
+	# Still missing
+	if (!$self->submod()) {
 	    # Don't link this file again - speeds up if many common gate-ish missing primitives
 	    $self->netlist->{_missing_submod}{$self->submodname} = 1;
 	}
+	# Note if got it the new_module will add it to the _need_link list
+    }
+    # Link pins after module resolved, so don't do it multiple times if not found
+    foreach my $pinref ($self->pins) {
+	$pinref->_link();
     }
 }
 
@@ -117,7 +122,7 @@ sub lint {
     if (!$self->submod() && !$self->gateprim && !$self->netlist->{link_read_nonfatal}) {
         $self->error ($self,"Module/Program/Interface reference not found: ",$self->submodname(),,"\n");
     }
-    if (!$self->netlist->{skip_pin_interconnect}) {
+    if ($self->netlist->{use_vars}) {
 	foreach my $pinref ($self->pins) {
 	    $pinref->lint();
 	}

@@ -18,7 +18,7 @@ module v_hier_top (/*AUTOARG*/
 
    missing missing ();
 
-   // Width checks, bugvp65
+   // Width checks, bug65
    wire  	WC_w1;
    wire [0:0]   WC_w1b;
    wire [2:0]   WC_w3;
@@ -28,6 +28,10 @@ module v_hier_top (/*AUTOARG*/
    localparam [2:0]   WC_p3=0;
    localparam [-1:2]  WC_p4=0;
    localparam integer WC_pint=0;
+
+   // Assignments
+   wire  asn_clk;
+   assign asn_clk = clk;
 
 endmodule
 

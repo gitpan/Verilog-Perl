@@ -14,7 +14,7 @@ use base qw(Verilog::Netlist::Subclass);
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.213';
+$VERSION = '3.220';
 
 ######################################################################
 #### Error Handling
@@ -32,15 +32,17 @@ sub new {
     my $self = {_interfaces => {},
 		_modules => {},
 		_files => {},
-		options => undef,	# Usually pointer to Verilog::Getopt
 		implicit_wires_ok => 1,
- 		preproc => 'Verilog::Preproc',
 		link_read => 1,
 		logger => Verilog::Netlist::Logger->new,
+		options => undef,	# Usually pointer to Verilog::Getopt
 		symbol_table => [],	# Symbol table for Verilog::Parser
+ 		preproc => 'Verilog::Preproc',
 		#include_open_nonfatal => 0,
 		#keep_comments => 0,
+		use_vars => 1,
 		_libraries_done => {},
+		_need_link => [],	# Objects we need to ->link
 		@_};
     bless $self, $class;
     return $self;
@@ -51,6 +53,12 @@ sub new {
 
 sub link {
     my $self = shift;
+    while (defined(my $subref = pop @{$self->{_need_link}})) {
+	$subref->link();
+    }
+    # The above should have gotten everything, but a child class
+    # may rely on old behavior or have added classes outside our
+    # universe, so be nice and do it the old way too.
     $self->{_relink} = 1;
     while ($self->{_relink}) {
 	$self->{_relink} = 0;
@@ -65,6 +73,7 @@ sub link {
 	}
     }
 }
+
 sub lint {
     my $self = shift;
     foreach my $subref ($self->modules_sorted) {
@@ -112,6 +121,7 @@ sub new_module {
 	 is_top=>1,
 	 @_);
     $self->{_modules}{$modref->name} = $modref;
+    push @{$self->{_need_link}}, $modref;
     return $modref;
 }
 
@@ -119,8 +129,8 @@ sub defvalue_nowarn {
     my $self = shift;
     my $sym = shift;
     # Look up the value of a define, letting the user pick the accessor class
-    if ($self->{options}) {
-	return $self->{options}->defvalue_nowarn($sym);
+    if (my $opt=$self->{options}) {
+	return $opt->defvalue_nowarn($sym);
     }
     return undef;
 }
@@ -128,14 +138,20 @@ sub defvalue_nowarn {
 sub remove_defines {
     my $self = shift;
     my $sym = shift;
-    my $val = "x";
-    while (defined $val) {
-	last if $sym eq $val;
-	(my $xsym = $sym) =~ s/^\`//;
-	$val = $self->defvalue_nowarn($xsym);  #Undef if not found
-	$sym = $val if defined $val;
-    }
+    # This function is HOT
+    # We only remove defines one level deep, for historical reasons.
+    # We don't require a ` as SystemC also uses this function and doesn't use `.
+    (my $xsym = $sym) =~ s/^\`//;
+    my $val = $self->defvalue_nowarn($xsym);  #Undef if not found
+    $sym = $val if defined $val;
     return $sym;
+}
+
+sub find_module_or_interface_for_cell {
+    # ($self,$name)   Are arguments, hardcoded below
+    # Hot function, used only by Verilog::Netlist::Cell linking
+    # Doesn't need to remove defines, as that's already done by caller
+    return $_[0]->{_modules}{$_[1]} || $_[0]->{_interfaces}{$_[1]};
 }
 
 sub find_module {
@@ -188,6 +204,7 @@ sub new_interface {
 	(netlist=>$self,
 	 @_);
     $self->{_interfaces}{$modref->name} = $modref;
+    push @{$self->{_need_link}}, $modref;
     return $modref;
 }
 
@@ -246,6 +263,7 @@ sub new_file {
     defined $fileref->name or carp "%Error: No name=> specified, stopped";
     $self->{_files}{$fileref->name} = $fileref;
     $fileref->basename (Verilog::Netlist::Module::modulename_from_filename($fileref->name));
+    push @{$self->{_need_link}}, $fileref;
     return $fileref;
 }
 
@@ -351,7 +369,7 @@ Verilog::Netlist - Verilog Netlist
     }
     # Read in any sub-modules
     $nl->link();
-    $nl->lint();
+    #$nl->lint();  # Optional, see docs; probably not wanted
     $nl->exit_if_error();
 
     foreach my $mod ($nl->top_modules_sorted) {
@@ -412,7 +430,14 @@ See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =item $netlist->lint
 
-Error checks the entire netlist structure.
+Error checks the entire netlist structure.  Currently there are only two
+checks, that modules are bound to instantiations (which is also checked by
+$netlist->link), and that signals aren't multiply driven.  Note that as
+there is no elaboration you may get false errors about multiple drivers
+from generate statements that are mutually exclusive.  For this reason and
+the few lint checks you may not want to use this method.  Alternatively to
+avoid pin interconnect checks, set the $netlist->new
+(...use_vars=>0...) option.
 
 =item $netlist->link()
 
@@ -423,10 +448,6 @@ undefined modules will be searched for using the Verilog::Getopt package,
 passed by a reference in the creation of the netlist.  To suppress errors
 in any missing references, set link_read_nonfatal=>1 also.
 
-If keep_comments=>1 is passed, comment fields will be entered on net
-declarations into the Vtest::Netlist::Net structures.  Otherwise all
-comments are stripped for speed.
-
 =item $netlist->new
 
 Creates a new netlist structure.  Pass optional parameters by name,
@@ -434,14 +455,34 @@ with the following parameters:
 
 =over 8
 
-=item options => $opt_object
-
-An optional pointer to a Verilog::Getopt object, to be used for locating
-files.
-
 =item implicit_wires_ok => $true_or_false
 
 Indicates whether to allow undeclared wires to be used.
+
+=item include_open_nonfatal => $true_or_false
+
+Indicates that include files that do not exist should be ignored.
+
+=item keep_comments => $true_or_false
+
+Indicates that comment fields should be preserved and on net declarations
+into the Vtest::Netlist::Net structures.  Otherwise all comments are
+stripped for speed.
+
+=item link_read => $true_or_false
+
+Indicates whether or not the parser should automatically search for
+undefined modules through the "options" object.
+
+=item link_read_nonfatal => $true_or_false
+
+Indicates that modules that referenced but not found should be ignored,
+rather than causing an error message.
+
+=item lint_pin_interconnect => $true_or_false
+
+Indicates that lint should Interconnect information is not needed, do not read it, nor report lint
+related pin warnings.  Greatly improves performance.
 
 =item logger => object
 
@@ -450,27 +491,20 @@ should be a Verilog::Netlist::Logger object, or derived from one.  If
 unspecified, a Verilog::Netlist::Logger local to this netlist will be
 used.
 
+=item options => $opt_object
+
+An optional pointer to a Verilog::Getopt object, to be used for locating
+files.
+
 =item preproc => $package_name
 
 The name of the preprocessor class. Defaults to "Verilog::Preproc".
 
-=item link_read => $true_or_false
+=item use_vars => $true_or_false
 
-Indicates whether or not the parser should automatically search for
-undefined modules through the "options" object.
-
-=item include_open_nonfatal => $true_or_false
-
-Indicates that include files that do not exist should be ignored.
-
-=item keep_comments => $true_or_false
-
-Indicates that comments should be preserved in the structure (slower).
-
-=item link_read_nonfatal => $true_or_false
-
-Indicates that modules that referenced but not found should be ignored,
-rather than causing an error message.
+Indicates that signals, variables, and pin interconnect information is
+needed; set by default.  If clear do not read it, nor report lint related
+pin warnings, which can greatly improve performance.
 
 =back
 

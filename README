@@ -98,6 +98,10 @@ PACKAGES
         A Verilog::Netlist::Cell object is created by Verilog::Netlist for
         every instantiation in the current module.
 
+    Verilog::Netlist::ContAssign
+        A Verilog::Netlist::ContAssign object is created by Verilog::Netlist
+        for every continuous assignment in the current module.
+
     Verilog::Netlist::File
         Verilog::Netlist::File allows Verilog::Netlist objects to be read
         and written in Verilog format.
@@ -226,10 +230,10 @@ SEE ALSO
     Verilog::EditFiles, Verilog::Getopt, Verilog::Language Verilog::Netlist,
     Verilog::Parser, Verilog::Preproc, Verilog::SigParser
 
-    Verilog::Netlist::Cell, Verilog::Netlist::File,
-    Verilog::Netlist::Interface, Verilog::Netlist::Module,
-    Verilog::Netlist::Net, Verilog::Netlist::Pin, Verilog::Netlist::Port,
-    Verilog::Netlist::Subclass,
+    Verilog::Netlist::Cell, Verilog::Netlist::ContAssign,
+    Verilog::Netlist::File, Verilog::Netlist::Interface,
+    Verilog::Netlist::Module, Verilog::Netlist::Net, Verilog::Netlist::Pin,
+    Verilog::Netlist::Port, Verilog::Netlist::Subclass,
 
     And the <http://www.veripool.org/verilog-mode>Verilog-Mode package for
     Emacs.

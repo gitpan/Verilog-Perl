@@ -52,7 +52,7 @@ private:
     VParseLex*	m_lexp;		///< Current lexer state (NULL = closed)
     VParseGrammar* m_grammarp;	///< Current bison state (NULL = closed)
     bool	m_eof;		///< At end of file
-    bool	m_callbackEnable; ///< Callbacks are enabled
+    bool	m_callbackMasterEna; ///< Callbacks are enabled
 
     bool	m_useUnreadback;///< Need m_unreadback tracking
     string	m_unreadback;	///< Otherwise unprocessed whitespace before current token
@@ -124,8 +124,8 @@ public:
     void setEof();				///< Got a end of file
     bool sigParser() const { return m_sigParser; }
     void language(const char* valuep);
-    void callbackEnable(bool flag) { m_callbackEnable=flag; }
-    bool callbackEnable() const { return m_callbackEnable; }
+    void callbackMasterEna(bool flag) { m_callbackMasterEna=flag; }
+    bool callbackMasterEna() const { return m_callbackMasterEna; }
 
     VFileLine* inFilelinep() const;		///< File/Line number for last callback
     void inFileline(const string& filename, int lineno) { m_inFilelinep = m_inFilelinep->create(filename, lineno); }
@@ -134,7 +134,8 @@ public:
 
     string unreadback() const { return (m_useUnreadback ? m_unreadback : "new(...,use_unreadback=>0) was used"); }
     void unreadback(const string& text) { if (m_useUnreadback) m_unreadback = text; }
-    void unreadbackCat(const char* textp, int len) { if (m_useUnreadback) m_unreadback += string(textp,len); }
+    void unreadbackCat(const string& text) { if (m_useUnreadback) m_unreadback += text; }
+    void unreadbackCat(const char* textp, int len) { unreadbackCat(string(textp,len)); }
 
     // The default behavior is to pass all unknown `defines right through.
     // This lets the user determine how to report the errors.  It also nicely
@@ -160,6 +161,7 @@ public:
     virtual void symbolCb(VFileLine* fl, const string& text) = 0;
     virtual void sysfuncCb(VFileLine* fl, const string& text) = 0;
     // Verilog::SigParser Callback methods
+    virtual void contassignCb(VFileLine* fl, const string& kwd, const string& lhs, const string& rhs) = 0;
     virtual void endcellCb(VFileLine* fl, const string& kwd) = 0;
     virtual void endinterfaceCb(VFileLine* fl, const string& kwd) = 0;
     virtual void endmoduleCb(VFileLine* fl, const string& kwd) = 0;

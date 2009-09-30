@@ -14,10 +14,11 @@ use base qw(Verilog::Parser);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.213';
+$VERSION = '3.220';
 
 our @_Callback_Names = qw(
   attribute
+  contassign
   endcell
   endinterface
   endtaskfunc
@@ -89,6 +90,12 @@ sub comment {
 
 # The my's aren't needed since we do nothing, but are useful if the
 # user copies them from here to their program.
+
+sub contassign {
+    my $self = shift;
+    my $lhs = shift;
+    my $rhs = shift;
+}
 
 sub endcell {
     my $self = shift;
@@ -261,6 +268,13 @@ of each comment line (C<//key rest> to end of line) or comment block
 (C</*key rest */).  It calls C<$self->attribute( meta_text )>
 if the first word has a true value in hash C<$self->metacomment>.
 
+=item $self->contassign ( $token, $lhs, $rhs )
+
+This method is called at a continuous "assign" keyword, with the left and
+right hand part of the assignment.  Note that "wire" initializations are
+not considered assignments; those are received via the var callback's value
+parameter.
+
 =item $self->endcell ( $token )
 
 This method is called at the end of defining a cell. It is useful for
@@ -336,6 +350,9 @@ This method is called when a pin on a instant is defined.  If a pin name
 was not provided and the connection is by position, name will be '' or
 undef.
 
+If you do not need the pin nor var nor port callbacks, consider the
+"$self->new (... use_vars=>0 ...)"  option to accelerate parsing.
+
 =item $self->port ( $name, $objof, $direction, $data_type, $array, $pinnum )
 
 This method is called when a module port is defined.  It may be called
@@ -349,6 +366,9 @@ the data type ('reg', 'user_type_t', 'signed [31:0]', etc).  $array is the
 arraying of the port ('[1:0][2:0]', '', etc).  $pinnum is set to the pin
 number for ANSI style declarations, and 0 for Verilog 1995 declarations
 made outside the port list.
+
+If you do not need the pin nor var nor port callbacks, consider the
+"$self->new (... use_vars=>0 ...)"  option to accelerate parsing.
 
 =item $self->ppdefine ( $defvar, $definition )
 
@@ -382,6 +402,9 @@ or expression).
 
 Note typedefs are included here, because "parameter type" is both a
 variable and a type declaration.
+
+If you do not need the pin nor var nor port callbacks, consider the
+"$self->new (... use_vars=>0 ...)"  option to accelerate parsing.
 
 Below are some example declarations and the callbacks:
 

@@ -14,7 +14,7 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.213';
+$VERSION = '3.220';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 
@@ -39,6 +39,8 @@ bootstrap Verilog::Parser;
 # sub _open (class)
 # sub _debug (class, level)
 # sub _prologe (class, flag)
+# sub _callback_master_enable
+# sub _use_cb (class, name, flag)
 # sub parse (class)
 # sub eof (class)
 # sub filename (class, [setit])
@@ -53,8 +55,11 @@ sub new {
     my $class = shift;  $class = ref $class if ref $class;
     my $self = {_sigparser=>0,
 		symbol_table=>[],	# .xs will init further for us
+		use_vars => 1,
 		use_unreadback => 1,   # Backward compatibility
 		use_std => undef,	# Undef = silent
+		#use_cb_{callback-name} => 0/1
+		#
 		#_debug		# Don't set, use debug() accessor to change level
 		@_};
 
@@ -66,6 +71,18 @@ sub new {
 		$self->{_sigparser},
 		$self->{use_unreadback},
 		);
+
+    $self->{use_cb_contassign} = $self->{use_vars} if !exists $self->{use_cb_contassign};
+    $self->{use_cb_pin}    = $self->{use_vars} if !exists $self->{use_cb_pin};
+    $self->{use_cb_port}   = $self->{use_vars} if !exists $self->{use_cb_port};
+    $self->{use_cb_var}    = $self->{use_vars} if !exists $self->{use_cb_var};
+
+    foreach my $key (keys %{$self}) {
+	if ($key =~ /^use_cb_(.*)/) {
+	    $self->_use_cb($1, $self->{$key});
+	}
+    }
+
     $self->language(Verilog::Language::language_standard());
     $self->debug($Debug) if $Debug;
     return $self;
@@ -114,13 +131,13 @@ sub std {
 	if ($quiet) {
 	    print "Disabling debug during std:: loading\n" if $self->{_debug};
 	    $self->debug(0);
-	    $self->_callback_enable(0); # //verilog-perl callbacks off
+	    $self->_callback_master_enable(0); # //verilog-perl callbacks off
 	}
 	$self->eof;  #Flush user code before callback disable
 	$self->parse(Verilog::Std::std);
 	$self->eof;
 	if ($quiet) {
-	    $self->_callback_enable(1); # //verilog-perl callbacks on
+	    $self->_callback_master_enable(1); # //verilog-perl callbacks on
 	    $self->debug($olddbg);
 	}
     }
@@ -153,8 +170,8 @@ sub parse_preproc_file {
 
     ref($pp) or croak "%Error: not passed a Verilog::Preproc object";
     $self->reset();
-    while (defined(my $line = $pp->getline())) {
-	$self->parse ($line);
+    while (defined(my $text = $pp->getall)) {
+	$self->parse ($text);
     }
     $self->eof;
     return $self;
@@ -284,12 +301,7 @@ parser to filter out such errors if it cares.
 
 =item $parser = Verilog::Parser->new (args...)
 
-Create a new Parser. Passing the named argument "use_unreadback => 0" will
-disable later use of the unreadback method, which may improve performance.
-
-Adding "use_std => 1" will add parsing of the SystemVerilog built-in std::
-package, or "use_std => 0" will disable it.  If unspecified it is silently
-included (no callbacks will be involed) when suspected to be necessary.
+Create a new Parser.
 
 Adding "symbol_table => []" will use the specified symbol table for this
 parse, and modify the array reference to include those symbols detected by
@@ -298,6 +310,24 @@ to exist before they are referenced, you must pass the same symbol_table to
 subsequent parses that are for the same compilation scope.  The internals
 of this symbol_table should be considered opaque, as it will change between
 package versions, and must not be modified by user code.
+
+Adding "use_cb_{callback-name} => 0" will disable the specified callback.
+By default, all callbacks will be called; disabling callbacks can greatly
+speed up the parser as a large percentage of time is spent calling between
+C and Perl to invoke the callbacks.  When using this feature,
+use_unreadback=>0 should be used too, as since whole tokens are skipped,
+skipping whitespace shouldn't matter either.
+
+Adding "use_std => 1" will add parsing of the SystemVerilog built-in std::
+package, or "use_std => 0" will disable it.  If unspecified it is silently
+included (no callbacks will be involed) when suspected to be necessary.
+
+Adding "use_unreadback => 0" will disable later use of the unreadback
+method, which may improve performance.
+
+Adding "use_vars => 0" will disable contassign, pin, var and port callbacks to
+Verilog::SigParser.  This can greatly speed parsing when variable and
+interconnect information is not required.
 
 =item $parser->callback_names ()
 

@@ -123,7 +123,7 @@ struct VPreprocImp : public VPreprocOpaque {
     int getToken();
     void parseTop();
     void parseUndef();
-    string getline();
+    string gettext(bool stop_at_eol);
     bool isEof() const { return (m_lexp==NULL); }
     void open(string filename, VFileLine* filelinep);
     void insertUnreadback(const string& text) { m_lineCmt += text; }
@@ -136,6 +136,7 @@ private:
     string defineSubst(VPreDefRef* refp);
     void addLineComment(int enter_exit_level);
     string trimWhitespace(const string& strg);
+    void unputString(const string& strg);
 
     void parsingOn() { m_off--; assert(m_off>=0); if (!m_off) addLineComment(0); }
     void parsingOff() { m_off++; }
@@ -160,7 +161,11 @@ void VPreproc::open(string filename, VFileLine* filelinep) {
 }
 string VPreproc::getline() {
     VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
-    return idatap->getline();
+    return idatap->gettext(true);
+}
+string VPreproc::getall() {
+    VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
+    return idatap->gettext(false);
 }
 void VPreproc::debug(int level) {
     VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
@@ -236,6 +241,18 @@ const char* VPreprocImp::tokenName(int tok) {
     case VP_ERROR	: return("ERROR");
     default: return("?");
     }
+}
+
+void VPreprocImp::unputString(const string& strg) {
+    // We used to just m_lexp->unputString(strg.c_str());
+    // However this can lead to "flex scanner push-back overflow"
+    // so instead we scan from a temporary buffer, then on EOF return.
+    // This is also faster than the old scheme, amazingly.
+    if (m_lexp->m_bufferStack.empty() || m_lexp->m_bufferStack.top()!=m_lexp->currentBuffer()) {
+	fatalSrc("bufferStack missing current buffer; will return incorrectly");
+	// Hard to debug lost text as won't know till much later
+    }
+    m_lexp->scanBytes(strg);
 }
 
 string VPreprocImp::trimWhitespace(const string& strg) {
@@ -387,8 +404,6 @@ void VPreprocImp::open(string filename, VFileLine* filelinep) {
     m_lexp->m_curFilelinep = m_preprocp->filelinep()->create(filename, 1);
     m_filelinep = m_lexp->m_curFilelinep;  // Remember token start location
     addLineComment(1); // Enter
-
-    yy_switch_to_buffer(m_lexp->m_yyState);
 }
 
 void VPreprocImp::insertUnreadbackAtBol(const string& text) {
@@ -413,16 +428,27 @@ void VPreprocImp::addLineComment(int enter_exit_level) {
 }
 
 void VPreprocImp::eof() {
-    // Remove current lexer
-    if (debug()) cout<<m_filelinep<<"EOF!\n";
-    addLineComment(2);	// Exit
-    delete m_lexp;  m_lexp=NULL;
-    // Perhaps there's a parent file including us?
-    if (!m_includeStack.empty()) {
-	// Back to parent.
-	m_lexp = m_includeStack.top(); m_includeStack.pop();
-	addLineComment(0);
-	yy_switch_to_buffer(m_lexp->m_yyState);
+    // Perhaps we're completing unputString
+    if (m_lexp->m_bufferStack.size()>1) {
+	if (debug()) cout<<m_filelinep<<"EOS\n";
+	// Switch to file or next unputString, but not a eof so don't delete lexer
+	yy_delete_buffer(m_lexp->currentBuffer());
+	m_lexp->m_bufferStack.pop();  // Must work as size>1
+	yy_switch_to_buffer(m_lexp->m_bufferStack.top());
+    } else {
+	// Remove current lexer
+	if (debug()) cout<<m_filelinep<<"EOF!\n";
+	addLineComment(2);	// Exit
+	// Destructor will call yy_delete_buffer
+	delete m_lexp;  m_lexp=NULL;
+	// Perhaps there's a parent file including us?
+	if (!m_includeStack.empty()) {
+	    // Back to parent.
+	    m_lexp = m_includeStack.top(); m_includeStack.pop();
+	    addLineComment(0);
+	    if (m_lexp->m_bufferStack.empty()) fatalSrc("No include buffer to return to");
+	    yy_switch_to_buffer(m_lexp->m_bufferStack.top());  // newest buffer in older lexer
+	}
     }
 }
 
@@ -648,6 +674,7 @@ int VPreprocImp::getToken() {
 	    if (m_defRefs.empty()) error("InternalError: Shouldn't be in DEFARG w/o active defref");
 	    VPreDefRef* refp = &(m_defRefs.top());
 	    refp->nextarg(refp->nextarg()+m_lexp->m_defValue); m_lexp->m_defValue="";
+	    if (debug()) cout<<"defarg++ "<<refp->nextarg()<<endl;
 	    if (tok==VP_DEFARG && yyleng==1 && yytext[0]==',') {
 		refp->args().push_back(refp->nextarg());
 		m_state = ps_DEFARG;
@@ -661,13 +688,17 @@ int VPreprocImp::getToken() {
 		// Similar code in non-parenthesized define (Search for END_OF_DEFARG)
 		m_defRefs.pop();
 		out = m_preprocp->defSubstitute(out);
-		m_lexp->unputString(out.c_str());
 		if (m_defRefs.empty()) {
+		    unputString(out);
 		    m_state = ps_TOP;
 		    m_lexp->m_parenLevel = 0;
 		}
 		else {  // Finished a defref inside a upper defref
+		    // Can't subst now, or
+		    // `define a(ign) x,y
+		    // foo(`a(ign),`b)  would break because a contains comma
 		    refp = &(m_defRefs.top());  // We popped, so new top
+		    refp->nextarg(refp->nextarg()+m_lexp->m_defValue+out); m_lexp->m_defValue="";
 		    m_lexp->m_parenLevel = refp->parenLevel();
 		    m_state = ps_DEFARG;
 		}
@@ -787,13 +818,13 @@ int VPreprocImp::getToken() {
 		else if (params=="0") {  // Found, as simple substitution
 		    string out = m_preprocp->defValue(name);
 		    if (debug()) cout<<"Defref `"<<name<<" => '"<<out<<"'"<<endl;
+		    out = m_preprocp->defSubstitute(out);
 		    // Similar code in parenthesized define (Search for END_OF_DEFARG)
 		    if (m_defRefs.empty()) {
 			// Just output the substitution
-			out = m_preprocp->defSubstitute(out);
-			m_lexp->unputString(out.c_str());
-		    } else {
-			// Inside another define.  Can't subst now, or
+			unputString(out);
+		    } else {  // Inside another define.
+			// Can't subst now, or
 			// `define a x,y
 			// foo(`a,`b)  would break because a contains comma
 			VPreDefRef* refp = &(m_defRefs.top());
@@ -840,13 +871,14 @@ int VPreprocImp::getToken() {
     }
 }
 
-string VPreprocImp::getline() {
+string VPreprocImp::gettext(bool stop_at_eol) {
     // Get a single line from the parse stream.  Buffer unreturned text until the newline.
     if (isEof()) return "";
     while (1) {
-	const char* rtnp;
+	const char* rtnp = NULL;
 	bool gotEof = false;
-	while (NULL==(rtnp=strchr(m_lineChars.c_str(),'\n')) && !gotEof) {
+	while ((!stop_at_eol || NULL==(rtnp=strchr(m_lineChars.c_str(),'\n')))
+	       && !gotEof) {
 	    int tok = getToken();
 	    if (debug()) {
 		string buf = string (yytext, yyleng);
@@ -870,7 +902,7 @@ string VPreprocImp::getline() {
 	}
 
 	// Make new string with data up to the newline.
-	int len = rtnp-m_lineChars.c_str()+1;
+	int len = stop_at_eol ? (rtnp-m_lineChars.c_str()+1) : m_lineChars.length();
 	string theLine(m_lineChars, 0, len);
 	m_lineChars = m_lineChars.erase(0,len);	// Remove returned characters
 

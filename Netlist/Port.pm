@@ -12,7 +12,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.213';
+$VERSION = '3.220';
 
 structs('_new_base',
 	'Verilog::Netlist::Port::Struct'
@@ -54,6 +54,8 @@ sub delete {
 ######################################################################
 
 sub netlist { return $_[0]->module->netlist; }
+
+sub logger { return $_[0]->netlist->logger; }
 
 sub type {  # Backward compatibility only
     my $self=shift;

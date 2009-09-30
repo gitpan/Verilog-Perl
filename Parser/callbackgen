@@ -9,7 +9,7 @@ use Pod::Usage;
 use strict;
 use vars qw ($Debug $VERSION);
 
-$VERSION = '3.213';
+$VERSION = '3.220';
 
 # xs_manual=>1,   -> The .xs file makes the handler itself
 
@@ -25,6 +25,7 @@ my %Cbs =
      symbol	=> {which=>'Parser', args => [text=>'string']},
      sysfunc	=> {which=>'Parser', args => [text=>'string']},
      #
+     contassign => {which=>'SigParser', args => [kwd=>'string', lhs=>'string', rhs=>'string']},
      endcell	=> {which=>'SigParser', args => [kwd=>'string']},
      endinterface=>{which=>'SigParser', args => [kwd=>'string']},
      endmodule	=> {which=>'SigParser', args => [kwd=>'string']},
@@ -113,6 +114,16 @@ sub filter {
 	    if ($line =~ /CALLBACKGEN_GENERATED_END/) {
 		$strip = 0;
 	    }
+	    elsif ($line =~ /CALLBACKGEN_H_MEMBERS/) {
+		push @out, "    // CALLBACKGEN_GENERATED_BEGIN - GENERATED AUTOMATICALLY by callbackgen\n";
+		push @out, _h_use_cb();
+		push @out, "    // CALLBACKGEN_GENERATED_END - GENERATED AUTOMATICALLY by callbackgen\n";
+	    }
+	    elsif ($line =~ /CALLBACKGEN_CB_USE/) {
+		push @out, "    // CALLBACKGEN_GENERATED_BEGIN - GENERATED AUTOMATICALLY by callbackgen\n";
+		push @out, _c_use_cb();
+		push @out, "    // CALLBACKGEN_GENERATED_END - GENERATED AUTOMATICALLY by callbackgen\n";
+	    }
 	    elsif ($line =~ /CALLBACKGEN_H_VIRTUAL(_0)?/) {
 		my $zero = (($1||"") eq "_0") ? " = 0":"";
 		push @out, "    // CALLBACKGEN_GENERATED_BEGIN - GENERATED AUTOMATICALLY by callbackgen\n";
@@ -133,6 +144,7 @@ sub filter {
 		    next if $Cbs{$cb}{xs_manual};
 		    push @out, _xs($cb);
 		}
+		push @out, _xs_use_cb();
 		push @out, "// CALLBACKGEN_GENERATED_END - GENERATED AUTOMATICALLY by callbackgen\n";
 	    }
 	    elsif ($line =~ /CALLBACKGEN/) {
@@ -181,19 +193,23 @@ sub _xs {
     my @out;
     push @out, "// GENERATED AUTOMATICALLY by callbackgen\n";
     push @out, "void VParserXs::"._func($cb)."("._arglist($cb).") {\n";
-    push @out, "    cbFileline(fl);\n";
+    my $enable = "callbackMasterEna()";
+    $enable .= " && m_useCb_${cb}";
+    $enable .= " && $Cbs{$cb}{enable}" if $Cbs{$cb}{enable};
+    push @out, "    if ($enable) {\n";
+    push @out, "        cbFileline(fl);\n";
     my $callargs="";
     my $n=1;
     for (my $i=0; $i<=$#{$Cbs{$cb}{args}}; $i+=2) {
 	my ($arg,$type) = ($Cbs{$cb}{args}[$i],$Cbs{$cb}{args}[$i+1]);
 	if ($type eq 'string') {
-	    push @out, "    static string hold${n}; hold${n} = $arg;\n";
+	    push @out, "        static string hold${n}; hold${n} = $arg;\n";
 	    $callargs .= ", hold${n}.c_str()";
 	} elsif ($type eq 'bool') {
-	    push @out, "    static string hold${n}; hold${n} = $arg ? \"1\":\"0\";\n";
+	    push @out, "        static string hold${n}; hold${n} = $arg ? \"1\":\"0\";\n";
 	    $callargs .= ", hold${n}.c_str()";
 	} elsif ($type eq 'int') {
-	    push @out, "    static string hold${n}; static char num".$n."[30]; sprintf(num${n},\"%d\",$arg); hold${n}=num${n};\n";
+	    push @out, "        static string hold${n}; static char num".$n."[30]; sprintf(num${n},\"%d\",$arg); hold${n}=num${n};\n";
 	    $callargs .= ", hold${n}.c_str()";
 	} elsif ($type eq 'undef') {
 	    $callargs .= ", NULL";
@@ -204,7 +220,43 @@ sub _xs {
 	$n++;
     }
     my $narg = $n-1;
-    push @out, "    if (callbackEnable()) call(NULL, $narg, \"$cb\"$callargs);\n";
+    push @out, "        call(NULL, $narg, \"$cb\"$callargs);\n";
+    push @out, "    }\n";
+    push @out, "}\n";
+    return @out;
+}
+
+#######################################################################
+
+sub _h_use_cb {
+    my @out;
+    push @out, "    struct {  // Bit packed to help the cache\n";
+    foreach my $cb (sort {$a cmp $b} keys %Cbs) {
+	push @out, "        bool m_useCb_${cb}:1;\n";
+    }
+    push @out, "    };\n";
+    return @out;
+}
+
+sub _c_use_cb {
+    my @out;
+    push @out, "    void set_cb_use() {\n";
+    foreach my $cb (sort {$a cmp $b} keys %Cbs) {
+	push @out, "       m_useCb_${cb} = true;\n";
+    }
+    push @out, "   }\n";
+    return @out;
+}
+
+sub _xs_use_cb {
+    my @out;
+    push @out, "// GENERATED AUTOMATICALLY by callbackgen\n";
+    # Trailing Ena so it doesn't look like it is a callback itself
+    push @out, "void VParserXs::useCbEna(const char* name, bool flag) {\n";
+    push @out, "    if (0) ;\n";
+    foreach my $cb (sort {$a cmp $b} keys %Cbs) {
+	push @out, "    else if (0==strcmp(name,\"${cb}\")) m_useCb_${cb} = flag;\n";
+    }
     push @out, "}\n";
     return @out;
 }
