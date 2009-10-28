@@ -87,9 +87,11 @@ void yyerrorf(const char* format, ...) {
 %s V95 V01 V05 S05
 %s STRING ATTRMODE
 %s CMTMODE PROTMODE
+%s DUMMY_TO_AVOID_WARNING
 
 space	[ ]
 ws	[ \t\f\r]+
+crnl	[\r]*[\n]
 	/* identifier */
 id	[a-zA-Z_][a-zA-Z0-9_$]*
 	/* escaped identifier */
@@ -102,7 +104,7 @@ escid	\\[^ \t\f\r\n]+
   /* Verilog 1995 */
 <V95,V01,V05,S05>{
   {ws}			{ StashPrefix; }	/* otherwise ignore white-space */
-  \n			{ StashPrefix; NEXTLINE(); }		/* Count line numbers */
+  {crnl}		{ StashPrefix; NEXTLINE(); }		/* Count line numbers */
   /*     Keywords */
   "always"		{ FL; VALTEXT; CALLBACK(keywordCb); return yALWAYS; }
   "and"			{ FL; VALTEXT; CALLBACK(keywordCb); return yAND; }
@@ -514,12 +516,13 @@ escid	\\[^ \t\f\r\n]+
 
   /************************************************************************/
   /* STRINGS */
-<STRING>\n 		{ yyerrorf("Unterminated string\n"); }
-<STRING>\r		;
-<STRING>[^\"\\]* 	{ yymore(); }
+<STRING><<EOF>>		{ yyerrorf("EOF in unterminated string"); yyleng = 0; yy_pop_state(); }
+<STRING>{crnl}		{ yyerrorf("Unterminated string"); NEXTLINE(); }
+<STRING>\\{crnl} 	{ NEXTLINE(); yymore(); }
 <STRING>\\.	 	{ yymore(); }
 <STRING>\" 		{ yy_pop_state();
 			  FL; VALTEXT; CALLBACK(stringCb); return yaSTRING; }
+<STRING>.	 	{ yymore(); }
 
   /************************************************************************/
   /* Multi-line COMMENTS */
@@ -540,7 +543,7 @@ escid	\\[^ \t\f\r\n]+
 
   /************************************************************************/
   /* Attributes */
-<ATTRMODE>\n		{ yymore(); NEXTLINE(); }
+<ATTRMODE>{crnl}	{ yymore(); NEXTLINE(); }
 <ATTRMODE>"*)"		{ FL; VALTEXT; CALLBACK(attributeCb); yy_pop_state(); }
 <ATTRMODE>. 		{ yymore(); }
 <ATTRMODE><<EOF>>	{ yyerrorf("EOF in (*");
@@ -558,7 +561,7 @@ escid	\\[^ \t\f\r\n]+
   "`accelerate"			{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`autoexpand_vectornets"	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`celldefine"			{ FL; VALTEXT; CALLBACK(preprocCb); LEXP->m_inCellDefine=true; }
-  "`default_decay_time"{ws}+[^\n]*	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog spec - delays only
+  "`default_decay_time"{ws}+[^\n\r]*	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog spec - delays only
   "`default_nettype"{ws}+[a-zA-Z0-9]*	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog 2001
   "`delay_mode_distributed"	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog spec - delays only
   "`delay_mode_path"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog spec - delays only
@@ -570,7 +573,7 @@ escid	\\[^ \t\f\r\n]+
   "`endprotect"			{ FL; VALTEXT; CALLBACK(preprocCb); }
   "`expand_vectornets"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`inline"			{ FL; VALTEXT; CALLBACK(preprocCb); }
-  "`line"{ws}+[^\n]*\n		{ LPARSEP->inLineDirective(yytext); FL; VALTEXT; CALLBACK(preprocCb); }
+  "`line"{ws}+[^\n\r]*{crnl}	{ LPARSEP->inLineDirective(yytext); FL; VALTEXT; CALLBACK(preprocCb); }
   "`noaccelerate"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`noexpand_vectornets"	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`noremove_gatenames"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
@@ -578,14 +581,14 @@ escid	\\[^ \t\f\r\n]+
   "`nosuppress_faults"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`nounconnected_drive"	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`portcoerce"			{ FL; VALTEXT; CALLBACK(preprocCb); }
-  "`pragma"{ws}+[^\n]*\n	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog 2005
+  "`pragma"{ws}+[^\n\r]*	{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog 2005
   "`protect"			{ FL; VALTEXT; CALLBACK(preprocCb); }
   "`protected"			{ FL; VALTEXT; CALLBACK(preprocCb); yy_push_state(PROTMODE); }
   "`remove_gatenames"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`remove_netnames"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`resetall"			{ FL; VALTEXT; CALLBACK(preprocCb); }
   "`suppress_faults"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
-  "`timescale"{ws}+[^\n]*\n	{ FL; VALTEXT; CALLBACK(preprocCb); NEXTLINE(); }
+  "`timescale"{ws}+[^\n\r]*	{ FL; VALTEXT; CALLBACK(preprocCb); }
 
   /* See also setLanguage below */
   "`begin_keywords"[ \t]*\"1364-1995\"		{ yy_push_state(V95); CALLBACK(preprocCb); }

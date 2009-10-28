@@ -12,7 +12,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.220';
+$VERSION = '3.221';
 
 structs('new',
 	'Verilog::Netlist::Cell::Struct'
@@ -66,7 +66,7 @@ sub _link_guts {
 	    my $sm = $netlist->find_module_or_interface_for_cell ($name);
 	    if (!$sm) {
 		my $name2 = $netlist->remove_defines($name);
-		$sm = $netlist->find_module_or_inteface_for_cell ($name2)
+		$sm = $netlist->find_module_or_interface_for_cell ($name2)
 		    if $name ne $name2;
 	    }
 	    if ($sm) {
