@@ -12,7 +12,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::ContAssign::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.221';
+$VERSION = '3.222';
 
 structs('new',
 	'Verilog::Netlist::ContAssign::Struct'
@@ -52,7 +52,7 @@ sub link {}
 
 sub verilog_text {
     my $self = shift;
-    my @out = ($self->keyword," ",$self->lhs," = ",$self->rhs);
+    my @out = ($self->keyword," ",$self->lhs," = ",$self->rhs,";");
     return (wantarray ? @out : join('',@out));
 }
 

@@ -52,13 +52,13 @@
 
 #define VARRESET_LIST(decl)    { GRAMMARP->pinNum(1); VARRESET(); VARDECL(decl); }	// Start of pinlist
 #define VARRESET_NONLIST(decl) { GRAMMARP->pinNum(0); VARRESET(); VARDECL(decl); }	// Not in a pinlist
-#define VARRESET()	 { VARDECL(""); VARIO(""); VARNET(""); VARTYPE(""); }  // Start of one variable decl
+#define VARRESET()	 { VARDECL(""); VARIO(""); VARNET(""); VARDTYPE(""); }  // Start of one variable decl
 
 // VARDECL("") indicates inside a port list or IO list and we shouldn't declare the variable
 #define VARDECL(type)	 { GRAMMARP->m_varDecl = (type); }  // genvar, parameter, localparam
 #define VARIO(type)	 { GRAMMARP->m_varIO   = (type); }  // input, output, inout, ref, const ref
 #define VARNET(type)	 { GRAMMARP->m_varNet  = (type); }  // supply*,wire,tri
-#define VARTYPE(type)	 { GRAMMARP->m_varType = (type); }  // "signed", "int", etc
+#define VARDTYPE(type)	 { GRAMMARP->m_varDType = (type); }  // "signed", "int", etc
 
 #define PINNUMINC()	{ GRAMMARP->pinNumInc(); }
 
@@ -68,19 +68,19 @@ static void VARDONE(VFileLine* fl, const string& name, const string& array, cons
     if (GRAMMARP->m_varIO!="" && GRAMMARP->m_varDecl=="") GRAMMARP->m_varDecl="port";
     if (GRAMMARP->m_varDecl!="") {
 	PARSEP->varCb(fl, GRAMMARP->m_varDecl, name, PARSEP->symObjofUpward(), GRAMMARP->m_varNet,
-		      GRAMMARP->m_varType, array, value);
+		      GRAMMARP->m_varDType, array, value);
     }
     if (GRAMMARP->m_varIO!="" || GRAMMARP->pinNum()) {
 	PARSEP->portCb(fl, name, PARSEP->symObjofUpward(),
-		       GRAMMARP->m_varIO, GRAMMARP->m_varType, array, GRAMMARP->pinNum());
+		       GRAMMARP->m_varIO, GRAMMARP->m_varDType, array, GRAMMARP->pinNum());
     }
-    if (GRAMMARP->m_varType == "type") {
+    if (GRAMMARP->m_varDType == "type") {
 	PARSEP->symReinsert(VAstType::TYPE,name);
     }
 }
 
 static void VARDONETYPEDEF(VFileLine* fl, const string& name, const string& type, const string& array) {
-    VARRESET(); VARDECL("typedef"); VARTYPE(type);
+    VARRESET(); VARDECL("typedef"); VARDTYPE(type);
     VARDONE(fl,name,array,"");
     // TYPE shouldn't override a more specific node type, as often is forward reference
     PARSEP->symReinsert(VAstType::TYPE,name);
@@ -547,12 +547,12 @@ timeunits_declaration:		// ==IEEE: timeunits_declaration
 // Packages
 
 package_declaration:		// ==IEEE: package_declaration
-		packageHdr package_itemListE yENDPACKAGE endLabelE
+		packageFront package_itemListE yENDPACKAGE endLabelE
 			{ PARSEP->endpackageCb($<fl>3,$3);
 			  PARSEP->symPopScope(VAstType::PACKAGE); }
 	;
 
-packageHdr:
+packageFront:
 		yPACKAGE idAny ';'
 			{ PARSEP->symPushNew(VAstType::PACKAGE, $2);
 			  PARSEP->packageCb($<fl>1,$1, $2); }
@@ -627,6 +627,8 @@ module_declaration:		// ==IEEE: module_declaration
 	;
 
 modFront:
+	//			// General note: all *Front functions must call symPushNew before
+	//			// any formal arguments, as the arguments must land in the new scope.
 		yMODULE lifetimeE idAny
 			{ PARSEP->symPushNew(VAstType::MODULE, $3);
 			  PARSEP->moduleCb($<fl>1,$1,$3,false,PARSEP->inCellDefine()); }
@@ -682,10 +684,10 @@ portE:				// ==IEEE: [ port ]
 	//			// Expanded interface_port_header
 	//			// We use instantCb here because the non-port form looks just like a module instantiation
 		/* empty */				{ }
-	|	portDirNetE id/*interface*/                   idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $3, $4, ""); PARSEP->instantCb($<fl>2, $2, $3, $4); PINNUMINC(); }
-	|	portDirNetE yINTERFACE                        idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $3, $4, ""); PINNUMINC(); }
-	|	portDirNetE id/*interface*/ '.' idAny/*modport*/ idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $5, $6, ""); PARSEP->instantCb($<fl>2, $2, $5, $6); PINNUMINC(); }
-	|	portDirNetE yINTERFACE      '.' idAny/*modport*/ idAny/*port*/ regArRangeE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>2, $5, $6, ""); PINNUMINC(); }
+	|	portDirNetE id/*interface*/                   idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $3, $4, ""); PARSEP->instantCb($<fl>2, $2, $3, $4); PINNUMINC(); }
+	|	portDirNetE yINTERFACE                        idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $3, $4, ""); PINNUMINC(); }
+	|	portDirNetE id/*interface*/ '.' idAny/*modport*/ idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $5, $6, ""); PARSEP->instantCb($<fl>2, $2, $5, $6); PINNUMINC(); }
+	|	portDirNetE yINTERFACE      '.' idAny/*modport*/ idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $5, $6, ""); PINNUMINC(); }
 	//
 	//			// IEEE: ansi_port_declaration, with [port_direction] removed
 	//			//   IEEE: [ net_port_header | interface_port_header ] port_identifier { unpacked_dimension }
@@ -708,34 +710,34 @@ portE:				// ==IEEE: [ port ]
 	//			//     net_port_type | [ port_direction ] var_data_type '.' port_identifier '(' [ expr ] ')'
 	//			// Expand implicit_type
 	//
-	//			// variable_dimensionListE instead of regArRangeE to avoid conflicts
+	//			// variable_dimensionListE instead of rangeListE to avoid conflicts
 	//
 	//			// Note implicit rules looks just line declaring additional followon port
 	//			// No VARDECL("port") for implicit, as we don't want to declare variables for them
-	|	portDirNetE data_type	       '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE($2); VARDONE($<fl>4, $4, "", ""); PINNUMINC(); }
-	|	portDirNetE yVAR data_type     '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE($3); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
-	|	portDirNetE yVAR implicit_type '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE($3); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
-	|	portDirNetE signingE rangeList '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARTYPE(SPACED($2,$3)); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
-	|	portDirNetE /*implicit*/       '.' portSig '(' portAssignExprE ')' sigAttrListE	{ /*VARTYPE-same*/ VARDONE($<fl>3, $3, "", ""); PINNUMINC(); }
+	|	portDirNetE data_type	       '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>4, $4, "", ""); PINNUMINC(); }
+	|	portDirNetE yVAR data_type     '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARDTYPE($3); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
+	|	portDirNetE yVAR implicit_type '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARDTYPE($3); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
+	|	portDirNetE signingE rangeList '.' portSig '(' portAssignExprE ')' sigAttrListE	{ VARDTYPE(SPACED($2,$3)); VARDONE($<fl>5, $5, "", ""); PINNUMINC(); }
+	|	portDirNetE /*implicit*/       '.' portSig '(' portAssignExprE ')' sigAttrListE	{ /*VARDTYPE-same*/ VARDONE($<fl>3, $3, "", ""); PINNUMINC(); }
 	//
-	|	portDirNetE data_type          portSig variable_dimensionListE sigAttrListE	{ VARTYPE($2); VARDONE($<fl>3, $3, $4, ""); PINNUMINC(); }
-	|	portDirNetE yVAR data_type     portSig variable_dimensionListE sigAttrListE	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
-	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE sigAttrListE	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
-	|	portDirNetE signingE rangeList portSig variable_dimensionListE sigAttrListE	{ VARTYPE(SPACED($2,$3)); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
-	|	portDirNetE /*implicit*/       portSig variable_dimensionListE sigAttrListE	{ /*VARTYPE-same*/ VARDONE($<fl>2, $2, $3, ""); PINNUMINC(); }
+	|	portDirNetE data_type          portSig variable_dimensionListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>3, $3, $4, ""); PINNUMINC(); }
+	|	portDirNetE yVAR data_type     portSig variable_dimensionListE sigAttrListE	{ VARDTYPE($3); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
+	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE sigAttrListE	{ VARDTYPE($3); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
+	|	portDirNetE signingE rangeList portSig variable_dimensionListE sigAttrListE	{ VARDTYPE(SPACED($2,$3)); VARDONE($<fl>4, $4, $5, ""); PINNUMINC(); }
+	|	portDirNetE /*implicit*/       portSig variable_dimensionListE sigAttrListE	{ /*VARDTYPE-same*/ VARDONE($<fl>2, $2, $3, ""); PINNUMINC(); }
 	//
-	|	portDirNetE data_type          portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARTYPE($2); VARDONE($<fl>3, $3, $4, $7); PINNUMINC(); }
-	|	portDirNetE yVAR data_type     portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
-	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
-	|	portDirNetE /*implicit*/       portSig variable_dimensionListE sigAttrListE '=' constExpr	{ /*VARTYPE-same*/ VARDONE($<fl>2, $2, $3, $6); PINNUMINC(); }
+	|	portDirNetE data_type          portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARDTYPE($2); VARDONE($<fl>3, $3, $4, $7); PINNUMINC(); }
+	|	portDirNetE yVAR data_type     portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARDTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
+	|	portDirNetE yVAR implicit_type portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARDTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
+	|	portDirNetE /*implicit*/       portSig variable_dimensionListE sigAttrListE '=' constExpr	{ /*VARDTYPE-same*/ VARDONE($<fl>2, $2, $3, $6); PINNUMINC(); }
 	;
 
 portDirNetE:			// IEEE: part of port, optional net type and/or direction
 		/* empty */				{ }
 	//			// Per spec, if direction given default the nettype.
-	//			// The higher level rule may override this VARTYPE with one later in the parse.
-	|	port_direction				{ VARTYPE(""/*default_nettype*/); }
-	|	port_direction net_type			{ VARTYPE(""/*default_nettype*/); } // net_type calls VARNET
+	//			// The higher level rule may override this VARDTYPE with one later in the parse.
+	|	port_direction				{ VARDTYPE(""/*default_nettype*/); }
+	|	port_direction net_type			{ VARDTYPE(""/*default_nettype*/); } // net_type calls VARNET
 	|	net_type				{ } // net_type calls VARNET
 	;
 
@@ -957,23 +959,23 @@ parameter_declaration:		// IEEE: parameter_declaration
 	;
 
 local_parameter_declarationFront: // IEEE: local_parameter_declaration w/o assignment
-		varLParamReset implicit_type 		{ VARRESET(); VARDECL("localparam"); VARTYPE($2); }
-	|	varLParamReset data_type		{ VARRESET(); VARDECL("localparam"); VARTYPE($2); }
-	|	varLParamReset yTYPE			{ VARRESET(); VARDECL("localparam"); VARTYPE($2); }
+		varLParamReset implicit_type 		{ VARRESET(); VARDECL("localparam"); VARDTYPE($2); }
+	|	varLParamReset data_type		{ VARRESET(); VARDECL("localparam"); VARDTYPE($2); }
+	|	varLParamReset yTYPE			{ VARRESET(); VARDECL("localparam"); VARDTYPE($2); }
 	;
 
 parameter_declarationFront:	// IEEE: parameter_declaration w/o assignment
-		varGParamReset implicit_type 		{ VARRESET(); VARDECL("parameter"); VARTYPE($2); }
-	|	varGParamReset data_type		{ VARRESET(); VARDECL("parameter"); VARTYPE($2); }
-	|	varGParamReset yTYPE			{ VARRESET(); VARDECL("parameter"); VARTYPE($2); }
+		varGParamReset implicit_type 		{ VARRESET(); VARDECL("parameter"); VARDTYPE($2); }
+	|	varGParamReset data_type		{ VARRESET(); VARDECL("parameter"); VARDTYPE($2); }
+	|	varGParamReset yTYPE			{ VARRESET(); VARDECL("parameter"); VARDTYPE($2); }
 	;
 
 parameter_port_declarationFront: // IEEE: parameter_port_declaration w/o assignment
 	//			// IEEE: parameter_declaration (minus assignment)
 		parameter_declarationFront		{ }
 	//
-	|	data_type				{ VARTYPE($1); }
-	|	yTYPE 					{ VARTYPE($1); }
+	|	data_type				{ VARDTYPE($1); }
+	|	yTYPE 					{ VARDTYPE($1); }
 	;
 
 net_declaration:		// IEEE: net_declaration - excluding implict
@@ -981,7 +983,7 @@ net_declaration:		// IEEE: net_declaration - excluding implict
 	;
 
 net_declarationFront:		// IEEE: beginning of net_declaration
-		net_declRESET net_type   strengthSpecE signingE delayrange { VARTYPE(SPACED($4,$5));}
+		net_declRESET net_type   strengthSpecE signingE delayrange { VARDTYPE(SPACED($4,$5));}
 	;
 
 net_declRESET:
@@ -1036,22 +1038,22 @@ port_declaration:		// ==IEEE: port_declaration
 	//			// IEEE: input_declaration
 	//			// IEEE: output_declaration
 	//			// IEEE: ref_declaration
-		port_directionReset port_declNetE data_type          { VARTYPE($3); } list_of_variable_decl_assignments	{ }
-	|	port_directionReset port_declNetE yVAR data_type     { VARTYPE($4); } list_of_variable_decl_assignments	{ }
-	|	port_directionReset port_declNetE yVAR implicit_type { VARTYPE($4); } list_of_variable_decl_assignments	{ }
-	|	port_directionReset port_declNetE signingE rangeList { VARTYPE(SPACED($3,$4)); } list_of_variable_decl_assignments	{ }
-	|	port_directionReset port_declNetE signing	     { VARTYPE($3); } list_of_variable_decl_assignments	{ }
-	|	port_directionReset port_declNetE /*implicit*/       { VARTYPE("");/*default_nettype*/} list_of_variable_decl_assignments	{ }
+		port_directionReset port_declNetE data_type          { VARDTYPE($3); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE yVAR data_type     { VARDTYPE($4); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE yVAR implicit_type { VARDTYPE($4); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE signingE rangeList { VARDTYPE(SPACED($3,$4)); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE signing	     { VARDTYPE($3); } list_of_variable_decl_assignments	{ }
+	|	port_directionReset port_declNetE /*implicit*/       { VARDTYPE("");/*default_nettype*/} list_of_variable_decl_assignments	{ }
 	;
 
 tf_port_declaration:		// ==IEEE: tf_port_declaration
 	//			// Used inside function; followed by ';'
 	//			// SIMILAR to port_declaration
 	//
-		port_directionReset      data_type     { VARTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
-	|	port_directionReset      implicit_type { VARTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
-	|	port_directionReset yVAR data_type     { VARTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
-	|	port_directionReset yVAR implicit_type { VARTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
+		port_directionReset      data_type     { VARDTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
+	|	port_directionReset      implicit_type { VARDTYPE($2); }  list_of_tf_variable_identifiers ';'	{ }
+	|	port_directionReset yVAR data_type     { VARDTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
+	|	port_directionReset yVAR implicit_type { VARDTYPE($3); }  list_of_tf_variable_identifiers ';'	{ }
 	;
 
 integer_atom_type<str>:		// ==IEEE: integer_atom_type
@@ -1111,8 +1113,8 @@ data_type<str>:			// ==IEEE: data_type
 	//			// This expansion also replicated elsewhere, IE data_type__AndID
 		data_typeNoRef				{ $<fl>$=$<fl>1; $$=$1; }
 	//			// IEEE: [ class_scope | package_scope ] type_identifier { packed_dimension }
-	|	ps_type  packed_dimensionE		{ $<fl>$=$<fl>1; $$=$1+$2; }
-	|	class_scope_type packed_dimensionE	{ $<fl>$=$<fl>1; $$=$1+$2; }
+	|	ps_type  packed_dimensionListE		{ $<fl>$=$<fl>1; $$=$1+$2; }
+	|	class_scope_type packed_dimensionListE	{ $<fl>$=$<fl>1; $$=$1+$2; }
 	//			// IEEE: class_type
 	|	class_typeWithoutId			{ $<fl>$=$<fl>1; $$=$1; }
 	//			// IEEE: ps_covergroup_identifier
@@ -1120,13 +1122,15 @@ data_type<str>:			// ==IEEE: data_type
 	;
 
 data_typeNoRef<str>:		// ==IEEE: data_type, excluding class_type etc references
-		integer_vector_type signingE regArRangeE	{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
-	|	integer_atom_type signingE			{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
+		integer_vector_type signingE rangeListE	{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
+	|	integer_atom_type signingE		{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
 	|	non_integer_type			{ $<fl>$=$<fl>1; $$=$1; }
 	|	ySTRUCT        packedSigningE '{' { PARSEP->symPushNew(VAstType::STRUCT, " unknown"); }
-	/*cont*/	struct_union_memberList '}' packed_dimensionE	{ $<fl>$=$<fl>1; $$=$1; PARSEP->symPopScope(VAstType::STRUCT); }
+	/*cont*/	struct_union_memberList '}' packed_dimensionListE
+			{ $<fl>$=$<fl>1; $$=$1; PARSEP->symPopScope(VAstType::STRUCT); }
 	|	yUNION taggedE packedSigningE '{' { PARSEP->symPushNew(VAstType::UNION, " unknown"); }
-	/*cont*/	struct_union_memberList '}' packed_dimensionE	{ $<fl>$=$<fl>1; $$=$1; PARSEP->symPopScope(VAstType::UNION); }
+	/*cont*/	struct_union_memberList '}' packed_dimensionListE
+			{ $<fl>$=$<fl>1; $$=$1; PARSEP->symPopScope(VAstType::UNION); }
 	|	enumDecl				{ $<fl>$=$<fl>1; $$=$1; }
 	|	ySTRING					{ $<fl>$=$<fl>1; $$=$1; }
 	|	yCHANDLE				{ $<fl>$=$<fl>1; $$=$1; }
@@ -1162,7 +1166,7 @@ struct_union_memberList:	// IEEE: { struct_union_member }
 	;
 
 struct_union_member:		// ==IEEE: struct_union_member
-		random_qualifierE data_type_or_void { VARRESET_NONLIST("member"); VARTYPE(SPACED($1,$2)); }
+		random_qualifierE data_type_or_void { VARRESET_NONLIST("member"); VARDTYPE(SPACED($1,$2)); }
 	/*cont*/	list_of_variable_decl_assignments ';'	{ }
 	;
 
@@ -1320,14 +1324,14 @@ data_declarationVarClass:	// IEEE: part of data_declaration (for class_property)
 
 data_declarationVarFront:	// IEEE: part of data_declaration
 	//			// implicit_type expanded into /*empty*/ or "signingE rangeList"
-		constE yVAR lifetimeE data_type	 { VARRESET(); VARDECL("var"); VARTYPE(SPACED($1,$4)); }
-	|	constE yVAR lifetimeE		 { VARRESET(); VARDECL("var"); VARTYPE($1); }
-	|	constE yVAR lifetimeE signingE rangeList { VARRESET(); VARDECL("var"); VARTYPE(SPACED($1,SPACED($4,$5))); }
+		constE yVAR lifetimeE data_type	 { VARRESET(); VARDECL("var"); VARDTYPE(SPACED($1,$4)); }
+	|	constE yVAR lifetimeE		 { VARRESET(); VARDECL("var"); VARDTYPE($1); }
+	|	constE yVAR lifetimeE signingE rangeList { VARRESET(); VARDECL("var"); VARDTYPE(SPACED($1,SPACED($4,$5))); }
 	//
 	//			// Expanded: "constE lifetimeE data_type"
-	|	/**/		      data_type	{ VARRESET(); VARDECL("var"); VARTYPE($1); }
-	|	/**/	    lifetime  data_type	{ VARRESET(); VARDECL("var"); VARTYPE($2); }
-	|	yCONST__ETC lifetimeE data_type	{ VARRESET(); VARDECL("var"); VARTYPE(SPACED($1,$3)); }
+	|	/**/		      data_type	{ VARRESET(); VARDECL("var"); VARDTYPE($1); }
+	|	/**/	    lifetime  data_type	{ VARRESET(); VARDECL("var"); VARDTYPE($2); }
+	|	yCONST__ETC lifetimeE data_type	{ VARRESET(); VARDECL("var"); VARDTYPE(SPACED($1,$3)); }
 	//			// = class_new is in variable_decl_assignment
 	;
 
@@ -1335,12 +1339,12 @@ data_declarationVarFrontClass:	// IEEE: part of data_declaration (for class_prop
 	//			// VARRESET called before this rule
 	//			// yCONST is removed, added to memberQual rules
 	//			// implicit_type expanded into /*empty*/ or "signingE rangeList"
-		yVAR lifetimeE data_type	 { VARDECL("var"); VARTYPE(SPACED(GRAMMARP->m_varType,$3)); }
-	|	yVAR lifetimeE			 { VARDECL("var"); VARTYPE(GRAMMARP->m_varType); }
-	|	yVAR lifetimeE signingE rangeList { VARDECL("var"); VARTYPE(SPACED(GRAMMARP->m_varType,SPACED($3,$4))); }
+		yVAR lifetimeE data_type	 { VARDECL("var"); VARDTYPE(SPACED(GRAMMARP->m_varDType,$3)); }
+	|	yVAR lifetimeE			 { VARDECL("var"); VARDTYPE(GRAMMARP->m_varDType); }
+	|	yVAR lifetimeE signingE rangeList { VARDECL("var"); VARDTYPE(SPACED(GRAMMARP->m_varDType,SPACED($3,$4))); }
 	//
 	//			// Expanded: "constE lifetimeE data_type"
-	|	/**/		      data_type	{ VARDECL("var"); VARTYPE(SPACED(GRAMMARP->m_varType,$1)); }
+	|	/**/		      data_type	{ VARDECL("var"); VARDTYPE(SPACED(GRAMMARP->m_varDType,$1)); }
 	//			// lifetime is removed, added to memberQual rules to avoid conflict
 	//			// yCONST is removed, added to memberQual rules to avoid conflict
 	//			// = class_new is in variable_decl_assignment
@@ -1661,20 +1665,13 @@ regrangeE<str>:
 	|	anyrange 				{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
-regArRangeE<str>:
-		/* empty */    		               	{ $$=""; }
-	|	regArRangeList 				{ $<fl>$=$<fl>1; $$=$1; }
-	;
-
-// Complication here is "[#:#]" is a range, while "[#:#][#:#]" is an array and range.
-regArRangeList<str>:
-		anyrange				{ $<fl>$=$<fl>1; $$=$1; }
-	|	regArRangeList anyrange			{ $<fl>$=$<fl>1; $$=$1+$2; }
-	;
-
 bit_selectE<str>:		// IEEE: constant_bit_select (IEEE included empty)
 		/* empty */				{ $$ = ""; }
 	|	'[' constExpr ']'			{ $<fl>$=$<fl>1; $$ = "["+$2+"]"; }
+	;
+
+wirerangeE<str>:
+		rangeListE				{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 // IEEE: select
@@ -1684,9 +1681,14 @@ anyrange<str>:
 		'[' constExpr ':' constExpr ']'		{ $<fl>$=$<fl>1; $$ = "["+$2+":"+$4+"]"; }
 	;
 
-packed_dimensionE<str>:		// IEEE: [ packed_dimension ]
+packed_dimensionListE<str>:	// IEEE: [{ packed_dimension }]
 		/* empty */				{ $$=""; }
-	|	packed_dimension			{ $<fl>$=$<fl>1; $$=$1; }
+	|	packed_dimensionList			{ $<fl>$=$<fl>1; $$=$1; }
+	;
+
+packed_dimensionList<str>:	// IEEE: { packed_dimension }
+		packed_dimension			{ $<fl>$=$<fl>1; $$=$1; }
+	|	packed_dimensionList packed_dimension	{ $<fl>$=$<fl>1; $$=$1+$2; }
 	;
 
 packed_dimension<str>:		// ==IEEE: packed_dimension
@@ -1695,9 +1697,9 @@ packed_dimension<str>:		// ==IEEE: packed_dimension
 	;
 
 delayrange<str>:
-		rangeListE delayE 			{ $<fl>$=$<fl>1; $$=$1; }
-	|	ySCALARED rangeListE delayE 		{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
-	|	yVECTORED rangeListE delayE		{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
+		wirerangeE delayE 			{ $<fl>$=$<fl>1; $$=$1; }
+	|	ySCALARED wirerangeE delayE 		{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
+	|	yVECTORED wirerangeE delayE		{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
 	;
 
 //************************************************
@@ -1841,25 +1843,23 @@ stmtBlock:			// IEEE: statement + seq_block + par_block
 
 seq_block:			// ==IEEE: seq_block
 	//			// IEEE doesn't allow declarations in unnamed blocks, but several simulators do.
-		yBEGIN blockDeclStmtList yEND		{ }
-	|	yBEGIN /**/	yEND			{ }
-	|	yBEGIN ':' seq_blockId blockDeclStmtList yEND endLabelE	{ PARSEP->symPopScope(VAstType::BLOCK); }
-	|	yBEGIN ':' seq_blockId /**/		 yEND endLabelE	{ PARSEP->symPopScope(VAstType::BLOCK); }
-	;
-
-seq_blockId:			// IEEE: part of seq_block
-		idAny/*new-block_identifier*/		{ PARSEP->symPushNew(VAstType::BLOCK,$1); }
+		seq_blockFront blockDeclStmtList yEND endLabelE	{ PARSEP->symPopScope(VAstType::BLOCK); }
+	|	seq_blockFront /**/		 yEND endLabelE	{ PARSEP->symPopScope(VAstType::BLOCK); }
 	;
 
 par_block:			// ==IEEE: par_block
-		yFORK blockDeclStmtList	yJOIN		{ }
-	|	yFORK /**/	yJOIN			{ }
-	|	yFORK ':' par_blockId blockDeclStmtList	yJOIN endLabelE	{ PARSEP->symPopScope(VAstType::FORK); }
-	|	yFORK ':' par_blockId /**/		yJOIN endLabelE	{ PARSEP->symPopScope(VAstType::FORK); }
+		par_blockFront blockDeclStmtList yJOIN endLabelE { PARSEP->symPopScope(VAstType::FORK); }
+	|	par_blockFront /**/		 yJOIN endLabelE { PARSEP->symPopScope(VAstType::FORK); }
 	;
 
-par_blockId:			// IEEE: part of par_block
-		idAny/*new-block_identifier*/		{ PARSEP->symPushNew(VAstType::FORK,$1); }
+seq_blockFront:			// IEEE: part of seq_block
+		yBEGIN					 	{ PARSEP->symPushNewAnon(VAstType::BLOCK); }
+	|	yBEGIN ':' idAny/*new-block_identifier*/	{ PARSEP->symPushNew(VAstType::BLOCK,$1); }
+	;
+
+par_blockFront:			// IEEE: part of par_block
+		yFORK					{ PARSEP->symPushNewAnon(VAstType::FORK); }
+	|	yFORK ':' idAny/*new-block_identifier*/	{ PARSEP->symPushNew(VAstType::FORK,$1); }
 	;
 
 blockDeclStmtList:		// IEEE: { block_item_declaration } { statement or null }
@@ -2060,6 +2060,7 @@ unique_priorityE:		// IEEE: unique_priority + empty
 action_block:			// ==IEEE: action_block
 		stmt	%prec prLOWER_THAN_ELSE		{ }
 	|	stmt yELSE stmt				{ }
+	|	yELSE stmt				{ }
 	;
 
 caseStart:			// IEEE: part of case_statement
@@ -2190,7 +2191,7 @@ for_initializationItemList:	// IEEE: [for_variable_declaration...]
 
 for_initializationItem:		// IEEE: variable_assignment + for_variable_declaration
 	//			// IEEE: for_variable_declaration
-		data_type idAny/*new*/ '=' expr		{ VARTYPE($1); }
+		data_type idAny/*new*/ '=' expr		{ VARDTYPE($1); }
 	//			// IEEE: variable_assignment
 	|	variable_lvalue '=' expr		{ }
 	;
@@ -2230,7 +2231,7 @@ funcRef<str>:			// IEEE: part of tf_call
 	//			//      or function_identifier
 	//			//      or property_identifier
 		id '(' list_of_argumentsE ')'		{ $<fl>$=$<fl>1; $$=$1+"("+$3+")"; }
-	|	package_scopeIdFollows id '(' list_of_argumentsE ')'	{ $<fl>$=$<fl>2; $$=$2+"("+$4+")"; }
+	|	package_scopeIdFollows id '(' list_of_argumentsE ')'	{ $<fl>$=$<fl>2; $$=$1+$2+"("+$4+")"; }
 	;
 
 task_subroutine_callNoMethod<str>:	// function_subroutine_callNoMethod (as task)
@@ -2267,7 +2268,7 @@ list_of_argumentsE<str>:	// IEEE: [list_of_arguments]
 	;
 
 task_declaration:		// ==IEEE: task_declaration
-	 	yTASK lifetimeE taskId tfGuts yENDTASK endLabelE
+		yTASK lifetimeE taskId tfGuts yENDTASK endLabelE
 			{ PARSEP->endtaskfuncCb($<fl>5,$5);
 			  PARSEP->symPopScope(VAstType::TASK); }
 	;
@@ -2311,7 +2312,7 @@ lifetime:			// ==IEEE: lifetime
 
 taskId:
 		tfIdScoped
-			{ PARSEP->symPushNewUnder($<entp>1, VAstType::TASK, $<str>1);
+			{ PARSEP->symPushNewUnder(VAstType::TASK, $<str>1, $<scp>1);
 			  PARSEP->taskCb($<fl>1,"task",$<str>1); }
 	;
 
@@ -2319,39 +2320,39 @@ funcId:				// IEEE: function_data_type_or_implicit + part of function_body_decla
 	//			// IEEE: function_data_type_or_implicit must be expanded here to prevent conflict
 	//			// function_data_type expanded here to prevent conflicts with implicit_type:empty vs data_type:ID
 		/**/			tfIdScoped
-			{ PARSEP->symPushNewUnder($<entp>1, VAstType::FUNCTION, $<str>1);
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, $<str>1, $<scp>1);
 			  PARSEP->functionCb($<fl>1,"function",$<str>1,""); }
 	|	signingE rangeList	tfIdScoped
-			{ PARSEP->symPushNewUnder($<entp>3, VAstType::FUNCTION, $<str>3);
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, $<str>3, $<scp>3);
 			  PARSEP->functionCb($<fl>3,"function",$<str>3,SPACED($1,$2)); }
 	|	signing			tfIdScoped
-			{ PARSEP->symPushNewUnder($<entp>2, VAstType::FUNCTION, $<str>2);
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, $<str>2, $<scp>2);
 			  PARSEP->functionCb($<fl>2,"function",$<str>2,$1); }
 	|	yVOID			tfIdScoped
-			{ PARSEP->symPushNewUnder($<entp>2, VAstType::FUNCTION, $<str>2);
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, $<str>2, $<scp>2);
 			  PARSEP->functionCb($<fl>2,"function",$<str>2,$1); }
 	|	data_type		tfIdScoped
-			{ PARSEP->symPushNewUnder($<entp>2, VAstType::FUNCTION, $<str>2);
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, $<str>2, $<scp>2);
 			  PARSEP->functionCb($<fl>2,"function",$<str>2,$1); }
 	;
 
 funcIdNew:			// IEEE: from class_constructor_declaration
 	 	yNEW__ETC
-			{ PARSEP->symPushNewUnder(NULL, VAstType::FUNCTION, "new");
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, "new", NULL);
 			  PARSEP->functionCb($<fl>1,"function","new",""); }
 	| 	yNEW__PAREN
-			{ PARSEP->symPushNewUnder(NULL, VAstType::FUNCTION, "new");
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, "new", NULL);
 			  PARSEP->functionCb($<fl>1,"function","new",""); }
 	|	class_scopeWithoutId yNEW__PAREN
-			{ PARSEP->symPushNewUnder($<entp>1, VAstType::FUNCTION, "new");
+			{ PARSEP->symPushNewUnder(VAstType::FUNCTION, "new", $<scp>1);
 			  PARSEP->functionCb($<fl>2,"function","new",""); }
 	;
 
-tfIdScoped<str_entp>:		// IEEE: part of function_body_declaration/task_body_declaration
+tfIdScoped<str_scp>:		// IEEE: part of function_body_declaration/task_body_declaration
  	//			// IEEE: [ interface_identifier '.' | class_scope ] function_identifier
-		id					{ $<fl>$=$<fl>1; $<entp>$=NULL;     $<str>$ = $1; }
-	|	id/*interface_identifier*/ '.' id	{ $<fl>$=$<fl>1; $<entp>$=NULL;     $<str>$ = $1+"."+$2; }
-	|	class_scope_id				{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$ = $<str>1; }
+		id					{ $<fl>$=$<fl>1; $<scp>$=NULL;     $<str>$ = $1; }
+	|	id/*interface_identifier*/ '.' id	{ $<fl>$=$<fl>1; $<scp>$=NULL;     $<str>$ = $1+"."+$2; }
+	|	class_scope_id				{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$ = $<str>1; }
 	;
 
 tfGuts:
@@ -2399,18 +2400,18 @@ tf_port_item:			// ==IEEE: tf_port_item
 	;
 
 tf_port_itemFront:		// IEEE: part of tf_port_item, which has the data type
-		data_type				{ VARTYPE($1); }
-	|	signingE rangeList			{ VARTYPE(SPACED($1,$2)); }
-	|	signing					{ VARTYPE($1); }
-	|	yVAR data_type				{ VARTYPE($2); }
-	|	yVAR implicit_type			{ VARTYPE($2); }
+		data_type				{ VARDTYPE($1); }
+	|	signingE rangeList			{ VARDTYPE(SPACED($1,$2)); }
+	|	signing					{ VARDTYPE($1); }
+	|	yVAR data_type				{ VARDTYPE($2); }
+	|	yVAR implicit_type			{ VARDTYPE($2); }
 	//
-	|	tf_port_itemDir /*implicit*/		{ VARTYPE(""); /*default_nettype-see spec*/ }
-	|	tf_port_itemDir data_type		{ VARTYPE($2); }
-	|	tf_port_itemDir signingE rangeList	{ VARTYPE(SPACED($2,$3)); }
-	|	tf_port_itemDir signing			{ VARTYPE($2); }
-	|	tf_port_itemDir yVAR data_type		{ VARTYPE($3); }
-	|	tf_port_itemDir yVAR implicit_type	{ VARTYPE($3); }
+	|	tf_port_itemDir /*implicit*/		{ VARDTYPE(""); /*default_nettype-see spec*/ }
+	|	tf_port_itemDir data_type		{ VARDTYPE($2); }
+	|	tf_port_itemDir signingE rangeList	{ VARDTYPE(SPACED($2,$3)); }
+	|	tf_port_itemDir signing			{ VARDTYPE($2); }
+	|	tf_port_itemDir yVAR data_type		{ VARDTYPE($3); }
+	|	tf_port_itemDir yVAR implicit_type	{ VARDTYPE($3); }
 	;
 
 tf_port_itemDir:		// IEEE: part of tf_port_item, direction
@@ -3157,19 +3158,17 @@ concurrent_assertion_item_declaration:	// ==IEEE: concurrent_assertion_item_decl
 	;
 
 property_declaration:		// ==IEEE: property_declaration
-		property_declarationFront property_declarationBody
+		property_declarationFront ';' property_declarationBody
+			yENDPROPERTY endLabelE
+			{ PARSEP->symPopScope(VAstType::PROPERTY); }
+	|	property_declarationFront '(' tf_port_listE ')' ';' property_declarationBody
 			yENDPROPERTY endLabelE
 			{ PARSEP->symPopScope(VAstType::PROPERTY); }
 	;
 
 property_declarationFront:	// IEEE: part of property_declaration
-		yPROPERTY property_declarationId ';'			{ }
-	|	yPROPERTY property_declarationId '(' tf_port_listE ')' ';'	{ }
-	;
-
-property_declarationId:		// IEEE: part of property_declaration
-		idAny/*property_identifier*/
-			{ PARSEP->symPushNew(VAstType::PROPERTY,$1); }
+		yPROPERTY idAny/*property_identifier*/
+			{ PARSEP->symPushNew(VAstType::PROPERTY,$2); }
 	;
 
 property_declarationBody:	// IEEE: part of property_declaration
@@ -3183,19 +3182,17 @@ assertion_variable_declarationList: // IEEE: part of assertion_variable_declarat
 	;
 
 sequence_declaration:		// ==IEEE: sequence_declaration
-		sequence_declarationHead sequence_declarationBody
+		sequence_declarationFront ';' sequence_declarationBody
+			yENDSEQUENCE endLabelE
+			{ PARSEP->symPopScope(VAstType::SEQUENCE); }
+	|	sequence_declarationFront '(' tf_port_listE ')' ';' sequence_declarationBody
 			yENDSEQUENCE endLabelE
 			{ PARSEP->symPopScope(VAstType::SEQUENCE); }
 	;
 
-sequence_declarationHead:	// IEEE: part of sequence_declaration
-		ySEQUENCE sequence_declarationId ';'			{ }
-	|	ySEQUENCE sequence_declarationId '(' tf_port_listE ')' ';'	{ }
-	;
-
-sequence_declarationId:		// IEEE: part of sequence_declaration
-		idAny/*new_sequence*/
-			{ PARSEP->symPushNew(VAstType::SEQUENCE,$1); }
+sequence_declarationFront:	// IEEE: part of sequence_declaration
+		ySEQUENCE idAny/*new_sequence*/
+			{ PARSEP->symPushNew(VAstType::SEQUENCE,$2); }
 	;
 
 sequence_declarationBody:	// IEEE: part of property_declaration
@@ -3362,18 +3359,16 @@ immediate_assert_statement:	// ==IEEE: immediate_assert_statement
 // Covergroup
 
 covergroup_declaration:		// ==IEEE: covergroup_declaration
-		covergroup_declarationHead coverage_spec_or_optionListE
+		covergroup_declarationFront coverage_eventE ';' coverage_spec_or_optionListE
+			yENDGROUP endLabelE
+			{ PARSEP->symPopScope(VAstType::COVERGROUP); }
+	|	covergroup_declarationFront '(' tf_port_listE ')' coverage_eventE ';' coverage_spec_or_optionListE
 			yENDGROUP endLabelE
 			{ PARSEP->symPopScope(VAstType::COVERGROUP); }
 	;
 
-covergroup_declarationHead:	// IEEE: part of covergroup_declaration
-		yCOVERGROUP covergroup_declarationId coverage_eventE ';'	{ }
-	|	yCOVERGROUP covergroup_declarationId '(' tf_port_listE ')' coverage_eventE ';'	{ }
-	;
-
-covergroup_declarationId:	// IEEE: part of covergroup_declaration
-		idAny					{ PARSEP->symPushNew(VAstType::COVERGROUP,$1); }
+covergroup_declarationFront:	// IEEE: part of covergroup_declaration
+		yCOVERGROUP idAny 			{ PARSEP->symPushNew(VAstType::COVERGROUP,$1); }
 	;
 
 coverage_spec_or_optionListE:	// IEEE: [{coverage_spec_or_option}]
@@ -3709,8 +3704,8 @@ class_scope_type<str>:		// class_scope + type
 		class_scopeIdFollows yaID__aTYPE	{ $<fl>$=$<fl>1; $$=$<str>1+$2; }
 	;
 
-class_scope_id<str_entp>:	// class_scope + id etc
-		class_scopeIdFollows id			{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1+$<str>2; }
+class_scope_id<str_scp>:	// class_scope + id etc
+		class_scopeIdFollows id			{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$=$<str>1+$<str>2; }
 	;
 
 //=== Below rules assume special scoping per above
@@ -3725,28 +3720,28 @@ class_scopeWithoutId<str>:	// class_type standalone without following id
 		class_scopeIdFollows			{ $<fl>$=$<fl>1; $$=$<str>1; PARSEP->symTableNextId(NULL); }
 	;
 
-class_scopeIdFollows<str_entp>:	// IEEE: class_scope
+class_scopeIdFollows<str_scp>:	// IEEE: class_scope
 	//			// IEEE: "class_type yP_COLONCOLON"
 	//			// IMPORTANT: The lexer will parse the following ID to be in the found package
 	//			// But class_type:'::' conflicts with class_scope:'::' so expand here
-		package_scopeIdFollowsE class_typeOneListColonIdFollows	{ $<fl>$=$<fl>2; $<entp>$=$<entp>2; $<str>$=$1+$<str>2; }
+		package_scopeIdFollowsE class_typeOneListColonIdFollows	{ $<fl>$=$<fl>2; $<scp>$=$<scp>2; $<str>$=$1+$<str>2; }
 	;
 
-class_typeOneListColonIdFollows<str_entp>: // IEEE: class_type ::
-		class_typeOneList yP_COLONCOLON 	{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1+$<str>2; PARSEP->symTableNextId($<entp>1); }
+class_typeOneListColonIdFollows<str_scp>: // IEEE: class_type ::
+		class_typeOneList yP_COLONCOLON 	{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$=$<str>1+$<str>2; PARSEP->symTableNextId($<scp>1); }
 	;
 
-class_typeOneList<str_entp>: // IEEE: class_type: "id [ parameter_value_assignment ]"
+class_typeOneList<str_scp>: // IEEE: class_type: "id [ parameter_value_assignment ]"
 	//			// If you follow the rules down, class_type is really a list via ps_class_identifier
-	//			// Must propagate entp up for next id
-		class_typeOne					{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1; }
-	|	class_typeOneListColonIdFollows class_typeOne	{ $<fl>$=$<fl>1; $<entp>$=$<entp>2; $<str>$=$<str>1+$<str>2; }
+	//			// Must propagate scp up for next id
+		class_typeOne					{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$=$<str>1; }
+	|	class_typeOneListColonIdFollows class_typeOne	{ $<fl>$=$<fl>1; $<scp>$=$<scp>2; $<str>$=$<str>1+$<str>2; }
 	;
 
-class_typeOne<str_entp>:	// IEEE: class_type: "id [ parameter_value_assignment ]"
+class_typeOne<str_scp>:		// IEEE: class_type: "id [ parameter_value_assignment ]"
 	//			// If you follow the rules down, class_type is really a list via ps_class_identifier
 		yaID__aCLASS parameter_value_assignmentE
-			{ $<fl>$=$<fl>1; $<entp>$=$<entp>1; $<str>$=$<str>1; }
+			{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$=$<str>1; }
 	;
 
 package_scopeIdFollowsE<str>:	// IEEE: [package_scope]
@@ -3760,7 +3755,7 @@ package_scopeIdFollows<str>:	// IEEE: package_scope
 	//			//vv mid rule action needed otherwise we might not have NextId in time to parse the id token
 		yD_UNIT        { PARSEP->symTableNextId(PARSEP->syms().netlistSymp()); }
 	/*cont*/	yP_COLONCOLON	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>3; }
-	|	yaID__aPACKAGE { PARSEP->symTableNextId($<entp>1); }
+	|	yaID__aPACKAGE { PARSEP->symTableNextId($<scp>1); }
 	/*cont*/	yP_COLONCOLON	{ $<fl>$=$<fl>1; $<str>$=$<str>1+$<str>3; }
 	;
 
@@ -3809,8 +3804,8 @@ class_item_qualifier<str>:	// IEEE: class_item_qualifier minus ySTATIC
 memberQualResetListE:		// Called from class_property for all qualifiers before yVAR
 	//			// Also before method declarations, to prevent grammar conflict
 	//			// Thus both types of qualifiers (method/property) are here
-		/*empty*/				{ VARRESET(); VARTYPE(""); }
-	|	memberQualList				{ VARRESET(); VARTYPE($1); }
+		/*empty*/				{ VARRESET(); VARDTYPE(""); }
+	|	memberQualList				{ VARRESET(); VARDTYPE($1); }
 	;
 
 memberQualList<str>:
