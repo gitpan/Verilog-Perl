@@ -11,7 +11,7 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '3.222';
+$VERSION = '3.223';
 
 ######################################################################
 #### Configuration Section
@@ -140,6 +140,10 @@ sub include {
 sub undef {
     my $self = shift;
     $self->{options}->undef(@_);
+}
+sub undefineall {
+    my $self = shift;
+    $self->{options}->undefineall(@_);
 }
 sub define {
     my $self = shift;
@@ -318,6 +322,10 @@ do nothing.
 =item $self->undef(I<defname>)
 
 Called with each `undef.  Defaults to use options object.
+
+=item $self->undefineall()
+
+Called with each `undefineall.  Defaults to use options object.
 
 =item $self->define(I<defname>, I<value>, I<params>)
 
