@@ -152,9 +152,7 @@ WHICH PARSER PACKAGE?
         Verilog::Preproc is useful when you need only text out, or a list of
         defines, etc. It can preprocess a file, or be used to provide the
         Verilog macro language on top of synthesis scripts. It understands
-        the full SystemVerilog 2005 preprocessor syntax, and parts of the
-        SystemVerilog 2009 draft standard (the rest will be supported when
-        the standard is approved.)
+        the full SystemVerilog 2009 preprocessor syntax.
 
     Verilog::Parser
         Verilog::Parser is useful when you need to tokenize or write source
@@ -230,7 +228,7 @@ DISTRIBUTION
     software tool suite. The latest version is available from CPAN and from
     <http://www.veripool.org/verilog-perl>.
 
-    Copyright 2000-2009 by Wilson Snyder. This package is free software; you
+    Copyright 2000-2010 by Wilson Snyder. This package is free software; you
     can redistribute it and/or modify it under the terms of either the GNU
     Lesser General Public License Version 3 or the Perl Artistic License
     Version 2.0.
@@ -251,8 +249,9 @@ SEE ALSO
 
     Verilog::Netlist::Cell, Verilog::Netlist::ContAssign,
     Verilog::Netlist::File, Verilog::Netlist::Interface,
-    Verilog::Netlist::Module, Verilog::Netlist::Net, Verilog::Netlist::Pin,
-    Verilog::Netlist::Port, Verilog::Netlist::Subclass,
+    Verilog::Netlist::ModPort, Verilog::Netlist::Module,
+    Verilog::Netlist::Net, Verilog::Netlist::Pin, Verilog::Netlist::Port,
+    Verilog::Netlist::Subclass,
 
     And the <http://www.veripool.org/verilog-mode>Verilog-Mode package for
     Emacs.

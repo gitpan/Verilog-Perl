@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2009 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2010 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -164,6 +164,7 @@ public:
     virtual void contassignCb(VFileLine* fl, const string& kwd, const string& lhs, const string& rhs) = 0;
     virtual void endcellCb(VFileLine* fl, const string& kwd) = 0;
     virtual void endinterfaceCb(VFileLine* fl, const string& kwd) = 0;
+    virtual void endmodportCb(VFileLine* fl, const string& kwd) = 0;
     virtual void endmoduleCb(VFileLine* fl, const string& kwd) = 0;
     virtual void endpackageCb(VFileLine* fl, const string& kwd) = 0;
     virtual void endprogramCb(VFileLine* fl, const string& kwd) = 0;
@@ -172,6 +173,7 @@ public:
     virtual void importCb(VFileLine* fl, const string& package, const string& id) = 0;
     virtual void instantCb(VFileLine* fl, const string& mod, const string& cell, const string& range) = 0;
     virtual void interfaceCb(VFileLine* fl, const string& kwd, const string& name) = 0;
+    virtual void modportCb(VFileLine* fl, const string& kwd, const string& name) = 0;
     virtual void moduleCb(VFileLine* fl, const string& kwd, const string& name, bool, bool celldefine) = 0;
     virtual void packageCb(VFileLine* fl, const string& kwd, const string& name) = 0;
     virtual void parampinCb(VFileLine* fl, const string& name, const string& conn, int index) = 0;
@@ -185,8 +187,8 @@ public:
     // CALLBACKGEN_GENERATED_END - GENERATED AUTOMATICALLY by callbackgen
 
     // UTILITIES
-    void error(string msg) { inFilelinep()->error(msg); }	///< Report a error
-    void fatal(string msg) { inFilelinep()->fatal(msg); }	///< Report a fatal error
+    void error(const string& msg) { inFilelinep()->error(msg); }	///< Report a error
+    void fatal(const string& msg) { inFilelinep()->fatal(msg); }	///< Report a fatal error
 };
 
 #endif // Guard

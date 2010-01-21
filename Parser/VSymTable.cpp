@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2009-2009 by Wilson Snyder.  This program is free software;
+// Copyright 2009-2010 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the
 // GNU Lesser General Public License Version 3 or the Perl Artistic License
 // Version 2.0.
@@ -104,8 +104,8 @@ class VFileLineTest : public VFileLine {
 public:
     VFileLineTest(int called_only_for_default) : VFileLine(called_only_for_default) {}
     virtual ~VFileLineTest() { }
-    virtual VFileLine* create(const string filename, int lineno) { return new VFileLineTest(true); }
-    virtual void error(const string msg) { cout << msg; }
+    virtual VFileLine* create(const string& filename, int lineno) { return new VFileLineTest(true); }
+    virtual void error(const string& msg) { cout << msg; }
 };
 
 void VSymStack::selftest() {

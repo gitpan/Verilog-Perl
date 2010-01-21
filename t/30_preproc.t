@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2010 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
@@ -87,6 +87,7 @@ sub test {
     $pp->open("inc1.v");
     $pp->open("inc2.v");
     $pp->open("inc_ifdef.v");
+    $pp->open("inc_def09.v");
 
     my $fhout = IO::File->new(">test_dir/inc${id}.out");
     $::OUTTO = $fhout;

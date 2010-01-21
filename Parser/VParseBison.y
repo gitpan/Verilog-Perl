@@ -10,7 +10,7 @@
 //
 //*************************************************************************
 //
-// Copyright 2001-2009 by Wilson Snyder.  This program is free software;
+// Copyright 2001-2010 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -684,10 +684,16 @@ portE:				// ==IEEE: [ port ]
 	//			// Expanded interface_port_header
 	//			// We use instantCb here because the non-port form looks just like a module instantiation
 		/* empty */				{ }
-	|	portDirNetE id/*interface*/                   idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $3, $4, ""); PARSEP->instantCb($<fl>2, $2, $3, $4); PINNUMINC(); }
-	|	portDirNetE yINTERFACE                        idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $3, $4, ""); PINNUMINC(); }
-	|	portDirNetE id/*interface*/ '.' idAny/*modport*/ idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $5, $6, ""); PARSEP->instantCb($<fl>2, $2, $5, $6); PINNUMINC(); }
-	|	portDirNetE yINTERFACE      '.' idAny/*modport*/ idAny/*port*/ rangeListE sigAttrListE	{ VARDTYPE($2); VARDONE($<fl>2, $5, $6, ""); PINNUMINC(); }
+	|	portDirNetE id/*interface*/                      idAny/*port*/ rangeListE sigAttrListE
+			{ VARDTYPE($2); VARIO("interface"); VARDONE($<fl>2, $3, $4, ""); PINNUMINC();
+			  PARSEP->instantCb($<fl>2, $2, $3, $4); PARSEP->endcellCb($<fl>2,""); }
+	|	portDirNetE yINTERFACE                           idAny/*port*/ rangeListE sigAttrListE
+			{ VARDTYPE($2); VARIO("interface"); VARDONE($<fl>2, $3, $4, ""); PINNUMINC(); }
+	|	portDirNetE id/*interface*/ '.' idAny/*modport*/ idAny/*port*/ rangeListE sigAttrListE
+			{ VARDTYPE($2+"."+$4); VARIO("interface"); VARDONE($<fl>2, $5, $6, ""); PINNUMINC();
+			  PARSEP->instantCb($<fl>2, $2, $5, $6); PARSEP->endcellCb($<fl>2,""); }
+	|	portDirNetE yINTERFACE      '.' idAny/*modport*/ idAny/*port*/ rangeListE sigAttrListE
+			{ VARDTYPE($2+"."+$4); VARIO("interface"); VARDONE($<fl>2, $5, $6, ""); PINNUMINC(); }
 	//
 	//			// IEEE: ansi_port_declaration, with [port_direction] removed
 	//			//   IEEE: [ net_port_header | interface_port_header ] port_identifier { unpacked_dimension }
@@ -894,7 +900,16 @@ modport_itemList:		// IEEE: part of modport_declaration
 	;
 
 modport_item:			// ==IEEE: modport_item
-		id/*new-modport*/ '(' modportPortsDeclList ')'		{ }
+		modport_idFront '(' {VARRESET_LIST("");} modportPortsDeclList ')'
+			{ VARRESET_NONLIST("");
+			  PARSEP->endmodportCb($<fl>1, "endmodport");
+			  PARSEP->symPopScope(VAstType::MODPORT); }
+	;
+
+modport_idFront:
+		id/*new-modport*/
+			{ PARSEP->symPushNew(VAstType::MODPORT,$1);
+			  PARSEP->modportCb($<fl>1,"modport",$1); }
 	;
 
 modportPortsDeclList:
@@ -919,9 +934,10 @@ modportPortsDecl:
 	;
 
 modportSimplePort:		// IEEE: modport_simple_port or modport_tf_port, depending what keyword was earlier
-		id					{ }
-	|	'.' idAny '(' ')'			{ }
-	|	'.' idAny '(' expr ')'			{ }
+	//			// Note 'init' field is used to say what to connect to
+		id					{ VARDONE($<fl>1,$1,"",$1); PINNUMINC(); }
+	|	'.' idAny '(' ')'			{ VARDONE($<fl>1,$2,"",""); PINNUMINC(); }
+	|	'.' idAny '(' expr ')'			{ VARDONE($<fl>1,$2,"",$4); PINNUMINC(); }
 	;
 
 modport_tf_port:		// ==IEEE: modport_tf_port

@@ -14,7 +14,7 @@
  *
  ******************************************************************************
  *
- * Copyright 2000-2009 by Wilson Snyder.  This program is free software;
+ * Copyright 2000-2010 by Wilson Snyder.  This program is free software;
  * you can redistribute it and/or modify it under the terms of either the GNU
  * Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
  *
@@ -39,11 +39,13 @@
 
 VPreprocLex* VPreprocLex::s_currentLexp = NULL;	// Current lexing point
 
-#define linenoInc()  { VPreprocLex::s_currentLexp->linenoInc(); }
-bool pedantic() { return VPreprocLex::s_currentLexp->m_pedantic; }
-bool keepWhitespace() { return VPreprocLex::s_currentLexp->m_keepWhitespace; }
-void yyerror(char* msg) { VPreprocLex::s_currentLexp->m_curFilelinep->error(msg); }
-void appendDefValue(const char* t,int l) { VPreprocLex::s_currentLexp->appendDefValue(t,l); }
+#define LEXP VPreprocLex::s_currentLexp
+
+#define linenoInc()  { LEXP->linenoInc(); }
+bool pedantic() { return LEXP->m_pedantic; }
+bool keepWhitespace() { return LEXP->m_keepWhitespace; }
+void yyerror(char* msg) { LEXP->m_curFilelinep->error(msg); }
+void appendDefValue(const char* t,int l) { LEXP->appendDefValue(t,l); }
 
 void yyerrorf(const char* format, ...) {
     char msg[1024];
@@ -81,7 +83,7 @@ drop		[\032]
 	/**************************************************************/
 %%
 
-<INITIAL>^{ws}*"`line"{ws}+.*{crnl}	{ VPreprocLex::s_currentLexp->lineDirective(yytext);
+<INITIAL>^{ws}*"`line"{ws}+.*{crnl}	{ LEXP->lineDirective(yytext);
 					  return(VP_LINE); }
 
 	/* Special directives we recognize */
@@ -96,17 +98,14 @@ drop		[\032]
 <INITIAL>"`undefineall"	{ return(VP_UNDEFINEALL); }
 
 	/* Optional directives we recognize */
-<INITIAL>"`__FILE__"	{ if (!pedantic()) {
-			     static string rtnfile;
-			     rtnfile = '"'; rtnfile += VPreprocLex::s_currentLexp->m_curFilelinep->cfilename();
-			     rtnfile += '"'; yytext=(char*)rtnfile.c_str(); yyleng = rtnfile.length();
-			     return (VP_STRING);
-	                  } else return(VP_DEFREF); }
-<INITIAL>"`__LINE__"	{ if (!pedantic()) {
-	                     static char buf[10];
-			     sprintf(buf, "%d",VPreprocLex::s_currentLexp->m_curFilelinep->lineno());
-	                     yytext = buf; yyleng = strlen(yytext); return (VP_TEXT);
-	                  } else return(VP_DEFREF); }
+<INITIAL>"`__FILE__"	{ static string rtnfile;
+			  rtnfile = '"'; rtnfile += LEXP->m_curFilelinep->filename();
+			  rtnfile += '"'; yytext=(char*)rtnfile.c_str(); yyleng = rtnfile.length();
+			  return (VP_STRING); }
+<INITIAL>"`__LINE__"	{ static char buf[10];
+			  sprintf(buf, "%d",LEXP->m_curFilelinep->lineno());
+	                  yytext = buf; yyleng = strlen(yytext);
+			  return (VP_TEXT); }
 <INITIAL>"`error"	{ if (!pedantic()) return (VP_ERROR); else return(VP_DEFREF); }
 
 	/* Pass-through strings */
@@ -117,7 +116,7 @@ drop		[\032]
 <STRMODE>{backslash}{crnl}	{ linenoInc(); yymore(); }
 <STRMODE>{backslash}.	{ yymore(); }
 <STRMODE>{quote} 	{ yy_pop_state();
-			  if (VPreprocLex::s_currentLexp->m_parenLevel) appendDefValue(yytext,yyleng);
+			  if (LEXP->m_parenLevel || LEXP->m_formalLevel) { appendDefValue(yytext,yyleng); yyleng=0; }
 			  else return (VP_STRING); }
 
 	/* Protected blocks */
@@ -136,21 +135,24 @@ drop		[\032]
 
 	/* Reading definition formal parenthesis (or not) to begin formal arguments */
 	/* Note '(' must IMMEDIATELY follow definition name */
-<DEFFPAR>[(]		{ appendDefValue("(",1); BEGIN(DEFFORM); }
+<DEFFPAR>[(]		{ appendDefValue("(",1); LEXP->m_formalLevel=1; BEGIN(DEFFORM); }
 <DEFFPAR>{crnl}		{ yy_pop_state(); unput('\n'); yyleng=0; return VP_DEFFORM; } /* DEFVAL will later grab the return */
 <DEFFPAR><<EOF>>	{ yy_pop_state(); return VP_DEFFORM; }  /* empty formals */
 <DEFFPAR>.		{ yy_pop_state(); unput(yytext[yyleng-1]); yyleng=0; return VP_DEFFORM; }  /* empty formals */
 
 	/* Reading definition formals */
-<DEFFORM>[(]		{ yy_pop_state(); yyerrorf("Extra ( in define formal arguments.\n"); yyleng=0; return VP_DEFFORM; }
-<DEFFORM>[)]		{ yy_pop_state(); appendDefValue(yytext,yyleng); yyleng=0; return VP_DEFFORM; }
+<DEFFORM>[(]		{ appendDefValue(yytext,yyleng); yyleng=0; ++LEXP->m_formalLevel; }
+<DEFFORM>[)]		{ appendDefValue(yytext,yyleng); yyleng=0; if ((--LEXP->m_formalLevel)==0) { yy_pop_state(); return VP_DEFFORM; } }
 <DEFFORM>"/*"		{ yy_push_state(CMTMODE); yymore(); }
 <DEFFORM>"//"[^\n\r]*	{ return (VP_COMMENT);}
-<DEFFORM>{drop}	{ }
+<DEFFORM>{drop}		{ }
 <DEFFORM><<EOF>>	{ linenoInc(); yy_pop_state(); yyerrorf("Unterminated ( in define formal arguments."); yyleng=0; return VP_DEFFORM; }
 <DEFFORM>{crnl}		{ linenoInc(); appendDefValue((char*)"\n",1); } /* Include return so can maintain output line count */
 <DEFFORM>[\\]{crnl}	{ linenoInc(); appendDefValue((char*)"\n",1); } /* Include return so can maintain output line count */
-<DEFFORM>[^\/\*\n\r\\()]+	|
+<DEFFORM>{quote}	{ yy_push_state(STRMODE); yymore(); }
+<DEFFORM>[{\[]		{ LEXP->m_formalLevel++; appendDefValue(yytext,yyleng); }
+<DEFFORM>[}\]]		{ LEXP->m_formalLevel--; appendDefValue(yytext,yyleng); }
+<DEFFORM>[^\/\*\n\r\\(){}\[\]\"]+	|
 <DEFFORM>[\\][^\n\r]	|
 <DEFFORM>.		{ appendDefValue(yytext,yyleng); }
 
@@ -172,26 +174,24 @@ drop		[\032]
 <ARGMODE><<EOF>>	{ yyerrorf("EOF in define argument list\n"); yyleng = 0; yyterminate(); }
 <ARGMODE>{crnl}		{ linenoInc(); yytext=(char*)"\n"; yyleng=1; return(VP_WHITE); }
 <ARGMODE>{quote}	{ yy_push_state(STRMODE); yymore(); }
-<ARGMODE>[{\[]		{ VPreprocLex::s_currentLexp->m_parenLevel++;
-			  appendDefValue(yytext,yyleng); }
-<ARGMODE>[}\]]		{ VPreprocLex::s_currentLexp->m_parenLevel--;
-			  appendDefValue(yytext,yyleng); }
-<ARGMODE>[(]		{ VPreprocLex::s_currentLexp->m_parenLevel++;
+<ARGMODE>[{\[]		{ LEXP->m_parenLevel++; appendDefValue(yytext,yyleng); }
+<ARGMODE>[}\]]		{ LEXP->m_parenLevel--; appendDefValue(yytext,yyleng); }
+<ARGMODE>[(]		{ LEXP->m_parenLevel++;
 			  // Note paren level 0 means before "(" of starting args
 			  // Level 1 means "," between arguments
 			  // Level 2+ means one argument's internal ()
-			  if (VPreprocLex::s_currentLexp->m_parenLevel>1) {
+			  if (LEXP->m_parenLevel>1) {
 			      appendDefValue(yytext,yyleng);
 			  } else {
 			      return (VP_TEXT);
 			}}
-<ARGMODE>[)]		{ VPreprocLex::s_currentLexp->m_parenLevel--;
-			  if (VPreprocLex::s_currentLexp->m_parenLevel>0) {
+<ARGMODE>[)]		{ LEXP->m_parenLevel--;
+			  if (LEXP->m_parenLevel>0) {
 			      appendDefValue(yytext,yyleng);
 			  } else {
 			      yy_pop_state(); return (VP_DEFARG);
 			}}
-<ARGMODE>[,]		{ if (VPreprocLex::s_currentLexp->m_parenLevel>1) {
+<ARGMODE>[,]		{ if (LEXP->m_parenLevel>1) {
 			      appendDefValue(yytext,yyleng);
 			  } else {
 			      yy_pop_state(); return (VP_DEFARG);

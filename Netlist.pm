@@ -14,7 +14,7 @@ use base qw(Verilog::Netlist::Subclass);
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.223';
+$VERSION = '3.230';
 
 ######################################################################
 #### Error Handling
@@ -46,6 +46,18 @@ sub new {
 		@_};
     bless $self, $class;
     return $self;
+}
+
+sub delete {
+    my $self = shift;
+    # Break circular references to netlist
+    foreach my $subref ($self->modules) { $subref->delete; }
+    foreach my $subref ($self->interfaces) { $subref->delete; }
+    foreach my $subref ($self->files) { $subref->delete; }
+    $self->{_modules} = {};
+    $self->{_interfaces} = {};
+    $self->{_files} = {};
+    $self->{_need_link} = {};
 }
 
 ######################################################################
@@ -588,6 +600,13 @@ Adds an additional input dependency for dependency_write.
 
 Adds an additional output dependency for dependency_write.
 
+=item $netlist->delete
+
+Delete the netlist, reclaim memory.  Unfortunately netlists will not
+disappear simply with normal garbage collection from leaving of scope due
+to complications with reference counting and weaking Class::Struct
+structures; solutions welcome.
+
 =item $netlist->files
 
 Returns list of Verilog::Netlist::File.
@@ -645,7 +664,7 @@ Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.org/verilog-perl>.
 
-Copyright 2000-2009 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2010 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
@@ -660,6 +679,7 @@ L<Verilog::Netlist::Cell>,
 L<Verilog::Netlist::File>,
 L<Verilog::Netlist::Interface>,
 L<Verilog::Netlist::Logger>,
+L<Verilog::Netlist::ModPort>,
 L<Verilog::Netlist::Module>,
 L<Verilog::Netlist::Net>,
 L<Verilog::Netlist::Pin>,

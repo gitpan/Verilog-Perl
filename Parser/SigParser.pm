@@ -14,13 +14,14 @@ use base qw(Verilog::Parser);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.223';
+$VERSION = '3.230';
 
 our @_Callback_Names = qw(
   attribute
   contassign
   endcell
   endinterface
+  endmodport
   endtaskfunc
   endmodule
   endpackage
@@ -29,6 +30,7 @@ our @_Callback_Names = qw(
   import
   instant
   interface
+  modport
   module
   package
   parampin
@@ -63,7 +65,8 @@ sub metacomment {
 # Accessors
 
 sub callback_names {
-    return sort @_Callback_Names;
+    my @out = sort @_Callback_Names;
+    return @out;
 }
 
 #######################################################################
@@ -105,6 +108,10 @@ sub endinterface {
     my $self = shift;
 }
 
+sub endmodport {
+    my $self = shift;
+}
+
 sub endtaskfunc {
     my $self = shift;
 }
@@ -142,6 +149,12 @@ sub instant {
 }
 
 sub interface {
+    my $self = shift;
+    my $keyword = shift;
+    my $name = shift;
+}
+
+sub modport {
     my $self = shift;
     my $keyword = shift;
     my $name = shift;
@@ -290,6 +303,11 @@ clean up routines.
 This method is called at a endfunction or endtask keyword.  It is useful
 for writing clean up routines.
 
+=item $self->endmodport ( $token )
+
+This method is called at a endmodport keyword. It is useful for writing
+clean up routines.
+
 =item $self->endmodule ( $token )
 
 This method is called at a endmodule keyword. It is useful for writing
@@ -329,6 +347,10 @@ this callback. This has been replaced with the parampin callback.
 
 This method is called when an interface is defined.
 
+=item $self->modport ( $keyword, $name )
+
+This method is called when an interface modport is defined.
+
 =item $self->module ( $keyword, $name, ignored, $in_celldefine )
 
 This method is called when a module is defined.
@@ -361,8 +383,9 @@ port header, the second call at the input/output declaration.
 
 The first argument $name, is the name of the port.  $objof is what the port
 is an object of ('module', 'function', etc).  $direction is the port
-direction ('input', 'output', 'inout', 'ref', 'const ref').  $data_type is
-the data type ('reg', 'user_type_t', 'signed [31:0]', etc).  $array is the
+direction ('input', 'output', 'inout', 'ref', 'const ref', or 'interface').
+$data_type is the data type ('reg', 'user_type_t', 'signed [31:0]', etc, or
+for interfaces the "{interface_id}.{modport_name}").  $array is the
 arraying of the port ('[1:0][2:0]', '', etc).  $pinnum is set to the pin
 number for ANSI style declarations, and 0 for Verilog 1995 declarations
 made outside the port list.
@@ -439,7 +462,7 @@ Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.org/verilog-perl>.
 
-Copyright 2000-2009 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2010 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 

@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2009-2009 by Wilson Snyder.  This program is free software;
+// Copyright 2009-2010 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the
 // GNU Lesser General Public License Version 3 or the Perl Artistic License
 // Version 2.0.
@@ -54,6 +54,7 @@ public:
 	FORK,
 	FUNCTION,
 	INTERFACE,
+	MODPORT,
 	MODULE,
 	PACKAGE,	// For yaID__PACKAGE
 	PROGRAM,
@@ -75,7 +76,7 @@ public:
 	"NOT_FOUND", "netlist", "error", "unknown",
 	"block", "class", "clocking", "covergroup",
 	"enum", "fork", "function", "interface",
-	"module", "package", "program", "property",
+	"modport", "module", "package", "program", "property",
 	"sequence", "struct", "task", "type", "union",
 	"_MAX"
 	};
@@ -99,8 +100,8 @@ private:
 public:
     static void debug(int flag) { s_debug=flag; }
     static int debug() { return s_debug; }
-private:
 
+private:
     // CREATORS
     VAstEnt() { assert(0); }	// Not made by users, it's an AV*
     ~VAstEnt() { assert(0); }	// Not made by users, it's an AV*

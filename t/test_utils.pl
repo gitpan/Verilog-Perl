@@ -1,6 +1,6 @@
 # DESCRIPTION: Perl ExtUtils: Common routines required by package tests
 #
-# Copyright 2000-2009 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2010 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
@@ -66,6 +66,16 @@ sub files_identical {
 	}
     }
     return 1;
+}
+
+sub get_memory_usage {
+    # Return memory usage.  Return 0 if the system doesn't look quite right.
+    my $fh = IO::File->new("</proc/self/statm");
+    return 0 if !$fh;
+
+    my $stat = $fh->getline || "";
+    my @stats = split /\s+/, $stat;
+    return $stats[0]||0;  # vmsize
 }
 
 1;

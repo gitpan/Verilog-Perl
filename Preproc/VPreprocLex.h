@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2009 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2010 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -114,9 +114,10 @@ class VPreprocLex {
     static VPreprocLex* s_currentLexp;	///< Current lexing point
     int		m_keepComments;		///< Emit comments in output text
     int		m_keepWhitespace;	///< Emit all whitespace in output text
-    bool	m_pedantic;	///< Obey standard; don't Substitute `__FILE__ and `__LINE__
+    bool	m_pedantic;	///< Obey standard; don't Substitute `error
 
     // State from lexer
+    int		m_formalLevel;	///< Parenthesis counting inside def formals
     int		m_parenLevel;	///< Parenthesis counting inside def args
     string	m_defValue;	///< Definition value being built.
 
@@ -126,6 +127,7 @@ class VPreprocLex {
 	m_keepComments = 0;
 	m_keepWhitespace = 1;
 	m_pedantic = false;
+	m_formalLevel = 0;
 	m_parenLevel = 0;
 	m_bufferStack.push(yy_create_buffer (fp, YY_BUF_SIZE));
 	yy_switch_to_buffer(m_bufferStack.top());

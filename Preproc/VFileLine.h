@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2009 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2010 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -47,20 +47,18 @@ public:
     /// Create a new fileline, for a new file and/or line number.
     /// Member functions, so that if a user provides another class, a change in the
     /// filename/linenumber will create a new element using the derived class.
-    virtual VFileLine* create(const string filename, int lineno);
+    virtual VFileLine* create(const string& filename, int lineno) = 0;
     /// Create with same filename, new line number; just calls create(fn,ln)
-    virtual VFileLine* create(int lineno);
-    static VFileLine* create_default();
-    virtual void init(const string filename, int lineno);
+    virtual VFileLine* create(int lineno) { return create(filename(), lineno); }
+    virtual void init(const string& filename, int lineno);
     virtual ~VFileLine() {}
     // ACCESSORS
     virtual int lineno () const { return m_lineno; }	///< Return line number
     virtual const string filename () const { return m_filename; }	///< Return filename
     virtual const string filebasename () const;	///< Filename with any directory stripped
-    virtual const char* cfilename () const { return m_filename.c_str(); }
     // METHODS
-    virtual void fatal(const string msg);	///< Report a fatal error at given location
-    virtual void error(const string msg);	///< Report a error at given location
+    virtual void fatal(const string& msg);	///< Report a fatal error at given location
+    virtual void error(const string& msg);	///< Report a error at given location
     VFileLine* lineDirective(const char* textp);
     // STATIC METHODS
     static int numErrors() {return s_numErrors;}	///< Return total errors detected
