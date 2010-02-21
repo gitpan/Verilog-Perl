@@ -3,6 +3,18 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.231 2010/02/21
+
+****	Support 1800-2009 /*comments*/ in define values.
+
+****	Fix DOS carriage returns leaking into comment output.
+
+****	Fix error on define comments w/o keep_whitespace, bug202. [Rick Ramus]
+
+****	Fix "parser thinks ending" error on unions, bug202. [Rick Ramus]
+
+****	Fix `defines with empty argument lists.
+
 * Verilog::Language 3.230 2010/01/21
 
 **	Support interface modports, bug200.  [by Thriller Wu]

@@ -191,14 +191,12 @@ COMMENT: // without warranty, 2000-2010 by Wilson Snyder.
 verilog/inc1.v:3:  /*CMT*/ 
 verilog/inc1.v:4:    text.
 verilog/inc1.v:5: 
-COMMENT: /*but not */
-COMMENT: /* or this either */
 verilog/inc1.v:6:  
 COMMENT: // but not
 verilog/inc1.v:7:  
-COMMENT: /*CMT*/
-COMMENT: /*CMT*/
-verilog/inc1.v:8: DS<foo   /*CMT*/   bar     /*CMT*/ >
+COMMENT: /*this */
+COMMENT: /* this too */
+verilog/inc1.v:8: DS<foo  /*CMT*/  bar    /*CMT*/ >
 COMMENT: /*CMT*/
 verilog/inc1.v:9: DS<foobar2   /*CMT*/ >
 verilog/inc1.v:10: 
@@ -474,4 +472,132 @@ verilog/inc1.v:210:
 verilog/inc1.v:211:     
 verilog/inc1.v:211: `line 211 "verilog/inc1.v" 0
 verilog/inc1.v:211: 
-verilog/inc1.v:212: `line 212 "verilog/inc1.v" 2
+verilog/inc1.v:212: 
+COMMENT: //======================================================================
+verilog/inc1.v:213:  /*CMT*/ 
+COMMENT: // bug202
+verilog/inc1.v:214:  /*CMT*/ 
+verilog/inc1.v:215:  
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:215: 
+verilog/inc1.v:226: 
+verilog/inc1.v:227: DS< 							          	       					   
+verilog/inc1.v:227: `line 227 "verilog/inc1.v" 0
+verilog/inc1.v:227: 								      					           		     
+verilog/inc1.v:227: `line 227 "verilog/inc1.v" 0
+verilog/inc1.v:227: 							      assign a3 = ~b3 ;						   >
+verilog/inc1.v:228: 
+COMMENT: /* multi	\
+	 line1*/
+verilog/inc1.v:229:  
+verilog/inc1.v:230:  /*CMT*/ 	\
+COMMENT: /*multi	\
+	   line2*/
+verilog/inc1.v:231:  
+verilog/inc1.v:233:  /*CMT*/ 
+verilog/inc1.v:233: 
+verilog/inc1.v:233: 
+verilog/inc1.v:233: 
+verilog/inc1.v:233: 
+verilog/inc1.v:233: 
+COMMENT: /* multi		       line 3*/
+verilog/inc1.v:238: DS< /*CMT*/ 		    def foo>
+verilog/inc1.v:239: 
+COMMENT: //======================================================================
+verilog/inc1.v:240:  /*CMT*/ 
+verilog/inc1.v:241: 
+COMMENT: // NOT IN DEFINE
+verilog/inc1.v:242:  
+verilog/inc1.v:243:  
+COMMENT: /* NOT PART
+	        OF DEFINE */
+verilog/inc1.v:244:  
+verilog/inc1.v:245: 
+verilog/inc1.v:246:  
+verilog/inc1.v:246: 
+COMMENT: // CMT NOT
+verilog/inc1.v:250:  
+verilog/inc1.v:250: 
+verilog/inc1.v:250: 
+verilog/inc1.v:251: 
+COMMENT: /*CMT*/
+verilog/inc1.v:252: 1 DS< /*CMT*/ > (nodef)
+COMMENT: /* PART OF DEFINE */
+verilog/inc1.v:253: 2 DS< /*CMT*/ > (hasdef)
+COMMENT: /*CMT*/
+verilog/inc1.v:254: 3 DS< /*CMT*/ > (nodef)
+COMMENT: /* PART  	        OF DEFINE */
+verilog/inc1.v:255: 4 DS< /*CMT*/ > (nodef)
+COMMENT: /*CMT*/
+verilog/inc1.v:256: 5 DS<also in     also3    /*CMT*/ > (nodef)
+verilog/inc1.v:257:  
+verilog/inc1.v:257: 
+verilog/inc1.v:259: DS<HAS a NEW  LINE>
+verilog/inc1.v:260: 
+COMMENT: //======================================================================
+verilog/inc1.v:261:  /*CMT*/ 
+verilog/inc1.v:262: 
+verilog/inc1.v:263:  
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:263: 
+verilog/inc1.v:275: 
+verilog/inc1.v:276:  
+verilog/inc1.v:277:  
+verilog/inc1.v:278: 
+verilog/inc1.v:279: EXP: clxx_scen
+verilog/inc1.v:280: DS<clxx_scen>
+verilog/inc1.v:281: EXP: clxx_scen
+verilog/inc1.v:282: "DS<clxx_scen>"
+verilog/inc1.v:283:  
+verilog/inc1.v:284: EXP: do if (start("verilog/inc1.v", 25)) begin  message({"Blah-", "clx_scen", " end"}); end  while(0);
+COMMENT: /* synopsys translate_off */
+verilog/inc1.v:285: DS<DS<do         /*CMT*/           
+verilog/inc1.v:285: `line 285 "verilog/inc1.v" 0
+COMMENT: /* synopsys translate_on */
+verilog/inc1.v:285:         if (start("verilog/inc1.v", 285)) begin    	 message({"Blah-", "DS<clx_scen>", " end"});        end         /*CMT*/      while(0)>;>
+verilog/inc1.v:286: 
+COMMENT: //======================================================================
+verilog/inc1.v:287:  /*CMT*/ 
+verilog/inc1.v:288: 
+verilog/inc1.v:289:  
+verilog/inc1.v:289: 
+verilog/inc1.v:289: 
+verilog/inc1.v:289: 
+verilog/inc1.v:293: DS< 
+verilog/inc1.v:294: 
+verilog/inc1.v:295:      
+verilog/inc1.v:295: `line 295 "verilog/inc1.v" 0
+verilog/inc1.v:295: 
+COMMENT: //`ifndef def_fooed_2  `error "No def_fooed_2" `endif
+verilog/inc1.v:296:  /*CMT*/ 
+verilog/inc1.v:297: EXP: This is fooed
+verilog/inc1.v:298: DS<This is fooed      
+verilog/inc1.v:299: 
+verilog/inc1.v:300: EXP: This is fooed_2
+verilog/inc1.v:301: DS<This is fooed_2>>>
+verilog/inc1.v:302: 
+COMMENT: //======================================================================
+verilog/inc1.v:303:  /*CMT*/ 
+verilog/inc1.v:304:  
+verilog/inc1.v:305: DS<np>
+verilog/inc1.v:306: DS<np>
+COMMENT: //======================================================================
+verilog/inc1.v:307:  /*CMT*/ 
+verilog/inc1.v:308: `line 308 "verilog/inc1.v" 2

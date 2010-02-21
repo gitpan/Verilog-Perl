@@ -61,7 +61,7 @@ inc3_a_filename_from_line_directive:18: `line 5 "verilog/inc2.v" 0
 verilog/inc2.v:6: `line 6 "verilog/inc2.v" 2
 verilog/inc2.v:6: `line 1 "verilog/inc1.v" 0
 verilog/inc1.v:4:  text.
-verilog/inc1.v:8: foo bar
+verilog/inc1.v:8: foo  bar 
 verilog/inc1.v:9: foobar2
 verilog/inc1.v:15: first part second part
 verilog/inc1.v:22: deep deep
@@ -135,4 +135,30 @@ verilog/inc1.v:203: $display("bits %d %d", $bits(foo), `10);
 verilog/inc1.v:208: `line 208 "verilog/inc1.v" 0
 verilog/inc1.v:210: `line 210 "verilog/inc1.v" 0
 verilog/inc1.v:211: `line 211 "verilog/inc1.v" 0
-verilog/inc1.v:212: `line 212 "verilog/inc1.v" 2
+verilog/inc1.v:227: `line 227 "verilog/inc1.v" 0
+verilog/inc1.v:227: `line 227 "verilog/inc1.v" 0
+verilog/inc1.v:227:  assign a3 = ~b3 ; 
+verilog/inc1.v:230:  \
+verilog/inc1.v:238:  def foo
+verilog/inc1.v:252: 1  (nodef)
+verilog/inc1.v:253: 2  (hasdef)
+verilog/inc1.v:254: 3  (nodef)
+verilog/inc1.v:255: 4  (nodef)
+verilog/inc1.v:256: 5 also in also3 (nodef)
+verilog/inc1.v:259: HAS a NEW LINE
+verilog/inc1.v:279: EXP: clxx_scen
+verilog/inc1.v:280: clxx_scen
+verilog/inc1.v:281: EXP: clxx_scen
+verilog/inc1.v:282: "clxx_scen"
+verilog/inc1.v:284: EXP: do if (start("verilog/inc1.v", 25)) begin message({"Blah-", "clx_scen", " end"}); end while(0);
+verilog/inc1.v:285: do      
+verilog/inc1.v:285: `line 285 "verilog/inc1.v" 0
+verilog/inc1.v:285:  if (start("verilog/inc1.v", 285)) begin  message({"Blah-", "clx_scen", " end"}); end  while(0);
+verilog/inc1.v:295: `line 295 "verilog/inc1.v" 0
+verilog/inc1.v:297: EXP: This is fooed
+verilog/inc1.v:298: This is fooed  
+verilog/inc1.v:300: EXP: This is fooed_2
+verilog/inc1.v:301: This is fooed_2
+verilog/inc1.v:305: np
+verilog/inc1.v:306: np
+verilog/inc1.v:308: `line 308 "verilog/inc1.v" 2

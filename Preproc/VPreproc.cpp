@@ -27,6 +27,17 @@
 #include <vector>
 #include <map>
 #include <cassert>
+#include <cerrno>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#if defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+# include <io.h>
+#else
+# include <unistd.h>
+#endif
 
 #include "VPreproc.h"
 #include "VPreprocLex.h"
@@ -42,7 +53,7 @@ class VPreDefRef {
     string	m_name;		// Define last name being defined
     string	m_params;	// Define parameter list for next expansion
     string	m_nextarg;	// String being built for next argument
-    int		m_parenLevel;	// Parenthesis counting inside def args
+    int		m_parenLevel;	// Parenthesis counting inside def args (for PARENT not child)
 
     vector<string> m_args;	// List of define arguments
 public:
@@ -51,9 +62,10 @@ public:
     string nextarg() const { return m_nextarg; }
     void nextarg(const string& value) { m_nextarg = value; }
     int parenLevel() const { return m_parenLevel; }
+    void parenLevel(int value) { m_parenLevel = value; }
     vector<string>& args() { return m_args; }
-    VPreDefRef(const string& name, const string& params, int pl)
-	: m_name(name), m_params(params), m_parenLevel(pl) {}
+    VPreDefRef(const string& name, const string& params)
+	: m_name(name), m_params(params), m_parenLevel(0) {}
     ~VPreDefRef() {}
 };
 
@@ -124,11 +136,13 @@ struct VPreprocImp : public VPreprocOpaque {
     const char* tokenName(int tok);
     int getRawToken();
     int getToken();
+    void debugToken(int tok, const char* cmtp);
     void parseTop();
     void parseUndef();
     string getparseline(bool stop_at_eol);
     bool isEof() const { return (m_lexp==NULL); }
-    void open(string filename, VFileLine* filelinep);
+    bool readWholefile(const string& filename, string& out);
+    void openFile(string filename, VFileLine* filelinep);
     void insertUnreadback(const string& text) { m_lineCmt += text; }
     void insertUnreadbackAtBol(const string& text);
 private:
@@ -139,7 +153,7 @@ private:
     string defineSubst(VPreDefRef* refp);
     void addLineComment(int enter_exit_level);
     string trimWhitespace(const string& strg, bool trailing);
-    void unputString(const string& strg);
+    void unputString(const string& strg, bool first=false);
 
     void parsingOn() { m_off--; assert(m_off>=0); if (!m_off) addLineComment(0); }
     void parsingOff() { m_off++; }
@@ -162,9 +176,9 @@ VPreproc::~VPreproc() {
 // VPreproc Methods.  Just call the implementation functions.
 
 void VPreproc::comment(string cmt) { }
-void VPreproc::open(string filename, VFileLine* filelinep) {
+void VPreproc::openFile(string filename, VFileLine* filelinep) {
     VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
-    idatap->open (filename,filelinep);
+    idatap->openFile (filename,filelinep);
 }
 string VPreproc::getline() {
     VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
@@ -198,7 +212,7 @@ void VPreproc::insertUnreadback(string text) {
 // This probably will want to be overridden for given child users of this class.
 
 void VPreproc::include(string filename) {
-    open(filename, filelinep());
+    openFile(filename, filelinep());
 }
 void VPreproc::undef(string define) {
     cout<<"UNDEF "<<define<<endl;
@@ -254,14 +268,16 @@ const char* VPreprocImp::tokenName(int tok) {
     }
 }
 
-void VPreprocImp::unputString(const string& strg) {
+void VPreprocImp::unputString(const string& strg, bool first) {
     // We used to just m_lexp->unputString(strg.c_str());
     // However this can lead to "flex scanner push-back overflow"
     // so instead we scan from a temporary buffer, then on EOF return.
     // This is also faster than the old scheme, amazingly.
-    if (m_lexp->m_bufferStack.empty() || m_lexp->m_bufferStack.top()!=m_lexp->currentBuffer()) {
-	fatalSrc("bufferStack missing current buffer; will return incorrectly");
-	// Hard to debug lost text as won't know till much later
+    if (!first) {  // Else the initial creation
+	if (m_lexp->m_bufferStack.empty() || m_lexp->m_bufferStack.top()!=m_lexp->currentBuffer()) {
+	    fatalSrc("bufferStack missing current buffer; will return incorrectly");
+	    // Hard to debug lost text as won't know till much later
+	}
     }
     m_lexp->scanBytes(strg);
 }
@@ -284,7 +300,8 @@ string VPreprocImp::trimWhitespace(const string& strg, bool trailing) {
 }
 
 string VPreprocImp::defineSubst(VPreDefRef* refp) {
-    // Substitute out defines in a argumented define reference.
+    // Substitute out defines in a define reference.
+    // (We also need to call here on non-param defines to handle `")
     // We could push the define text back into the lexer, but that's slow
     // and would make recursive definitions and parameter handling nasty.
     //
@@ -360,7 +377,9 @@ string VPreprocImp::defineSubst(VPreDefRef* refp) {
 	    if (*cp=='"') quote=!quote;
 	    if (*cp) token += *cp;
 	}
-	if (refp->args().size() > numArgs) {
+	if (refp->args().size() > numArgs
+	    // `define X() is ok to call with nothing
+	    && !(refp->args().size()==1 && numArgs==0 && trimWhitespace(refp->args()[0],false)=="")) {
 	    error("Define passed too many arguments: "+refp->name()+"\n");
 	    return " `"+refp->name()+" ";
 	}
@@ -430,17 +449,50 @@ string VPreprocImp::defineSubst(VPreDefRef* refp) {
 //**********************************************************************
 // Parser routines
 
-void VPreprocImp::open(string filename, VFileLine* filelinep) {
+bool VPreprocImp::readWholefile(const string& filename, string& out) {
+    int fd = open (filename.c_str(), O_RDONLY);
+    if (!fd) return false;
+
+#define INFILTER_IPC_BUFSIZ 64*1024
+    char buf[INFILTER_IPC_BUFSIZ];
+    bool eof = false;
+    while (!eof) {
+	int todo = INFILTER_IPC_BUFSIZ;
+	int got = read (fd, buf, todo);
+	if (got>0) out.append(buf, got);
+	else if (errno == EINTR || errno == EAGAIN
+#ifdef EWOULDBLOCK
+		 || errno == EWOULDBLOCK
+#endif
+	    ) {
+	} else { eof = true; break; }
+    }
+
+    close(fd);
+    return true;
+}
+
+void VPreprocImp::openFile(string filename, VFileLine* filelinep) {
     // Open a new file, possibly overriding the current one which is active.
     if (filelinep) {
 	m_filelinep = filelinep;
     }
 
-    FILE* fp = fopen (filename.c_str(), "r");
-    if (!fp) {
+    string wholefile;
+    bool ok = readWholefile(filename, wholefile/*ref*/);
+    if (!ok) {
 	error("File not found: "+filename+"\n");
 	return;
     }
+
+    // Filter all DOS CR's en-mass.  This avoids bugs with lexing CRs in the wrong places.
+    // This will also strip them from strings, but strings aren't supposed to be multi-line without a "\"
+    string wholefilecr;
+    size_t wholesize = wholefile.length();
+    for (size_t i=0; i<wholesize; i++) {  // Not a c_str(), as we keep '\0's for now.
+	if (wholefile[i] != '\r' && wholefile[i] != '\0') wholefilecr += wholefile[i];
+    }
+    wholefile.resize(0); // free memory
 
     if (m_lexp) {
 	// We allow the same include file twice, because occasionally it pops
@@ -454,13 +506,15 @@ void VPreprocImp::open(string filename, VFileLine* filelinep) {
 	addLineComment(0);
     }
 
-    m_lexp = new VPreprocLex (fp);
+    m_lexp = new VPreprocLex ();
     m_lexp->m_keepComments = m_preprocp->keepComments();
     m_lexp->m_keepWhitespace = m_preprocp->keepWhitespace();
     m_lexp->m_pedantic = m_preprocp->pedantic();
     m_lexp->m_curFilelinep = m_preprocp->filelinep()->create(filename, 1);
     m_filelinep = m_lexp->m_curFilelinep;  // Remember token start location
     addLineComment(1); // Enter
+
+    unputString(wholefilecr,true);
 }
 
 void VPreprocImp::insertUnreadbackAtBol(const string& text) {
@@ -517,7 +571,8 @@ int VPreprocImp::getRawToken() {
 	    m_lineAdd--;
 	    m_rawAtBol = true;
 	    yytext=(char*)"\n"; yyleng=1;
-	    return (VP_TEXT);
+	    if (debug()) debugToken(VP_WHITE, "LNA");
+	    return (VP_WHITE);
 	}
 	if (m_lineCmt!="") {
 	    // We have some `line directive or other processed data to return to the user.
@@ -534,6 +589,7 @@ int VPreprocImp::getRawToken() {
 		VPreprocLex::s_currentLexp->appendDefValue(yytext,yyleng);
 		goto next_tok;
 	    } else {
+		if (debug()) debugToken(VP_TEXT, "LCM");
 		return (VP_TEXT);
 	    }
 	}
@@ -544,15 +600,7 @@ int VPreprocImp::getRawToken() {
 	VPreprocLex::s_currentLexp = m_lexp;   // Tell parser where to get/put data
 	int tok = yylex();
 
-	if (debug()) {
-	    string buf = string (yytext, yyleng);
-	    string::size_type pos;
-	    while ((pos=buf.find("\n")) != string::npos) { buf.replace(pos, 1, "\\n"); }
-	    while ((pos=buf.find("\r")) != string::npos) { buf.replace(pos, 1, "\\r"); }
-	    fprintf (stderr, "%d: RAW %s s%d dr%d:  <%d>%-10s: %s\n",
-		     m_filelinep->lineno(), m_off?"of":"on", m_state, (int)m_defRefs.size(),
-		     m_lexp->currentStartState(), tokenName(tok), buf.c_str());
-	}
+	if (debug()) debugToken(tok, "RAW");
 
 	// On EOF, try to pop to upper level includes, as needed.
 	if (tok==VP_EOF) {
@@ -562,6 +610,18 @@ int VPreprocImp::getRawToken() {
 
 	if (yyleng) m_rawAtBol = (yytext[yyleng-1]=='\n');
 	return tok;
+    }
+}
+
+void VPreprocImp::debugToken(int tok, const char* cmtp) {
+    if (debug()) {
+	string buf = string (yytext, yyleng);
+	string::size_type pos;
+	while ((pos=buf.find("\n")) != string::npos) { buf.replace(pos, 1, "\\n"); }
+	while ((pos=buf.find("\r")) != string::npos) { buf.replace(pos, 1, "\\r"); }
+	fprintf (stderr, "%d: %s %s s%d dr%d:  <%d>%-10s: %s\n",
+		 m_filelinep->lineno(), cmtp, m_off?"of":"on", m_state, (int)m_defRefs.size(),
+		 m_lexp->currentStartState(), tokenName(tok), buf.c_str());
     }
 }
 
@@ -642,6 +702,11 @@ int VPreprocImp::getToken() {
 		else fatalSrc("Bad case\n");
 		goto next_tok;
 	    }
+	    else if (tok==VP_TEXT) {
+		// IE, something like comment between define and symbol
+		if (!m_off) return tok;
+		else goto next_tok;
+	    }
 	    else {
 		error((string)"Expecting define name. Found: "+tokenName(tok)+"\n");
 		goto next_tok;
@@ -672,13 +737,17 @@ int VPreprocImp::getToken() {
 		string formals = m_formals;
 		string value = m_lexp->m_defValue;
 		// Remove returns
-		for (unsigned i=0; i<formals.length(); i++) {
+		// Not removing returns in values has two problems,
+		// 1. we need to correct line numbers with `line after each substitution
+		// 2. Substituting in " .... " with embedded returns requires \ escape.
+		//    This is very difficult in the presence of `".
+		for (size_t i=0; i<formals.length(); i++) {
 		    if (formals[i] == '\n') {
 			formals[i] = ' ';
 			newlines += "\n";
 		    }
 		}
-		for (unsigned i=0; i<value.length(); i++) {
+		for (size_t i=0; i<value.length(); i++) {
 		    if (value[i] == '\n') {
 			value[i] = ' ';
 			newlines += "\n";
@@ -692,7 +761,8 @@ int VPreprocImp::getToken() {
 		    m_preprocp->define(m_lastSym, value, formals);
 		}
 	    } else {
-		fatalSrc("Bad define text\n");
+		string msg = string("Bad define text, unexpected ")+tokenName(tok)+"\n";
+		fatalSrc(msg);
 	    }
 	    m_state = ps_TOP;
 	    // DEFVALUE is terminated by a return, but lex can't return both tokens.
@@ -876,7 +946,9 @@ int VPreprocImp::getToken() {
 		}
 		else {  // Found, with parameters
 		    if (debug()) cout<<"Defref `"<<name<<" => parametrized"<<endl;
-		    m_defRefs.push(VPreDefRef(name, params, m_lexp->m_parenLevel));
+		    // The CURRENT macro needs the paren saved, it's not a property of the child macro
+		    if (!m_defRefs.empty()) m_defRefs.top().parenLevel(m_lexp->m_parenLevel);
+		    m_defRefs.push(VPreDefRef(name, params));
 		    m_state = ps_DEFPAREN;  m_stateFor = tok;
 		    m_lexp->pushStateDefArg(0);
 		    goto next_tok;
