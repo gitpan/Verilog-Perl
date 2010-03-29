@@ -27,6 +27,7 @@
 #ifndef _VPREPROCLEX_H_		// Guard
 #define _VPREPROCLEX_H_ 1
 
+#include <deque>
 #include <stack>
 
 #include "VFileLine.h"
@@ -80,6 +81,11 @@
 # define yytext VPreprocLextext
 #endif
 
+#ifndef yyourleng
+# define yyourleng VPreprocLexourleng
+# define yyourtext VPreprocLexourtext
+#endif
+
 #ifndef YY_BUFFER_STATE
 struct yy_buffer_state;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
@@ -88,8 +94,12 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
 extern int yylex();
 extern void yyrestart(FILE*);
-extern char* yytext;
-extern int yyleng;
+
+// Accessors, because flex keeps changing the type of yyleng
+extern char* yyourtext();
+extern size_t yyourleng();
+extern void yyourtext(const char* textp, size_t size);  // Must call with static
+
 YY_BUFFER_STATE yy_create_buffer ( FILE *file, int size );
 void yy_switch_to_buffer( YY_BUFFER_STATE new_buffer );
 void yy_delete_buffer( YY_BUFFER_STATE b );
@@ -100,7 +110,7 @@ void yy_delete_buffer( YY_BUFFER_STATE b );
 #define KEEPCMT_EXP 3
 
 //======================================================================
-/// Class entry for each per-lexter state
+// Class entry for each per-lexter state
 
 class VPreprocLex {
   public:	// Used only by VPreprocLex.cpp and VPreproc.cpp
@@ -108,6 +118,7 @@ class VPreprocLex {
 
     // Parse state
     stack<YY_BUFFER_STATE> m_bufferStack;	///< Stack of inserted text above current point
+    deque<string>	m_buffers;	///< Buffer of characters to process
 
     // State to lexer
     static VPreprocLex* s_currentLexp;	///< Current lexing point
@@ -129,13 +140,15 @@ class VPreprocLex {
 	m_formalLevel = 0;
 	m_parenLevel = 0;
 	m_defCmtSlash = false;
+	initFirstBuffer();
     }
     ~VPreprocLex() {
 	while (!m_bufferStack.empty()) { yy_delete_buffer(m_bufferStack.top()); m_bufferStack.pop(); }
     }
+    void initFirstBuffer();
 
     /// Called by VPreprocLex.l from lexer
-    void appendDefValue(const char* text, int len);
+    void appendDefValue(const char* text, size_t len);
     void lineDirective(const char* text) { m_curFilelinep = m_curFilelinep->lineDirective(text); }
     void linenoInc() { m_curFilelinep = m_curFilelinep->create(m_curFilelinep->lineno()+1); }
     /// Called by VPreproc.cpp to inform lexer
@@ -143,10 +156,13 @@ class VPreprocLex {
     void pushStateDefForm();
     void pushStateDefValue();
     void pushStateIncFilename();
-    void scanBytes(const string& strg);
+    void scanBytes(const char* strp, size_t len);
+    void scanBytesBack(const string& str);
+    size_t inputToLex(char* buf, size_t max_size);
     /// Called by VPreproc.cpp to get data from lexer
     YY_BUFFER_STATE currentBuffer();
     int	 currentStartState();
+    void dumpSummary();
     void dumpStack();
     void unused();
 };

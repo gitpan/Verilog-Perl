@@ -110,4 +110,29 @@ module example;
       $ucover_foreach_clk(clk, "foreach_label", "27:3,1,0", (i[$ui]));
    end
 
+   // Meta coverage disables
+   initial begin
+      // vp_coverage_off
+      if (0) begin end // cover off'ed
+      // vp_coverage_on
+   end
+
+   // Ifdef based disables
+   initial begin
+`ifndef NEVER
+ `ifdef SYNTHESIS
+      if (1) begin end  // cover on
+ `elsif SYNTHESIS
+      if (1) begin end  // cover on
+ `else
+      if (1) begin end  // cover off'ed
+ `endif
+ `ifndef SYNTHESIS
+      if (1) begin end  // cover off'ed
+ `else
+      if (1) begin end  // cover on
+ `endif
+`endif
+    end
+
 endmodule

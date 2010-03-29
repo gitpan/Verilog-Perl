@@ -60,8 +60,7 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
 extern int yylex();
 extern void yyrestart(FILE*);
-extern char* yytext;
-extern int yyleng;
+
 YY_BUFFER_STATE yy_create_buffer ( FILE *file, int size );
 YY_BUFFER_STATE yy_scan_bytes(const char *bytes, int len);
 void yy_switch_to_buffer( YY_BUFFER_STATE new_buffer );
@@ -107,7 +106,7 @@ class VParseLex {
     void restart() { yyrestart(NULL); }
 
     // Internal Utilities
-    static bool symEscapeless(const char* textp, int leng) {
+    static bool symEscapeless(const char* textp, size_t leng) {
 	// Are \ escapes needed to print this symbol?
 	if (leng<1) return false;  // Probably not a valid identifier, but better than a core dump...
 	if (!isalpha(textp[0]) && textp[0] != '_') return false;

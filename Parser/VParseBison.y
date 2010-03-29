@@ -1807,13 +1807,18 @@ cellpinItemE:			// IEEE: named_port_connection + named_parameter_assignment + em
 	|	'.' idSVKwd				{ PINDONE($<fl>1,$2,$2);  PINNUMINC(); }
 	|	'.' idAny				{ PINDONE($<fl>1,$2,$2);  PINNUMINC(); }
 	|	'.' idAny '(' ')'			{ PINDONE($<fl>1,$2,"");  PINNUMINC(); }
+	//			// mintypmax is expanded here, as it might be a UDP or gate primitive
 	|	'.' idAny '(' expr ')'			{ PINDONE($<fl>1,$2,$4);  PINNUMINC(); }
+	|	'.' idAny '(' expr ':' expr ')'		{ PINDONE($<fl>1,$2,$4);  PINNUMINC(); }
+	|	'.' idAny '(' expr ':' expr ':' expr ')' { PINDONE($<fl>1,$2,$4);  PINNUMINC(); }
 	//			// For parameters
 	|	'.' idAny '(' data_type ')'		{ PINDONE($<fl>1,$2,$4);  PINNUMINC(); }
 	//			// For parameters
 	|	data_type				{ PINDONE($<fl>1,"",$1);  PINNUMINC(); }
 	//
 	|	expr					{ PINDONE($<fl>1,"",$1);  PINNUMINC(); }
+	|	expr ':' expr				{ PINDONE($<fl>1,"",$1);  PINNUMINC(); }
+	|	expr ':' expr ':' expr			{ PINDONE($<fl>1,"",$1);  PINNUMINC(); }
 	;
 
 //************************************************
@@ -2415,9 +2420,9 @@ tf_port_listList:		// IEEE: part of tf_port_list
 
 tf_port_item:			// ==IEEE: tf_port_item
 	//			// We split tf_port_item into the type and assignment as don't know what follows a comma
-		/* empty */				{ }	// For example a ",," port
-	|	tf_port_itemFront tf_port_itemAssignment { }
-	|	tf_port_itemAssignment 			{ }
+		/* empty */				{ PINNUMINC(); }	// For example a ",," port
+	|	tf_port_itemFront tf_port_itemAssignment { PINNUMINC(); }
+	|	tf_port_itemAssignment 			{ PINNUMINC(); }
 	;
 
 tf_port_itemFront:		// IEEE: part of tf_port_item, which has the data type
@@ -2647,7 +2652,7 @@ expr<str>:			// IEEE: part of expression/constant_expression/primary
 	//
 	//			// IEEE: '(' mintypmax_expression ')'
 	|	~noPar__IGNORE~'(' expr ')'			{ $<fl>$=$<fl>1; $$ = "("+$2+")"; }
-	|	~noPar__IGNORE~'(' expr ':' expr ':' expr ')'	{ $<fl>$=$<fl>1; $$ = "("+$2+")"; }
+	|	~noPar__IGNORE~'(' expr ':' expr ':' expr ')'	{ $<fl>$=$<fl>1; $$ = "("+$2+":"+$4+":"+$5+")"; }
 	//			// PSL rule
 	|	'_' '(' statePushVlg expr statePop ')'	{ $<fl>$=$<fl>1; $$ = "_("+$4+")"; }	// Arbitrary Verilog inside PSL
 	//
@@ -3229,12 +3234,8 @@ sequence_declarationBody:	// IEEE: part of property_declaration
 property_spec:			// IEEE: property_spec
 	//			// IEEE: [clocking_event ] [ yDISABLE yIFF '(' expression_or_dist ')' ] property_expr
 	//			// matches property_spec: "clocking_event property_expr" so we put it there
-	|	property_specDisable pexpr		{ }
+		yDISABLE yIFF '(' expr ')' pexpr	{ }
 	|	pexpr			 		{ }
-	;
-
-property_specDisable:		// IEEE: part of property_spec
-		yDISABLE yIFF '(' expr ')'		{ }
 	;
 
 pexpr<str>:			// IEEE: property_expr  (The name pexpr is important as regexps just add an "p" to expr.)
@@ -3262,7 +3263,7 @@ pexpr<str>:			// IEEE: property_expr  (The name pexpr is important as regexps ju
 	//
 	|	clocking_event pexpr             %prec prSEQ_CLOCKING	{ }
 	//			// Include property_specDisable to match property_spec rule
-	|	clocking_event property_specDisable expr %prec prSEQ_CLOCKING	{ }
+	|	clocking_event yDISABLE yIFF '(' expr ')' pexpr	%prec prSEQ_CLOCKING	{ }
 	//
 	//
 	//============= sequence_expr rules copied for pexpr

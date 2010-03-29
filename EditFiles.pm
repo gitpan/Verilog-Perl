@@ -13,7 +13,7 @@ use vars qw ($VERSION $Debug);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.231';
+$VERSION = '3.240';
 
 #######################################################################
 # CONSTRUCTORS
@@ -273,11 +273,12 @@ Verilog::EditFiles - Split Verilog modules into separate files.
 See splitmodule command.
 
    use Verilog::EditFiles;
-   my $split = EditFiles->new(outdir => "processed_rtl",
-				translate_synthesis => 0,
-				lint_header => undef,
-				celldefine => 1,
-				);
+   my $split = Verilog::EditFiles->new
+       (outdir => "processed_rtl",
+	translate_synthesis => 0,
+	lint_header => undef,
+	celldefine => 1,
+	);
    $split->read_and_split(glob("inbound_rtl/*.v"));
    $split->write_files();
    $split->edit_file(filename=>"foo", cb => sub { return $_[0]; });

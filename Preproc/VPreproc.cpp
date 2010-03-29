@@ -21,11 +21,13 @@
 //*************************************************************************
 
 #include <cstdio>
+#include <cstdlib>
 #include <fstream>
 #include <cstring>
 #include <stack>
 #include <vector>
 #include <map>
+#include <list>
 #include <cassert>
 #include <cerrno>
 
@@ -88,6 +90,8 @@ public:
 /// Data for a preprocessor instantiation.
 
 struct VPreprocImp : public VPreprocOpaque {
+    typedef list<string> StrList;
+
     VPreproc*	m_preprocp;	///< Object we're holding data for
     VFileLine*	m_filelinep;	///< Last token's starting point
     int		m_debug;	///< Debugging level
@@ -139,9 +143,9 @@ struct VPreprocImp : public VPreprocOpaque {
     void debugToken(int tok, const char* cmtp);
     void parseTop();
     void parseUndef();
-    string getparseline(bool stop_at_eol);
+    string getparseline(bool stop_at_eol, size_t approx_chunk);
     bool isEof() const { return (m_lexp==NULL); }
-    bool readWholefile(const string& filename, string& out);
+    bool readWholefile(const string& filename, StrList& outl);
     void openFile(string filename, VFileLine* filelinep);
     void insertUnreadback(const string& text) { m_lineCmt += text; }
     void insertUnreadbackAtBol(const string& text);
@@ -153,7 +157,7 @@ private:
     string defineSubst(VPreDefRef* refp);
     void addLineComment(int enter_exit_level);
     string trimWhitespace(const string& strg, bool trailing);
-    void unputString(const string& strg, bool first=false);
+    void unputString(const string& strg);
 
     void parsingOn() { m_off--; assert(m_off>=0); if (!m_off) addLineComment(0); }
     void parsingOff() { m_off++; }
@@ -182,11 +186,11 @@ void VPreproc::openFile(string filename, VFileLine* filelinep) {
 }
 string VPreproc::getline() {
     VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
-    return idatap->getparseline(true);
+    return idatap->getparseline(true,0);
 }
-string VPreproc::getall() {
+string VPreproc::getall(size_t approx_chunk) {
     VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
-    return idatap->getparseline(false);
+    return idatap->getparseline(false,approx_chunk);
 }
 void VPreproc::debug(int level) {
     VPreprocImp* idatap = static_cast<VPreprocImp*>(m_opaquep);
@@ -268,18 +272,19 @@ const char* VPreprocImp::tokenName(int tok) {
     }
 }
 
-void VPreprocImp::unputString(const string& strg, bool first) {
+void VPreprocImp::unputString(const string& strg) {
+    // Note: The preliminary call in ::openFile bypasses this function
     // We used to just m_lexp->unputString(strg.c_str());
     // However this can lead to "flex scanner push-back overflow"
     // so instead we scan from a temporary buffer, then on EOF return.
     // This is also faster than the old scheme, amazingly.
-    if (!first) {  // Else the initial creation
+    if (1) {
 	if (m_lexp->m_bufferStack.empty() || m_lexp->m_bufferStack.top()!=m_lexp->currentBuffer()) {
 	    fatalSrc("bufferStack missing current buffer; will return incorrectly");
 	    // Hard to debug lost text as won't know till much later
 	}
     }
-    m_lexp->scanBytes(strg);
+    m_lexp->scanBytes(strg.c_str(), strg.length());
 }
 
 string VPreprocImp::trimWhitespace(const string& strg, bool trailing) {
@@ -449,17 +454,21 @@ string VPreprocImp::defineSubst(VPreDefRef* refp) {
 //**********************************************************************
 // Parser routines
 
-bool VPreprocImp::readWholefile(const string& filename, string& out) {
+bool VPreprocImp::readWholefile(const string& filename, StrList& outl) {
     int fd = open (filename.c_str(), O_RDONLY);
     if (!fd) return false;
 
+    // If change this code, run a test with the below size set very small
+//#define INFILTER_IPC_BUFSIZ 16
 #define INFILTER_IPC_BUFSIZ 64*1024
     char buf[INFILTER_IPC_BUFSIZ];
     bool eof = false;
     while (!eof) {
-	int todo = INFILTER_IPC_BUFSIZ;
-	int got = read (fd, buf, todo);
-	if (got>0) out.append(buf, got);
+	ssize_t todo = INFILTER_IPC_BUFSIZ;
+	ssize_t got = read (fd, buf, todo);
+	if (got>0) {
+	    outl.push_back(string(buf, got));
+	}
 	else if (errno == EINTR || errno == EAGAIN
 #ifdef EWOULDBLOCK
 		 || errno == EWOULDBLOCK
@@ -478,21 +487,13 @@ void VPreprocImp::openFile(string filename, VFileLine* filelinep) {
 	m_filelinep = filelinep;
     }
 
-    string wholefile;
+    // Read a list<string> with the whole file.
+    StrList wholefile;
     bool ok = readWholefile(filename, wholefile/*ref*/);
     if (!ok) {
 	error("File not found: "+filename+"\n");
 	return;
     }
-
-    // Filter all DOS CR's en-mass.  This avoids bugs with lexing CRs in the wrong places.
-    // This will also strip them from strings, but strings aren't supposed to be multi-line without a "\"
-    string wholefilecr;
-    size_t wholesize = wholefile.length();
-    for (size_t i=0; i<wholesize; i++) {  // Not a c_str(), as we keep '\0's for now.
-	if (wholefile[i] != '\r' && wholefile[i] != '\0') wholefilecr += wholefile[i];
-    }
-    wholefile.resize(0); // free memory
 
     if (m_lexp) {
 	// We allow the same include file twice, because occasionally it pops
@@ -514,7 +515,29 @@ void VPreprocImp::openFile(string filename, VFileLine* filelinep) {
     m_filelinep = m_lexp->m_curFilelinep;  // Remember token start location
     addLineComment(1); // Enter
 
-    unputString(wholefilecr,true);
+    // Filter all DOS CR's en-mass.  This avoids bugs with lexing CRs in the wrong places.
+    // This will also strip them from strings, but strings aren't supposed to be multi-line without a "\"
+    for (StrList::iterator it=wholefile.begin(); it!=wholefile.end(); ++it) {
+	// We don't test for \0 as we allow and strip mid-string '\0's (for now).
+	// We also edit in place.  This is nasty to other users of the string, but
+	// there aren't any, and it avoids needing 2x the memory on very large files.
+	const char* sp = it->data();
+	const char* ep = sp + it->length();
+	char* cp = (char*) sp;
+	for (; sp<ep; sp++) {
+	    if (*sp != '\r' && *sp != '\0') {
+		*cp++ = *sp;
+	    }
+	}
+	size_t len = cp - it->data();
+	// Truncate old string
+	it->erase(len);
+
+	// Push the data to an internal buffer.
+	m_lexp->scanBytesBack(*it);
+	// Reclaim memory; the push saved the string contents for us
+	*it = "";
+    }
 }
 
 void VPreprocImp::insertUnreadbackAtBol(const string& text) {
@@ -570,7 +593,7 @@ int VPreprocImp::getRawToken() {
 	if (m_lineAdd) {
 	    m_lineAdd--;
 	    m_rawAtBol = true;
-	    yytext=(char*)"\n"; yyleng=1;
+	    yyourtext("\n",1);
 	    if (debug()) debugToken(VP_WHITE, "LNA");
 	    return (VP_WHITE);
 	}
@@ -582,11 +605,11 @@ int VPreprocImp::getRawToken() {
 		if (!m_rawAtBol) rtncmt = "\n"+rtncmt;
 		m_lineCmtNl = false;
 	    }
-	    yytext=(char*)rtncmt.c_str(); yyleng=rtncmt.length();
+	    yyourtext(rtncmt.c_str(), rtncmt.length());
 	    m_lineCmt = "";
-	    if (yyleng) m_rawAtBol = (yytext[yyleng-1]=='\n');
+	    if (yyourleng()) m_rawAtBol = (yyourtext()[yyourleng()-1]=='\n');
 	    if (m_state==ps_DEFVALUE) {
-		VPreprocLex::s_currentLexp->appendDefValue(yytext,yyleng);
+		VPreprocLex::s_currentLexp->appendDefValue(yyourtext(),yyourleng());
 		goto next_tok;
 	    } else {
 		if (debug()) debugToken(VP_TEXT, "LCM");
@@ -608,14 +631,14 @@ int VPreprocImp::getRawToken() {
 	    goto next_tok;  // Parse parent, or find the EOF.
 	}
 
-	if (yyleng) m_rawAtBol = (yytext[yyleng-1]=='\n');
+	if (yyourleng()) m_rawAtBol = (yyourtext()[yyourleng()-1]=='\n');
 	return tok;
     }
 }
 
 void VPreprocImp::debugToken(int tok, const char* cmtp) {
     if (debug()) {
-	string buf = string (yytext, yyleng);
+	string buf = string (yyourtext(), yyourleng());
 	string::size_type pos;
 	while ((pos=buf.find("\n")) != string::npos) { buf.replace(pos, 1, "\\n"); }
 	while ((pos=buf.find("\r")) != string::npos) { buf.replace(pos, 1, "\\r"); }
@@ -641,7 +664,7 @@ int VPreprocImp::getToken() {
 	    if (!m_off && m_lexp->m_keepComments) {
 		if (m_lexp->m_keepComments == KEEPCMT_SUB
 		    || m_lexp->m_keepComments == KEEPCMT_EXP) {
-		    string rtn; rtn.assign(yytext,yyleng);
+		    string rtn; rtn.assign(yyourtext(),yyourleng());
 		    m_preprocp->comment(rtn);
 		} else {
 		    return (tok);
@@ -650,7 +673,7 @@ int VPreprocImp::getToken() {
 	    // We're off or processed the comment specially.  If there are newlines
 	    // in it, we also return the newlines as TEXT so that the linenumber
 	    // count is maintained for downstream tools
-	    for (int len=0; len<yyleng; len++) { if (yytext[len]=='\n') m_lineAdd++; }
+	    for (size_t len=0; len<(size_t)yyourleng(); len++) { if (yyourtext()[len]=='\n') m_lineAdd++; }
 	    goto next_tok;
 	}
 	if (tok==VP_LINE) {
@@ -665,7 +688,7 @@ int VPreprocImp::getToken() {
 	case ps_DEFNAME: {
 	    if (tok==VP_SYMBOL) {
 		m_state = ps_TOP;
-		m_lastSym.assign(yytext,yyleng);
+		m_lastSym.assign(yyourtext(),yyourleng());
 		if (m_stateFor==VP_IFDEF
 		    || m_stateFor==VP_IFNDEF) {
 		    bool enable = m_preprocp->defExists(m_lastSym);
@@ -767,11 +790,11 @@ int VPreprocImp::getToken() {
 	    m_state = ps_TOP;
 	    // DEFVALUE is terminated by a return, but lex can't return both tokens.
 	    // Thus, we emit a return here.
-	    yytext=(char*)(newlines.c_str()); yyleng=newlines.length();
+	    yyourtext(newlines.c_str(), newlines.length());
 	    return(VP_WHITE);
 	}
 	case ps_DEFPAREN: {
-	    if (tok==VP_TEXT && yyleng==1 && yytext[0]=='(') {
+	    if (tok==VP_TEXT && yyourleng()==1 && yyourtext()[0]=='(') {
 		m_state = ps_DEFARG;
 		goto next_tok;
 	    } else {
@@ -787,13 +810,13 @@ int VPreprocImp::getToken() {
 	    VPreDefRef* refp = &(m_defRefs.top());
 	    refp->nextarg(refp->nextarg()+m_lexp->m_defValue); m_lexp->m_defValue="";
 	    if (debug()) cout<<"defarg++ "<<refp->nextarg()<<endl;
-	    if (tok==VP_DEFARG && yyleng==1 && yytext[0]==',') {
+	    if (tok==VP_DEFARG && yyourleng()==1 && yyourtext()[0]==',') {
 		refp->args().push_back(refp->nextarg());
 		m_state = ps_DEFARG;
 		m_lexp->pushStateDefArg(1);
 		refp->nextarg("");
 		goto next_tok;
-	    } else if (tok==VP_DEFARG && yyleng==1 && yytext[0]==')') {
+	    } else if (tok==VP_DEFARG && yyourleng()==1 && yyourtext()[0]==')') {
 		refp->args().push_back(refp->nextarg());
 		string out = defineSubst(refp);
 		// Substitute in and prepare for next action
@@ -821,7 +844,7 @@ int VPreprocImp::getToken() {
 		// we'll append it when we push the argument.
 		break;
 	    } else if (tok==VP_SYMBOL || tok==VP_STRING || VP_TEXT || VP_WHITE) {
-		string rtn; rtn.assign(yytext,yyleng);
+		string rtn; rtn.assign(yyourtext(),yyourleng());
 		refp->nextarg(refp->nextarg()+rtn);
 		goto next_tok;
 	    } else {
@@ -833,7 +856,7 @@ int VPreprocImp::getToken() {
 	case ps_INCNAME: {
 	    if (tok==VP_STRING) {
 		m_state = ps_TOP;
-		m_lastSym.assign(yytext,yyleng);
+		m_lastSym.assign(yyourtext(),yyourleng());
 		if (debug()) cout<<"Include "<<m_lastSym<<endl;
 		// Drop leading and trailing quotes.
 		m_lastSym.erase(0,1);
@@ -841,7 +864,7 @@ int VPreprocImp::getToken() {
 		m_preprocp->include(m_lastSym);
 		goto next_tok;
 	    }
-	    else if (tok==VP_TEXT && yyleng==1 && yytext[0]=='<') {
+	    else if (tok==VP_TEXT && yyourleng()==1 && yyourtext()[0]=='<') {
 		// include <filename>
 		m_state = ps_INCNAME;  // Still
 		m_lexp->pushStateIncFilename();
@@ -861,7 +884,7 @@ int VPreprocImp::getToken() {
 	    if (tok==VP_STRING) {
 		m_state = ps_TOP;
 		if (!m_off) {
-		    m_lastSym.assign(yytext,yyleng);
+		    m_lastSym.assign(yyourtext(),yyourleng());
 		    error(m_lastSym);
 		}
 		goto next_tok;
@@ -914,7 +937,7 @@ int VPreprocImp::getToken() {
 
 	case VP_DEFREF: {
 	    if (!m_off) {
-		string name; name.append(yytext+1,yyleng-1);
+		string name; name.append(yyourtext()+1,yyourleng()-1);
 		if (debug()) cout<<"DefRef "<<name<<endl;
 		if (m_defDepth++ > VPreproc::DEFINE_RECURSION_LEVEL_MAX) {
 		    error("Recursive `define substitution: `"+name);
@@ -991,17 +1014,19 @@ int VPreprocImp::getToken() {
     }
 }
 
-string VPreprocImp::getparseline(bool stop_at_eol) {
+string VPreprocImp::getparseline(bool stop_at_eol, size_t approx_chunk) {
     // Get a single line from the parse stream.  Buffer unreturned text until the newline.
     if (isEof()) return "";
     while (1) {
 	const char* rtnp = NULL;
 	bool gotEof = false;
-	while ((!stop_at_eol || NULL==(rtnp=strchr(m_lineChars.c_str(),'\n')))
+	while ((stop_at_eol
+		? (NULL==(rtnp=strchr(m_lineChars.c_str(),'\n')))
+		: (approx_chunk==0 || (m_lineChars.length() < approx_chunk)))
 	       && !gotEof) {
 	    int tok = getToken();
 	    if (debug()) {
-		string buf = string (yytext, yyleng);
+		string buf = string (yyourtext(), yyourleng());
 		string::size_type pos;
 		while ((pos=buf.find("\n")) != string::npos) { buf.replace(pos, 1, "\\n"); }
 		while ((pos=buf.find("\r")) != string::npos) { buf.replace(pos, 1, "\\r"); }
@@ -1017,12 +1042,12 @@ string VPreprocImp::getparseline(bool stop_at_eol) {
 		gotEof = true;
 	    }
 	    else {
-		m_lineChars.append(yytext,0,yyleng);
+		m_lineChars.append(yyourtext(),0,yyourleng());
 	    }
 	}
 
 	// Make new string with data up to the newline.
-	int len = stop_at_eol ? (rtnp-m_lineChars.c_str()+1) : m_lineChars.length();
+	size_t len = stop_at_eol ? (rtnp-m_lineChars.c_str()+1) : m_lineChars.length();
 	string theLine(m_lineChars, 0, len);
 	m_lineChars = m_lineChars.erase(0,len);	// Remove returned characters
 

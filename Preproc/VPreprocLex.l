@@ -45,7 +45,15 @@ VPreprocLex* VPreprocLex::s_currentLexp = NULL;	// Current lexing point
 bool pedantic() { return LEXP->m_pedantic; }
 bool keepWhitespace() { return LEXP->m_keepWhitespace; }
 void yyerror(char* msg) { LEXP->m_curFilelinep->error(msg); }
-void appendDefValue(const char* t,int l) { LEXP->appendDefValue(t,l); }
+void appendDefValue(const char* t, size_t l) { LEXP->appendDefValue(t,l); }
+
+#define YY_INPUT(buf,result,max_size) \
+    result = LEXP->inputToLex(buf,max_size);
+
+// Accessors, because flex keeps changing the type of yyleng
+char* yyourtext() { return yytext; }
+size_t yyourleng() { return (size_t)yyleng; }
+void yyourtext(const char* textp, size_t size) { yytext=(char*)textp; yyleng=size; }
 
 void yyerrorf(const char* format, ...) {
     char msg[1024];
@@ -79,6 +87,7 @@ crnl		[\r]*[\n]
 quote		[\"]
 backslash	[\\]
 symb		([a-zA-Z_][a-zA-Z0-9_$]*|\\[^ \t\f\r\n]+)
+word		[a-zA-Z0-9_]+
 drop		[\032]
 
 	/**************************************************************/
@@ -113,6 +122,7 @@ drop		[\032]
 <INITIAL>{quote}	{ yy_push_state(STRMODE); yymore(); }
 <STRMODE><<EOF>>	{ linenoInc(); yyerrorf("EOF in unterminated string"); yyleng=0; yyterminate(); }
 <STRMODE>{crnl}		{ linenoInc(); yyerrorf("Unterminated string"); BEGIN(INITIAL); }
+<STRMODE>{word}		{ yymore(); }
 <STRMODE>[^\"\\]	{ yymore(); }
 <STRMODE>{backslash}{crnl}	{ linenoInc(); yymore(); }
 <STRMODE>{backslash}.	{ yymore(); }
@@ -167,6 +177,7 @@ drop		[\032]
 <DEFVAL>[\\]{crnl}	{ linenoInc(); appendDefValue((char*)"\n",1); } /* Return, but not \ is part of define value */
 <DEFVAL>[^\/\*\n\r\\]+	|
 <DEFVAL>[\\][^\n\r]	|
+<DEFVAL>{word}		{ appendDefValue(yytext,yyleng); }
 <DEFVAL>.		{ appendDefValue(yytext,yyleng); }
 
 	/* Comments inside define values - if embedded get added to define value per spec */
@@ -177,6 +188,7 @@ drop		[\032]
 	 		  appendDefValue(yytext,yyleng-2); appendDefValue((char*)"\n",1); }  /* Return but not \ */
 <DEFCMT>{crnl}		{ linenoInc(); yymore(); if (LEXP->m_defCmtSlash) yyerrorf("One line of /* ... */ is missing \\ before newline");
 			  BEGIN(CMTMODE); }
+<DEFCMT>{word}		{ yymore(); }
 <DEFCMT>.		{ yymore(); }
 <DEFCMT><<EOF>>		{ yyerrorf("EOF in '/* ... */' block comment\n"); yyleng=0; yyterminate(); }
 
@@ -221,6 +233,7 @@ drop		[\032]
 <INITIAL>"/*"		{ yy_push_state(CMTMODE); yymore(); }
 <CMTMODE>"*/"		{ yy_pop_state(); return(VP_COMMENT); }
 <CMTMODE>{crnl}		{ linenoInc(); yymore(); }
+<CMTMODE>{word}		{ yymore(); }
 <CMTMODE>.		{ yymore(); }
 <CMTMODE><<EOF>>	{ yyerrorf("EOF in '/* ... */' block comment\n"); yyleng=0; yyterminate(); }
 
@@ -266,12 +279,57 @@ void VPreprocLex::pushStateIncFilename() {
     yymore();
 }
 
-void VPreprocLex::scanBytes(const string& strg) {
-    yy_scan_bytes(strg.c_str(), strg.length());
+void VPreprocLex::initFirstBuffer() {
+    // Called from constructor to make first buffer
+    // yy_create_buffer also sets yy_fill_buffer=1 so reads from YY_INPUT
+    yy_switch_to_buffer(yy_create_buffer(NULL, YY_BUF_SIZE));
+    m_bufferStack.push(currentBuffer());
+    yyrestart(NULL);
+}
+
+size_t VPreprocLex::inputToLex(char* buf, size_t max_size) {
+    // We need a custom YY_INPUT because we can't use flex buffers.
+    // Flex buffers are limited to 2GB, and we can't chop into 2G pieces
+    // because buffers can't end in the middle of tokens.
+    // m_buffers only applies to the "base" buffer when there's no scanBytes outstanding
+    // It won't be called on scan_buffers as they don't have yy_fill_buffer set.
+    //
+    //if (debug()) { cout<<"-  pp:inputToLex ITL s="<<max_size<<" bs="<<m_bufferStack.size()<<endl;  dumpSummary(); }
+    // For testing, use really small chunks
+    //if (max_size > 13) max_size=13;
+    size_t got = 0;
+    while (got < max_size	// Haven't got enough
+	   && !m_buffers.empty()) {	// And something buffered
+	string front = m_buffers.front(); m_buffers.pop_front();
+	size_t len = front.length();
+	if (len > (max_size-got)) {  // Front string too big
+	    string remainder = front.substr(max_size-got);
+	    front = front.substr(0, max_size-got);
+	    m_buffers.push_front(remainder);  // Put back remainder for next time
+	    len = (max_size-got);
+	}
+	strncpy(buf+got, front.c_str(), len);
+	got += len;
+    }
+    //if (debug()) { cout<<"-  pp::inputToLex  got="<<got<<" '"<<string(buf,got)<<"'"<<endl; }
+    return got;
+}
+
+void VPreprocLex::scanBytes(const char* strp, size_t len) {
+    // Note buffers also appended in ::scanBytesBack
+    // Not "m_buffers.push_front(string(strp,len))" as we need a `define
+    // to take effect immediately, in the middle of the current buffer
+    yy_scan_bytes(strp, len);
     m_bufferStack.push(currentBuffer());  // yy_scan_bytes makes new buffer
 }
 
-void VPreprocLex::appendDefValue(const char* textp, int len) {
+void VPreprocLex::scanBytesBack(const string& str) {
+    // Initial creation, that will pull from YY_INPUT==inputToLex
+    // Note buffers also appended in ::scanBytes
+    m_buffers.push_back(str);
+}
+
+void VPreprocLex::appendDefValue(const char* textp, size_t len) {
     // Append given text to current definition value being formed
     m_defValue.append(textp,len);
 }
@@ -284,8 +342,15 @@ int VPreprocLex::currentStartState() {
     return YY_START;
 }
 
+void VPreprocLex::dumpSummary() {
+    cout<<"-  pp::dumpSummary  curBuf="<<(void*)(currentBuffer())
+	<<" nBuf="<<m_bufferStack.size()
+	<<" yyfill="<<currentBuffer()->yy_fill_buffer<<endl;
+}
+
 void VPreprocLex::dumpStack() {
     // For debug use
+    dumpSummary();
     stack<YY_BUFFER_STATE> tmpstack = m_bufferStack;
     printf("  bufferStack[%p]:",this);
     while (!tmpstack.empty()) {

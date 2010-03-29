@@ -14,7 +14,7 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION $Debug);
 
-$VERSION = '3.231';
+$VERSION = '3.240';
 
 #$Debug sets the default value for debug.  You're better off with the object method though.
 
@@ -176,7 +176,9 @@ sub parse_preproc_file {
 
     ref($pp) or croak "%Error: not passed a Verilog::Preproc object";
     $self->reset();
-    while (defined(my $text = $pp->getall)) {
+
+    # Chunk size of ~32K determined experimentally with t/49_largeish.t
+    while (defined(my $text = $pp->getall(31*1024))) {
 	$self->parse ($text);
     }
     $self->eof;

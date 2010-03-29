@@ -11,7 +11,7 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '3.231';
+$VERSION = '3.240';
 
 ######################################################################
 #### Configuration Section
@@ -233,7 +233,8 @@ the filename passed on the command line, as `line directives are honored.
 =item $self->getall()
 
 Return the entire translated text up to the final EOF, similar to calling
-join('',$self->getline) but significantly faster.  Returns undef at EOF.
+join('',$self->getline) but significantly faster.  With optional argument,
+returns approximately that number of characters.  Returns undef at EOF.
 
 =item $self->getline()
 

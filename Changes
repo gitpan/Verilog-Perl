@@ -3,6 +3,30 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.240 2010/03/29
+
+***	Add vpassert vp_coverage_off/on pragmas.
+
+***	Add vpassert --synthcov, --axiom and --vcs switches.
+
+****	Pass pin numbers for functions/tasks to SigParser::port_cb.
+
+****	Improve performance of large file parsing.  [Jeffrey Short]
+
+****	Fix parsing single files > 2GB.  [Jeffrey Short]
+
+****	Fix vpassert to insert `lines on every line where needed.
+
+****	Fix "disable iff {property_expr}", bug221.  [Rick Ramus]
+
+****	Fix UDPs with min:typ:max delays, bug228.  [Pihay Saelieo]
+
+****	Fix Pod::Usage dependency, rt51024.  [Andreas Koenig]
+
+****	Fix Mac OS-X compile issues.  [Joshua Wise]
+
+****	Fix Verilog::EditFiles documentation, bug222. [Evgeni Stavinov]
+
 * Verilog::Language 3.231 2010/02/21
 
 ****	Support 1800-2009 /*comments*/ in define values.

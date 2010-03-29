@@ -82,7 +82,15 @@ void VParse::parse(const string& text) {
     // to us when a complete token is recognized.
     // YYACCEPT is one possibility, but where to call it depends on the user's callbacks.
     // Instead, buffer until eof.
-    m_buffers.push_back(text);
+    // But, don't buffer too large a chunk, as it we need to peel off up to 8KB chunks from it
+    const size_t max_chunk = 8191; // Flex uses 8KB chunks, so if slightly less, we won't have to move data
+    size_t pos = 0;
+    while (pos < text.length()) {
+	size_t chunk = text.length() - pos;
+	if (chunk > max_chunk) chunk = max_chunk;
+	m_buffers.push_back(string(text.data()+pos, chunk));
+	pos += chunk;
+    }
 }
 
 void VParse::setEof() {
@@ -112,12 +120,12 @@ int VParse::lexToBison(VParseBisonYYSType* yylvalp) {
     return m_lexp->lexToBison(yylvalp);
 }
 
-int VParse::inputToLex(char* buf, int max_size) {
-    int got = 0;
+size_t VParse::inputToLex(char* buf, size_t max_size) {
+    size_t got = 0;
     while (got < max_size	// Haven't got enough
 	   && !m_buffers.empty()) {	// And something buffered
 	string front = m_buffers.front(); m_buffers.pop_front();
-	int len = front.length();
+	size_t len = front.length();
 	if (len > (max_size-got)) {  // Front string too big
 	    string remainder = front.substr(max_size-got);
 	    front = front.substr(0, max_size-got);

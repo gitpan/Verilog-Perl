@@ -19,8 +19,8 @@ use Verilog::Getopt;
 
 use vars qw ($VERSION $Debug $Opt %Vpassert_Conversions
 	     $Vpassert_Conversions_Regexp
-	     %Vpassert_Chiponly_Rename
-	     $Opt_Vericov $Opt_Chiponly
+	     $Opt_Synthcov
+	     $Opt_Vericov
 	     @Endmodule_Inserts
 	     $Last_Parser
 	     $Last_Module
@@ -30,10 +30,10 @@ use vars qw ($VERSION $Debug $Opt %Vpassert_Conversions
 	     $Got_Change
 	     @Sendout
 	     %Insure_Symbols
-	     %File_Mtime %File_Mtime_Read %File_Mtime_Read_Used
+	     %Files %Files_Read
 	     %File_Dest
 	     );
-$VERSION = '3.231';
+$VERSION = '3.240';
 
 ######################################################################
 # configuration
@@ -60,29 +60,21 @@ $VERSION = '3.231';
        '$ucover_foreach_clk' =>	sub {shift; ucover_foreach_clk(@_); },
        );
 
-# Any tokens appearing here will be removed with the --chiponly option
-# This allows v files to be given to people that don't have our PLI library, and
-# cah have these "true-PLI" functions to do something simpler.
-%Vpassert_Chiponly_Rename = ();
-%Vpassert_Chiponly_Rename
-    = (#Token	  Convert to (0=remove)
-       '$cmd_stop' => '$stop',
-       );
-
 ######################################################################
 # main
 
 $Debug = 0;
 my $output_dirname = ".vpassert/";
 my $Opt_Quiet = 0;	# Don't blab about what files are being worked on
+my $Opt_Axiom;		# Athdl
 my $Opt_AllFiles = 0;	# Preprocess all files
 my $Opt_Date = 0;	# Check dates
 my $Opt_NoPli = 0;	# Delete all pli calls
 $Opt_Vericov = 0;	# Add vericov on/off comments (messes up line # counts)
-$Opt_Chiponly = 0;	# Only chip model; apply Vpassert_Chiponly_Rename's
 my $Opt_RealIntent;	# RealIntent
 my $Opt_Stop = 1;	# Put $stop in error messages
 my $Opt_Verilator;	# Verilator
+my $Opt_Vcs;		# Vcs
 my $Last_ArgsDiffer;	# Last run's Opt_* mismatch
 my $Opt_Minimum;	# Include `__message_minimum
 my @Opt_Exclude;
@@ -106,7 +98,7 @@ $Opt = new Verilog::Getopt();
 if (! GetOptions (
 		  "-o=s"	=> \$output_dirname,
 		  "allfiles!"	=> \$Opt_AllFiles,
-		  "chiponly!"	=> \$Opt_Chiponly,	# For makeesim only
+		  "axiom!"	=> \$Opt_Axiom,
 		  "date!"	=> \$Opt_Date,
 		  "debug"	=> \&debug,
 		  "exclude=s"	=> sub {shift; push @Opt_Exclude, shift;},
@@ -118,11 +110,13 @@ if (! GetOptions (
 		  "realintent!"	=> \$Opt_RealIntent,
 		  "quiet!"	=> \$Opt_Quiet,
 		  "stop!"	=> \$Opt_Stop,
+		  "synthcov!"	=> \$Opt_Synthcov,
 		  "timeformat-precision=s" => \$Opt_Timeformat_Precision,
 		  "timeformat-units=s"	=> \$Opt_Timeformat_Units,
 		  "vericov!"	=> \$Opt_Vericov,
 		  "verilator!"	=> \$Opt_Verilator,
 		  "version"	=> sub { print "Version $VERSION\n"; exit(0); },
+		  "vcs!"	=> \$Opt_Vcs,
 		  "<>"		=> \&parameter,
 		  )) {
     die "%Error: Bad usage, try 'vpassert --help'\n";
@@ -130,7 +124,7 @@ if (! GetOptions (
 sub _switch_line {
     # If any of these flags change, we must regenerate output
     my $sw = "";
-    $sw .= " --chiponly" if $Opt_Chiponly;
+    $sw .= " --axiom" if $Opt_Axiom;
     $sw .= " --line" if $Opt_Line;
     $sw .= " --minimum=$Opt_Minimum" if defined $Opt_Minimum;
     $sw .= " --nopli" if $Opt_NoPli;
@@ -138,6 +132,7 @@ sub _switch_line {
     $sw .= " --stop" if $Opt_Stop;
     $sw .= " --vericov" if $Opt_Vericov;
     $sw .= " --verilator" if $Opt_Verilator;
+    $sw .= " --vcs" if $Opt_Vcs;
     return $sw;
 }
 
@@ -258,6 +253,7 @@ sub ins_uassert_req_ack {
 
     # Output it
     sendout(message_header());
+    push @Sendout, [$Last_Parser->lineno, ""];  # Make sure message_header newlines leave us in right place
     sendout("if (`__message_on) begin ");  # Need to wait till after reset, so FSM doesn't start
     sendout("casez({($busy),($req),($ack)}) ");
     sendout(" 3'b000: ;");
@@ -358,7 +354,7 @@ sub umessage_clk {
     my $bot = (" always @ (posedge $clk) if ($sig) "
 	       .message (get_lineinfo(), 1, $char, 1, "", @_)
 	       ." ");
-    push @Endmodule_Inserts, $bot;
+    push @Endmodule_Inserts, [0, $bot];
 }
 
 sub ucover_foreach_clk {
@@ -414,16 +410,8 @@ sub _ucover_clk_guts {
 
     _insert_always_begin('cover', "/*vpassert*/ $sig=1'b0; /*vpassert*/");
 
-    # Alas, `line is required to see correct cover point
-    my $bot = "";
-    if ($Opt_Line) {
-	$bot .= "\n`line ".$Last_Parser->lineno." \"".$Last_Parser->filename."\" 0\n";
-    }
-    $bot .= " $label: cover property (@(posedge $clk) ($sig));\n";
-    if ($Opt_Line) {
-	$bot .= "`line /*vpassert_endmod_line*/ \"".$Last_Parser->filename."\" 0\n";
-    }
-    push @Endmodule_Inserts, $bot;
+    # Note correct `line is required to see correct cover point
+    push @Endmodule_Inserts, [$Last_Parser->lineno," $label: cover property (@(posedge $clk) ($sig));\n"];
 }
 
 sub _insert_always_begin {
@@ -449,10 +437,7 @@ sub _insert_always_begin {
 	}
 	if ($tok =~ /\balways\b/) {
 	    last if !defined $beginl;  # And die below
-	    my $insert = "";
-	    $insert .= "\n" if $Opt_Line;
-	    $insert .= $text;
-	    $insert .= "\n`line ".$Sendout[$l][0]." \"".$Last_Parser->filename."\" 0\n" if $Opt_Line;
+	    my $insert = $text;
 	    $Sendout[$beginl][1] =~ s/(\bbegin\b)/$1$insert/;
 	    return;
 	}
@@ -470,24 +455,49 @@ sub get_lineinfo {
 }
 
 use vars qw($Msg_Header_Level);
-sub message_header {
+sub coverage_off {
+    my $subcall = shift;
     my $out = "";
     if (!$Msg_Header_Level) {
-	$out .= "\n/*summit modcovoff -bpen*/\n" if $Vericov_Enabled;
-	$out .= "\n/*ri userpass BE on*/\n" if $Opt_RealIntent;
+	$out .= "/*summit modcovoff -bpen*/\n" if $Vericov_Enabled;
+	$out .= "/*ri userpass BE on*/\n" if $Opt_RealIntent;
+	$out .= "/*VCS coverage off*/\n" if $Opt_Vcs;
+	$out .= "/*ax_line_coverage_off*/\n" if $Opt_Axiom;
+	$out .= "/*verilator coverage_off*/\n" if $Opt_Verilator && !$subcall;
+	$out = "\n".$out if $out;
 	$out .= "/*vpassert*/";
+	$Got_Change = 1;
     }
-    $out .= "begin ";
-    $out .= "`coverage_block_off " if ($Opt_Verilator && !$Msg_Header_Level);
     $Msg_Header_Level++;
+    return $out;
+}
+
+sub coverage_on {
+    my $subcall = shift;
+    my $out = "";
+    if ((--$Msg_Header_Level)==0) {
+	$out .= "/*verilator coverage_on*/\n" if $Opt_Verilator && !$subcall;
+	$out .= "/*VCS coverage on*/\n" if $Opt_Vcs;
+	$out .= "/*ax_line_coverage_on*/\n" if $Opt_Axiom;
+	$out .= "/*ri userpass BE off*/\n" if $Opt_RealIntent;
+	$out .= "/*summit modcovon -bpen*/\n" if $Vericov_Enabled;
+	$out = "\n".$out if $out;
+	$out = '/*vpassert*/'.$out;
+    }
+    return $out;
+}
+
+sub message_header {
+    my $off = coverage_off(1);
+    my $out = $off;
+    $out .= "begin ";
+    $out .= "/*verilator coverage_block_off*/" if ($Opt_Verilator && $off);
     return $out;
 }
 
 sub message_trailer {
     my $out = 'end ';
-    $out .= '/*vpassert*/' if ((--$Msg_Header_Level)==0);
-    $out .= "\n/*summit modcovon -bpen*/\n" if $Vericov_Enabled;
-    $out .= "\n/*ri userpass BE off*/\n" if $Opt_RealIntent;
+    $out .= coverage_on(1);
     return $out;
 }
 
@@ -526,7 +536,7 @@ sub message {
 
     if ($cond ne "1") {
 	# Conditional code, for $uassert
-	# Note this will only work in RTL code!  Chiponly build issues otherwise.
+	# Note this will only work in RTL code!
 	$out .= "if (!($cond) && (`__message_on)) ";
     } elsif ($params[0] =~ /^\s*0\s*$/) {
 	# Always enabled
@@ -567,8 +577,7 @@ sub message {
 	    print "MESSAGE $char, Parameter $p\n" if ($Debug);
 	}
 	$out .= ');';
-	$out .= $task    if ($task && !$Opt_Chiponly);
-	$out .= '$stop;' if ($task && $Opt_Chiponly);
+	$out .= $task    if $task;
 	$out .= ' end ';
     }
 
@@ -642,18 +651,8 @@ sub convert_concat_string {
 sub sendout {
     # Send out the string to the output file, consider this a change.
     my $string = shift;
-    push @Sendout, [0, $string];
+    push @Sendout, [$Last_Parser->lineno, $string];
     $Got_Change = 1;
-}
-
-sub sendout_orig {
-    # Send out the string to the output file, not a change.
-    # The first argument is the line number.  Right now only certain things
-    # need to set it.  In the future we may adopt a more general scheme
-    # whereby all original text sets it, the autos indicate "-1" and the
-    # outputter does the appropriate `lines for us.
-    my $string = shift;
-    push @Sendout, [0, $string];
 }
 
 ######################################################################
@@ -664,21 +663,33 @@ sub sendout_orig {
 sub form_conversions_regexp {
     # Create $Vpassert_Conversions_Regexp, a regexp that matches any of the conversions
     # This regexp will allow us to quickly look at the file and ignore it if no matches
-    $Vpassert_Conversions_Regexp = '\$(';
+    my $re = '';
     my $last_tok = "\$ignore";
     foreach my $tok (sort (keys %Vpassert_Conversions)) {
 	($tok =~ s/^\$//) or die "%Error: Vpassert_Conversion $tok doesn't have leading \$\n";
 	if (substr ($tok, 0, length($last_tok)) eq $last_tok) {
 	    #print "Suppress $tok   $last_tok\n" if $Debug;
 	} else {
-	    $Vpassert_Conversions_Regexp .= "${tok}|";
+	    $re .= "|" if $re;
+	    $re .= '\$'.$tok;
 	    $last_tok = $tok;
 	}
     }
-    $Vpassert_Conversions_Regexp =~ s/\|$ /\)/x;
 
-    $Vpassert_Conversions_Regexp = "\$NEVER_MATCH_ANYTHING" if $Vpassert_Conversions_Regexp eq '\$()';
-    #print "CV REGEXP $Vpassert_Conversions_Regexp\n" if $Debug;
+    if ($Opt_NoPli) {
+	$re .= "|" if $re;
+	$re .= '\$';
+    }
+    if ($Opt_Synthcov) {
+	$re .= "|" if $re;
+	$re .= 'SYNTHESIS';
+    }
+
+    $re = "(".$re.")";
+    $re = "\$NEVER_MATCH_ANYTHING" if $re eq '\$()';
+    #print "CV REGEXP $re\n" if $Debug;
+
+    $Vpassert_Conversions_Regexp = qr/$re/;
 }
 
 sub vpassert_process {
@@ -700,7 +711,7 @@ sub vpassert_process {
     ($filename ne $outname) or die "%Error: $filename: Would overwrite self.";
 
     @Sendout = ();
-
+    $Msg_Header_Level = 0;
     @instance_tests_list = ();
 
     # Set up parsing
@@ -713,8 +724,7 @@ sub vpassert_process {
     my $fh = IO::File->new("<$filename") or die "%Error: $! $filename.";
     if (!$Got_Change) {
 	while (<$fh>) {
-	    goto diff if (/$Vpassert_Conversions_Regexp/o);
-	    goto diff if ($Opt_NoPli && /\$/);
+	    goto diff if (/$Vpassert_Conversions_Regexp/);
 	}
 	print "$filename: No dollars, not processing\n" if ($Debug);
 	return;
@@ -727,7 +737,7 @@ sub vpassert_process {
 	$parser->parse ($line);
     }
     $parser->eof;
-    sendout_orig($parser->unreadback());    $parser->unreadback('');
+    push @Sendout, [$Last_Parser->lineno, $parser->unreadback()];    $parser->unreadback('');
     $fh->close;
 
     # Hack the output text to add in the messages variable
@@ -772,18 +782,31 @@ sub vpassert_process {
     if ($Got_Change) {
 	my $date = localtime;
 	$fh->open(">$outname") or die "%Error: Can't write $outname.";
-	if ($Opt_Line) {
-	    print $fh "`line 1 \"$filename\" 0\n";
-	}
+	my $curline = -1;
+	my $needline = 1;
 	# No newline so line counts not affected
 	print $fh "/* Generated by vpassert; File:\"$filename\" */";
-	my $out = join('',map {$_->[1]} @Sendout);
+	my @out;
+	foreach my $outref (@Sendout) {
+	    #print "CL $curline  WL $outref->[0]  TT $outref->[1]\n";
+	    if ($outref->[0]) {
+		$needline = $outref->[0];
+	    }
+	    if ($curline != $needline) {
+		push @out, "\n`line $needline \"$filename\" 0\n" if $Opt_Line;
+		$curline = $needline;
+	    }
+	    push @out, $outref->[1];
+	    $curline++ while ($outref->[1] =~ /\n/g);
+	}
+	my $out = join('',@out);
 	# Simplify redundant `lines to save space
-	$out =~ s%(`line[^\n]*)\n[ \t\n]*(`line[^\n]*\n)%$2%mg;
+	$out =~ s%(\`line[^\n]*)\n[ \t\n]*(\`line[^\n]*\n)%$2%mg;
+	$out =~ s%\n+(\n\`line[^\n]*)%$1%mg;
 	print $fh $out;
 	$fh->close;
-	if (defined $File_Mtime{$filename}) {
-	    utime $File_Mtime{$filename}, $File_Mtime{$filename}, $outname;
+	if (defined $Files{$filename}{mtime}) {
+	    utime $Files{$filename}{mtime}, $Files{$filename}{mtime}, $outname;
 	}
     }
 
@@ -823,10 +846,10 @@ sub vpassert_db_read_file {
 	    $now =~ s/\s+//g;
 	    $Last_ArgsDiffer = ($old ne $now);
 	} else {
-	    my ($tt_cmd, $tt_file, $tt_mtime) = split(/\t/,$line);
+	    my ($tt_cmd, $tt_file, $tt_mtime, $tt_size) = split(/\t/,$line);
 	    $tt_cmd .= "";	# Warning removal
-	    $File_Mtime_Read{$tt_file} = $tt_mtime;
-	    $File_Mtime_Read_Used{$tt_file} = 0;
+	    $Files_Read{$tt_file}{mtime} = $tt_mtime;
+	    $Files_Read{$tt_file}{size} = $tt_size;
 	}
     }
     $fh->close;
@@ -837,8 +860,9 @@ sub vpassert_db_write_file {
     my $filename = shift;
     my $fh = IO::File->new(">$filename") or die "%Error: $! $filename.\n";
     $fh->print ("switch\t"._switch_line()."\n");
-    foreach my $file (sort (keys %File_Mtime)) {
-	$fh->print ("unproc\t$file\t$File_Mtime{$file}\n");
+    foreach my $file (sort (keys %Files)) {
+	next if !$Files{$file}{mtime};
+	$fh->print ("unproc\t$file\t$Files{$file}{mtime}\t$Files{$file}{size}\n");
     }
     $fh->close;
 }
@@ -851,8 +875,8 @@ sub vpassert_recursive_prelude {
 
     $destdir .= "/"		if ($destdir !~ /[\\\/]$/);
 
-    %File_Mtime = ();
-    %File_Mtime_Read = ();
+    %Files = ();
+    %Files_Read = ();
     vpassert_db_read_file ("${destdir}/.vpassert_skipped_times");
     form_conversions_regexp();
 
@@ -861,18 +885,18 @@ sub vpassert_recursive_prelude {
     }
 
     # Don't include directory in time saving, as path may change dep how run
-    my $dest_mtime = $File_Mtime_Read{"vpassert"} || 0;
+    my $dest_mtime = $Files_Read{"vpassert"}{mtime} || 0;
     if (!$Opt_Date
 	|| ($Prog_Mtime > $dest_mtime)
 	|| $Last_ArgsDiffer) {
 	# Flush the whole read cache
-	%File_Mtime_Read = ();
+	%Files_Read = ();
 	print "\t    VPASSERT (or overall flags) changed... Two minutes...\n";
 	print "\t    Mtime = $Prog_Mtime\n" if $Debug;
     }
     #print "FF $Opt_Date, $Prog_Mtime, $dest_mtime, $Opt_Vericov, $Last_Vericov\n";
-    $File_Mtime{"vpassert"} = $Prog_Mtime;
-    $File_Mtime_Read_Used{"vpassert"} = 1;
+    $Files{"vpassert"}{mtime} = $Prog_Mtime;
+    $Files{"vpassert"}{size} = 1;
 }
 
 sub vpassert_recursive_postlude {
@@ -881,9 +905,9 @@ sub vpassert_recursive_postlude {
     # What to do after processing all files
 
     # Check for deletions
-    foreach my $srcfile (keys %File_Mtime_Read) {
-	if (defined $File_Mtime_Read_Used{$srcfile}
-	    && !$File_Mtime_Read_Used{$srcfile}) {
+    foreach my $srcfile (keys %Files_Read) {
+	if ($Files_Read{$srcfile}{mtime}
+	    && !$Files{$srcfile}{mtime}) {
 	    (my $basefile = $srcfile) =~ s/.*\///;
 	    my $destfile = "$destdir$basefile";
 	    # A file with the same basename may now be in a different dir,
@@ -934,16 +958,18 @@ sub vpassert_process_one {
     my $destfile = "$destdir$basefile";
     $File_Dest{$destfile} = 1;
 
-    my $src_mtime = (stat($srcfile))[9];
-    $src_mtime ||= 0;
-    my $dest_mtime = $File_Mtime_Read{$srcfile} || 0;
-    $File_Mtime_Read_Used{$srcfile} = 1;
+    my @stat = (stat($srcfile));
+    my $src_mtime = $stat[9] || 0;
+    my $src_size = $stat[7] || 0;
+    my $dest_mtime = $Files_Read{$srcfile}{mtime} || 0;
 
     # Mark times
     #print "BCK $basefile $src_mtime, $dest_mtime\n";
-    $File_Mtime{$srcfile} = $src_mtime;
+    $Files{$srcfile}{mtime} = $src_mtime;
+    $Files{$srcfile}{size} = $src_size;
 
-    if ($src_mtime != $dest_mtime) {
+    if ($src_mtime != $dest_mtime
+	|| $src_size != $Files_Read{$srcfile}{size}) {
 	my $no_output = 0;
 	unlink $destfile;
 	$Total_Files++;
@@ -991,12 +1017,11 @@ BEGIN {
 	 @Sendout
 	 $Last_Task
 	 $Last_Module
-	 $Opt_Chiponly
 	 $Opt_Vericov
+	 $Opt_Synthcov
 	 $ReqAck_Num
 	 $Vericov_Enabled
 	 %Vpassert_Conversions
-	 %Vpassert_Chiponly_Rename
 	 %Insure_Symbols
 	 @Endmodule_Inserts
 	 );
@@ -1011,12 +1036,16 @@ BEGIN {
 use strict;
 use vars (@GLOBALS,
 	  qw ( $Last_Keyword
+	       $Last_Lineno
+	       $Last_Prekwd
 	       @Last_Symbols
 	       @Last_Number_Ops
 	       $Need_Vpassert_Symbols
 	       @Params
 	       $Param_Num
 	       $Parens
+	       $PreLevel
+	       @PreCovOff
 	       $In_Message
 	       ));
 use Verilog::Parser;
@@ -1031,6 +1060,8 @@ sub new {
     # one file at a time
     @Endmodule_Inserts = ();
     $Last_Keyword = "";
+    $Last_Lineno = 0;
+    $Last_Prekwd = 0;
     @Last_Symbols = ();
     @Last_Number_Ops = ();
     $Last_Task = "";
@@ -1039,6 +1070,8 @@ sub new {
     $Need_Vpassert_Symbols = 0;
     $Param_Num = 0;
     $Parens = 0;
+    $PreLevel = 0;
+    @PreCovOff = ();
     $In_Message = 0;
     #%module_symbols = ();
     %Insure_Symbols = ();
@@ -1057,27 +1090,25 @@ sub keyword {
     @Last_Number_Ops = ();
 
     if ($Opt_Vericov && (($token eq "case") || ($token eq "casex") || ($token eq "casez"))) {
-	push @Sendout, [$parser->lineno, $since];
-	::sendout ("\n/*summit implicit off*/\n") if $Vericov_Enabled;
-	push @Sendout, [$parser->lineno, $token];
+	push @Sendout, [$Last_Lineno, $since];
+	push @Sendout, [$Last_Lineno, "\n/*summit implicit off*/\n"] if $Vericov_Enabled;
+	push @Sendout, [$Last_Lineno, $token];
     }
     elsif ($Opt_Vericov && ($token eq "endcase")) {
-	push @Sendout, [$parser->lineno, $since . $token];
-	::sendout ("\n/*summit implicit on*/\n") if $Vericov_Enabled;
+	push @Sendout, [$Last_Lineno, $since . $token];
+	push @Sendout, [$Last_Lineno, "\n/*summit implicit on*/\n"] if $Vericov_Enabled;
     }
     elsif ($token eq "endmodule") {
 	if ($#Endmodule_Inserts >= 0) {
-	    my $ins = join('',@Endmodule_Inserts);
-	    my $lineno = $parser->lineno;
-	    $ins =~ s!/\*vpassert_endmod_line\*/!$lineno!g;
-	    ::sendout ("/*vpassert*/ ".$ins." /*vpassert*/");
+	    push @Sendout, @Endmodule_Inserts;
 	    @Endmodule_Inserts = ();
 	}
-	push @Sendout, [$parser->lineno, $since . $token];
+	push @Sendout, [$Last_Lineno, $since . $token];
     }
     else {
-	push @Sendout, [$parser->lineno, $since . $token];
+	push @Sendout, [$Last_Lineno, $since . $token];
     }
+    $Last_Lineno = $parser->lineno;
 }
 
 sub symbol {
@@ -1085,27 +1116,20 @@ sub symbol {
     my ($parser, $token) = @_;
     my $since = $parser->unreadback(); $parser->unreadback('');
 
-    if ($token eq "__LINE__") { $token = $parser->lineno(); }
-    if ($token eq "__FILE__") { $token = '"'.$parser->filename().'"'; }
-
     if ($In_Message) {
 	$Params[$Param_Num] .= $since . $token;
     } else {
 	if ($Vpassert_Conversions {$token}
-		 || ($Opt_Chiponly && defined $Vpassert_Chiponly_Rename{$token} && !$Vpassert_Chiponly_Rename{$token})
 		 || ($Opt_NoPli && $token =~ /^\$/ && $Parens==0)) {
-	    push @Sendout, [$parser->lineno, $since];
+	    push @Sendout, [$Last_Lineno, $since];
 	    print "Callback SYMBOL $token\n"    if ($Debug);
 	    $In_Message = 1;
 	    $Param_Num = 1;
 	    @Params = ();
 	    $Params[0] = $token;
-	} elsif ($Opt_Chiponly && defined $Vpassert_Chiponly_Rename{$token}
-		 && $Vpassert_Chiponly_Rename{$token}) {
-	    push @Sendout, [$parser->lineno, $since . $Vpassert_Chiponly_Rename{$token}];
 	} else {
 	    # Actually a keyword; we check for that too
-	    push @Sendout, [$parser->lineno, $since . $token];
+	    push @Sendout, [$Last_Lineno, $since . $token];
 	}
     }
 
@@ -1121,7 +1145,23 @@ sub symbol {
 	$ReqAck_Num = 1;
 	$Parens = 0;
     }
+    if ($Last_Prekwd) {
+	if ($Last_Prekwd eq "`ifdef" || $Last_Prekwd eq "`elsif" || $Last_Prekwd eq "`ifndef") {
+	    if ($token eq "SYNTHESIS") {
+		my $ndef = ($Last_Prekwd eq "`ifndef");
+		$PreCovOff[$PreLevel] = $ndef;
+		if ($PreCovOff[$PreLevel] && $Opt_Synthcov) {
+		    push @Sendout, [0, ::coverage_off(0)];
+		}
+	    } else {
+		$PreCovOff[$PreLevel] = 0;
+	    }
+	}
+	$Last_Prekwd = 0;
+    }
+
     push @Last_Symbols, $token;
+    $Last_Lineno = $parser->lineno;
 }
 
 sub number {
@@ -1133,9 +1173,10 @@ sub number {
 	print "Callback NUMBER $token\n"    if ($Debug);
 	$Params[$Param_Num] .= $since . $token;
     } else {
-	push @Sendout, [0, $since . $token];
+	push @Sendout, [$Last_Lineno, $since . $token];
     }
     push @Last_Number_Ops, $token;
+    $Last_Lineno = $parser->lineno;
 }
 
 sub operator {
@@ -1198,10 +1239,10 @@ sub operator {
     elsif ($Need_Vpassert_Symbols && ($token eq ';')) {
 	$Need_Vpassert_Symbols = 0;
 	# Squeeze it after module (..);
-	push @Sendout, [$parser->lineno, $since . $token . '/*vpassert beginmodule '.$Last_Module.'*/'];
+	push @Sendout, [$Last_Lineno, $since . $token . '/*vpassert beginmodule '.$Last_Module.'*/'];
     }
     else {
-	push @Sendout, [$parser->lineno, $since . $token];
+	push @Sendout, [$Last_Lineno, $since . $token];
     }
 
     # Track parens
@@ -1212,6 +1253,7 @@ sub operator {
     }
 
     push @Last_Number_Ops, $token;
+    $Last_Lineno = $parser->lineno;
 }
 
 sub string {
@@ -1224,36 +1266,85 @@ sub string {
 	print "Callback STRING $token\n"    if ($Debug);
 	$Params[$Param_Num] .= $since . $token;
     } else {
-	push @Sendout, [0, $since . $token];
+	push @Sendout, [$Last_Lineno, $since . $token];
 	if (($Last_Keyword eq "`include")
 	    && ($token =~ /\//)) {
 	    print STDERR "%Warning: ".$parser->fileline.": `include has directory,"
 		. " remove and add +incdir+ to input.vc\n";
 	}
     }
+    $Last_Lineno = $parser->lineno;
 }
 
 sub comment {
     # Callback from parser when a comment
     # *** To speed things up, this is only invoked when doing vericov
     my ($parser, $token) = @_;
-    if (!$Opt_Vericov) {
+    if (!$Opt_Vericov && $token !~ /_coverage_/) {
 	$parser->unreadback($parser->unreadback() . $token);
 	return;
     }
 
     my $since = $parser->unreadback(); $parser->unreadback('');
 
-    if ($Opt_Vericov
-	&& (($token =~ /summit\s+modcovon/
-	     || $token =~ /simtech\s+modcovon/))) {
-	$Vericov_Enabled = 1;
-    } elsif ($token =~ /summit\s+modcovoff/
-	     || $token =~ /simtech\s+modcovoff/) {
-	$Vericov_Enabled = 0;
+    if ($Opt_Vericov) {
+	if ($token =~ /summit\s+modcovon/
+	    || $token =~ /simtech\s+modcovon/) {
+	    $Vericov_Enabled = 1;
+	} elsif ($token =~ /summit\s+modcovoff/
+		|| $token =~ /simtech\s+modcovoff/) {
+	    $Vericov_Enabled = 0;
+	}
     }
 
-    push @Sendout, [0, $since . $token];
+    push @Sendout, [$Last_Lineno, $since . $token];
+    if ($token =~ /\b(cn|vp)_coverage_(off|on)/) {
+	if ($2 eq 'off') {
+	    push @Sendout, [0, ::coverage_off(0)];
+	} else {
+	    push @Sendout, [0, ::coverage_on(0)];
+	}
+    }
+    $Last_Lineno = $parser->lineno;
+}
+
+sub preproc {
+    my ($self, $token) = @_;
+    if (Verilog::Language::is_compdirect($token)) {
+	my $since = $self->unreadback(); $self->unreadback('');
+	# Close previous endif
+	if ($Opt_Synthcov) {  # Else accelerate
+	    if ($token eq "`elsif"
+		|| $token eq "`else"
+		|| $token eq "`endif") {
+		if ($PreCovOff[$PreLevel] && $Opt_Synthcov) {
+		    push @Sendout, [0, ::coverage_on(0)];
+		}
+		$PreLevel--;
+	    }
+	}
+	# Current token
+	push @Sendout, [$Last_Lineno, $since . $token];
+	# Begin new endif
+	if ($Opt_Synthcov) {  # Else accelerate
+	    if ($token eq "`ifdef"
+		|| $token eq "`ifndef"
+		|| $token eq "`elsif") {
+		$PreLevel++;
+		$Last_Prekwd = $token;
+	    }
+	    elsif ($token eq "`else") {
+		$PreLevel++;
+		$PreCovOff[$PreLevel] = !$PreCovOff[$PreLevel];
+		if ($PreCovOff[$PreLevel] && $Opt_Synthcov) {
+		    push @Sendout, [0, ::coverage_off(0)];
+		}
+	    }
+	}
+	$Last_Lineno = $self->lineno;
+    } else {
+	$self->symbol($token);
+    }
 }
 
 package main;
@@ -1313,14 +1404,14 @@ This option may speed up simulator compile times; the file will always be
 found in the preprocessed directory, saving the compiler from having to
 search a large number of -v directories to find it.
 
-=item --chiponly
+=item --axiom
 
-Special standalone chip compile
+Special Axiom ATHDL enables/disables added around unreachable code.
 
 =item --date
 
-Check file dates versus the last run of VPASSERT and don't process if the
-given source file has not changed.
+Check file dates and sizes versus the last run of vpassert and don't
+process if the given source file has not changed.
 
 =item --exclude
 
@@ -1353,10 +1444,6 @@ not be changed, and thus may still need to be manually ifdef'ed out.
 Useful for reducing the amount of `ifdef's required to feed non-PLI
 competent synthesis programs.
 
-=item --quiet
-
-Suppress messages about what files are being preprocessed.
-
 =item --nostop
 
 By default, $error and $warn insert a $stop statement.  With --nostop, this
@@ -1369,9 +1456,23 @@ Use the given filename for output instead of the input name .vpassert.  If
 the name ends in a / it is used as a output directory with the default
 name.
 
+=item --quiet
+
+Suppress messages about what files are being preprocessed.
+
 =item --realintent
 
 Special RealIntent enable/disables added around unreachable code.
+
+=item --synthcov
+
+When "ifdef SYNTHESIS" is seen, disable coverage.  Resume on the `else or
+`endif.  This does NOT follow child defines, for example:
+
+  `ifdef SYNTHSIS
+    `define MYSYNTH
+  `endif
+  `ifdef MYSYNTH   // This will not be coveraged-off
 
 =item --timeformat-units I<units>
 
@@ -1396,6 +1497,10 @@ Special Verilator translations enabled.
 
 Displays program version and exits.
 
+=item --vcs
+
+Special Synopsys VCS enables/disables added around unreachable code.
+
 =back
 
 =head1 FUNCTIONS
@@ -1403,6 +1508,16 @@ Displays program version and exits.
 These Verilog pseudo-pli calls are expanded:
 
 =over 4
+
+=item /*vp_coverage_off*/
+
+Disable coverage for all tools starting at this point.  Does not need to be
+on a unique line.
+
+=item /*vp_coverage_on*/
+
+Re-enable coverage after a vp_coverage_off.  Does not need to be on a
+unique line.
 
 =item $uassert (I<case>, "message", [I<vars>...] )
 
