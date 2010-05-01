@@ -3,7 +3,6 @@
 ######################################################################
 
 package Verilog::Netlist::Cell;
-use Class::Struct;
 
 use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
@@ -12,7 +11,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Cell::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.240';
+$VERSION = '3.241';
 
 structs('new',
 	'Verilog::Netlist::Cell::Struct'

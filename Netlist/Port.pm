@@ -3,7 +3,6 @@
 ######################################################################
 
 package Verilog::Netlist::Port;
-use Class::Struct;
 
 use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
@@ -12,7 +11,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Port::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.240';
+$VERSION = '3.241';
 
 structs('_new_base',
 	'Verilog::Netlist::Port::Struct'

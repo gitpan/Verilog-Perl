@@ -3,7 +3,6 @@
 ######################################################################
 
 package Verilog::Netlist::Interface;
-use Class::Struct;
 
 use Verilog::Netlist;
 use Verilog::Netlist::ModPort;
@@ -15,7 +14,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Interface::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.240';
+$VERSION = '3.241';
 
 structs('new',
 	'Verilog::Netlist::Interface::Struct'
@@ -356,10 +355,6 @@ sorted by name.
 See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =over 4
-
-=item $self->autos
-
-Updates the AUTOs for the interface.
 
 =item $self->find_net(I<name>)
 
