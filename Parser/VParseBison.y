@@ -736,6 +736,8 @@ portE:				// ==IEEE: [ port ]
 	|	portDirNetE yVAR data_type      portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARDTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
 	|	portDirNetE yVAR implicit_typeE portSig variable_dimensionListE sigAttrListE '=' constExpr	{ VARDTYPE($3); VARDONE($<fl>4, $4, $5, $8); PINNUMINC(); }
 	|	portDirNetE /*implicit*/        portSig variable_dimensionListE sigAttrListE '=' constExpr	{ /*VARDTYPE-same*/ VARDONE($<fl>2, $2, $3, $6); PINNUMINC(); }
+	//
+	|	'{' list_of_portsE '}'			{ }
 	;
 
 portDirNetE:			// IEEE: part of port, optional net type and/or direction
@@ -1743,7 +1745,7 @@ list_of_defparam_assignments:	// ==IEEE: list_of_defparam_assignments
 	;
 
 defparam_assignment:		// ==IEEE: defparam_assignment
-		hierarchical_identifier/*parameter*/ '=' expr	{ }
+		hierarchical_identifier/*parameter*/ '=' expr	{ PARSEP->defparamCb($<fl>2,"defparam",$1,$3); }
 	;
 
 //************************************************
@@ -3012,10 +3014,10 @@ hierarchical_identifierBit:	// IEEE: "hierarchical_identifier bit_select"
 		idClassSel				{ }
 	;
 
-hierarchical_identifier:	// IEEE: hierarchical_identifier, including extra bit_select
+hierarchical_identifier<str>:	// IEEE: hierarchical_identifier, including extra bit_select
 	//			//	  +hierarchical_parameter_identifier
 	//			// Not in grammar but "this." believed legal here
-		idClassSel				{ }
+		idClassSel				{ $<fl>$=$<fl>1; $$ = $1; }
 	;
 
 idDotted<str>:

@@ -2,19 +2,19 @@
 # See copyright, etc in below POD section.
 ######################################################################
 
-package Verilog::Netlist::ContAssign;
+package Verilog::Netlist::Defparam;
 
 use Verilog::Netlist;
 use Verilog::Netlist::Subclass;
 use vars qw($VERSION @ISA);
 use strict;
-@ISA = qw(Verilog::Netlist::ContAssign::Struct
+@ISA = qw(Verilog::Netlist::Defparam::Struct
 	Verilog::Netlist::Subclass);
 
 $VERSION = '3.250';
 
 structs('new',
-	'Verilog::Netlist::ContAssign::Struct'
+	'Verilog::Netlist::Defparam::Struct'
 	=>[name    	=> '$', #'	# Unique ID
 	   keyword    	=> '$', #'	# Keyword name
 	   filename 	=> '$', #'	# Filename this came from
@@ -58,7 +58,7 @@ sub verilog_text {
 sub dump {
     my $self = shift;
     my $indent = shift||0;
-    print " "x$indent,"ContAssign:",$self->keyword,"  lhs:",$self->lhs,"  rhs:",$self->rhs;
+    print " "x$indent,"Defparam:",$self->keyword,"  lhs:",$self->lhs,"  rhs:",$self->rhs;
     print "\n";
 }
 
@@ -71,7 +71,7 @@ __END__
 
 =head1 NAME
 
-Verilog::Netlist::ContAssign - ContAssign assignment
+Verilog::Netlist::Defparam - Defparam assignment
 
 =head1 SYNOPSIS
 
@@ -83,8 +83,8 @@ Verilog::Netlist::ContAssign - ContAssign assignment
 
 =head1 DESCRIPTION
 
-A Verilog::Netlist::ContAssign object is created by Verilog::Netlist for
-every continuous assignment statement in the current module.
+A Verilog::Netlist::Defparam object is created by Verilog::Netlist for
+every defparam in the current module.
 
 =head1 ACCESSORS
 
@@ -94,7 +94,7 @@ See also Verilog::Netlist::Subclass for additional accessors and methods.
 
 =item $self->keyword
 
-Keyword used to declare the assignment.  Currently "assign" is the only
+Keyword used to declare the assignment.  Currently "defparam" is the only
 supported value.
 
 =item $self->lhs

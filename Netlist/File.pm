@@ -12,7 +12,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.241';
+$VERSION = '3.250';
 
 structs('new',
 	'Verilog::Netlist::File::Struct'
@@ -91,6 +91,22 @@ sub contassign {
 	 return $self->error ("CONTASSIGN outside of module definition", $lhs);
     }
     $modref->new_contassign
+	 (filename=>$self->filename, lineno=>$self->lineno,
+	  keyword=>$keyword, lhs=>$lhs, rhs=>$rhs);
+}
+
+sub defparam {
+    my $self = shift;
+    my $keyword = shift;
+    my $lhs = shift;
+    my $rhs = shift;
+
+    print " Defparam $keyword $lhs\n" if $Verilog::Netlist::Debug;
+    my $modref = $self->{modref};
+    if (!$modref) {
+	 return $self->error ("DEFPARAM outside of module definition", $lhs);
+    }
+    $modref->new_defparam
 	 (filename=>$self->filename, lineno=>$self->lineno,
 	  keyword=>$keyword, lhs=>$lhs, rhs=>$rhs);
 }

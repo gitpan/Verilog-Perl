@@ -9,7 +9,7 @@ use Pod::Usage;
 use strict;
 use vars qw ($Debug $VERSION);
 
-$VERSION = '3.241';
+$VERSION = '3.250';
 
 # xs_manual=>1,   -> The .xs file makes the handler itself
 
@@ -26,6 +26,7 @@ my %Cbs =
      sysfunc	=> {which=>'Parser', args => [text=>'string']},
      #
      contassign => {which=>'SigParser', args => [kwd=>'string', lhs=>'string', rhs=>'string']},
+     defparam   => {which=>'SigParser', args => [kwd=>'string', lhs=>'string', rhs=>'string']},
      endcell	=> {which=>'SigParser', args => [kwd=>'string']},
      endinterface=>{which=>'SigParser', args => [kwd=>'string']},
      endmodport => {which=>'SigParser', args => [kwd=>'string']},

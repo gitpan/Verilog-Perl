@@ -3,9 +3,10 @@
 ######################################################################
 
 require 5.005;
-use lib 'blib/arch';
-use lib 'blib/lib';
-use lib '.';
+use FindBin qw($RealBin);
+use lib "$RealBin/blib/arch";
+use lib "$RealBin/blib/lib";
+use lib "$RealBin";
 
 use Getopt::Long;
 use IO::File;
@@ -16,7 +17,7 @@ use Verilog::Getopt;
 use strict;
 use vars qw ($Debug $VERSION);
 
-$VERSION = '3.241';
+$VERSION = '3.250';
 
 ######################################################################
 # main
