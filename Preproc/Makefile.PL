@@ -35,6 +35,10 @@ sub MY::postamble {
     $out .= "CCFLAGS  += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
     $out .= "OPTIMIZE += -Wno-unused\n" if $ENV{VERILATOR_AUTHOR_SITE};  # Makefile has another -Wall
     $out .= "OPTIMIZE += $ENV{VERILOGPERL_CCFLAGS}\n" if defined $ENV{VERILOGPERL_CCFLAGS};
+    $out .= "CCFLAGS += -I\$(PPSRC)\n";
+    my $cmt = $ENV{VERILOGPERL_FLEX_DEBUG} ? "" : "#";
+    $out .= "${cmt}CFLAGS += -DFLEX_DEBUG\n";
+    $out .= "${cmt}LEXFLAGS += -d\n";
     $out .= '
 ifeq ($(OBJCACHE_HOSTS_DETERMINANT),)
 OBJCACHE :=
@@ -47,31 +51,29 @@ LEX = flex
 YACC = bison
 PPSRC = ../Preproc
 FLEXFIX = $(PPSRC)/flexfix
+TOOLHASH = $(PPSRC)/toolhash
 XSUBPPFIX = $(PPSRC)/xsubppfix
-
-CCFLAGS += -I$(PPSRC)
-#CFLAGS += -DFLEX_DEBUG
-#LEXFLAGS += -d
 
 VPATH += . $(PPSRC)
 
-VPreprocLex.o:	VPreprocLex.h VPreproc.h VFileLine.h
-VPreproc.o:	VPreprocLex.h VPreproc.h VFileLine.h
+VPreLex.o:	VPreLex.h VPreProc.h VFileLine.h
+VPreProc.o:	VPreLex.h VPreProc.h VFileLine.h
 VFileLine.o:	                         VFileLine.h
 
-VPreprocLex_pretmp.cpp: VPreprocLex.l
-	$(LEX) --version
-	$(LEX) $(LEXFLAGS) -o$@ $<
+VPreLex_pretmp.cpp: VPreLex.l
+	-$(LEX) --version
+	$(PERL) $(TOOLHASH) --in $< --out $@ --cmd $(LEX) $(LEXFLAGS) -o$@ $<
 
-VPreprocLex.cpp: $(FLEXFIX) VPreprocLex_pretmp.cpp
-	$(PERL) $(FLEXFIX) VPreprocLex < VPreprocLex_pretmp.cpp > $@
+VPreLex.cpp: $(FLEXFIX) VPreLex_pretmp.cpp
+	$(PERL) $(FLEXFIX) VPreLex < VPreLex_pretmp.cpp > $@
 
 Preproc_cleaned.c: Preproc.c
 	$(PERL) $(XSUBPPFIX) < Preproc.c > Preproc_cleaned.c
 
 clean::
 	-$(RM_RF) test *.d *.o *.output
-	-$(RM_RF) VPreprocLex*.cpp Preproc_cleaned.c
+	-$(RM_RF) VPreLex*.cpp Preproc_cleaned.c
+	-$(RM_RF) VPreprocLex*
 ';
     return $out;
 }
@@ -85,6 +87,6 @@ WriteMakefile(
 	      VERSION_FROM  => 'Preproc.pm',
 	      XSOPT => '-C++',
 	      CCFLAGS	=> $ccflags,
-	      OBJECT   => 'VFileLine.o VPreproc.o VPreprocLex.o',
+	      OBJECT   => 'VFileLine.o VPreProc.o VPreLex.o',
 	      MYEXTLIB => 'Preproc_cleaned.o',
 	      );

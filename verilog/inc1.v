@@ -3,18 +3,45 @@
 // without warranty, 2000-2010 by Wilson Snyder.
    text.
 
+//===========================================================================
+// Includes
+
+//===========================================================================
+// Defines
+
+`define DEF_A3
+`define DEF_A1
+// DEF_A0 set by command line
+   wire [3:0] q = {
+		   `ifdef DEF_A3 1'b1 `else 1'b0 `endif ,
+		   `ifdef DEF_A2 1'b1 `else 1'b0 `endif ,
+		   `ifdef DEF_A1 1'b1 `else 1'b0 `endif ,
+		   `ifdef DEF_A0 1'b1 `else 1'b0 `endif
+		   };
+
+text.
+
 `define FOOBAR  foo /*this */ bar   /* this too */
 `define FOOBAR2  foobar2 // but not
 `FOOBAR
 `FOOBAR2
 
 `define MULTILINE first part \
-		second part
+  		second part \
+  		third part
+
+`define MOREMULTILINE {\
+		       a,\
+		       b,\
+		       c}
 
 /*******COMMENT*****/
 `MULTILINE
+`MOREMULTILINE
+Line_Preproc_Check `__LINE__
 
 //===========================================================================
+
 `define syn_negedge_reset_l or negedge reset_l
 
 `define DEEP deep
@@ -54,13 +81,8 @@ $display(`msg(left side, right side))
 /* Define inside comment: `DEEPER and `WITHTICK */
 // More commentary: `zap(bug1); `zap("bug2");
 
-`define EMPTY_TRUE
-`ifndef EMPTY_TRUE
-  `error "Empty is still true"
-`endif
-
 //======================================================================
-// RT bug 34429
+// display passthru
 
 `define ls left_side
 `define rs right_side
@@ -81,16 +103,20 @@ $display(`msg(left side, right side))
       $display(`msg(`thru(),));  // Empty
       $display(`msg(`thru(left side),`thru(right side)));
       $display(`msg( `thru( left side ) , `thru( right side ) ));
+      $display(`"standalone`");
 
+      // Unspecified when the stringification has multiple lines
 `define twoline first \
- second
+      second
       $display(`msg(twoline, `twoline));
-
       //$display(`msg(left side, \ right side \ ));  // Not sure \{space} is legal.
       $write("*-* All Finished *-*\n");
       $finish;
    end
 endmodule
+
+//======================================================================
+// rt.cpan.org bug34429
 
 `define ADD_UP(a,c)          \
 wire  tmp_``a = a; \
@@ -103,6 +129,19 @@ endmodule
 module add2 ( input wire d2, output wire o2);
  `ADD_UP( d2 , o2 )  // expansion is bad
 endmodule
+
+ `define check(mod, width, flopname, gate, path) \
+   generate for (i=0; i<(width); i=i+1) begin \
+      psl cover {  path.d[i] & ~path.q[i] & !path.cond & (gate)} report `"fondNoRise: mod.flopname`"; \
+      psl cover { ~path.d[i] &  path.q[i] & !path.cond & (gate)} report `"fondNoFall: mod.flopname`"; \
+   end endgenerate
+
+// parameterized macro with arguments that are macros
+ `define MK		m5k.f
+ `define MF		`MK .ctl
+ `define CK_fr	(`MF.alive & `MF.alive_m1)
+
+   `check(m5kc_fcl, 3, _ctl_mvldx_m1, `CK_fr,	`MF._ctl_mvldx_m1)	// ignorecmt
 
 //======================================================================
 // Quotes are legal in protected blocks.  Grr.
@@ -130,12 +169,12 @@ endmodule
 
 //======================================================================
 // include of parameterized file
-`define INCNAME "inc4.v"
+`define INCNAME "t_preproc_inc4.vh"
 `include `INCNAME
-`ifndef INC4
+`ifndef T_PREPROC_INC4
  `error "No Inc4"
 `endif
-`undef INC4
+`undef T_PREPROC_INC4
 
 `ifdef NOT_DEFINED_INC
  `include NOT_DEFINED_INC
@@ -158,6 +197,15 @@ endmodule
 `default_nettype uwire
 
 //======================================================================
+// Ifdef
+
+`define EMPTY_TRUE
+`ifndef EMPTY_TRUE
+  `error "Empty is still true"
+`endif
+Line_Preproc_Check `__LINE__
+
+//======================================================================
 // bug84
 
 `define ARGPAR(a,  // Hello, comments MIGHT not be legal
@@ -168,7 +216,7 @@ endmodule
 	      x,
   y   //Too
   )
-Line: `__LINE__
+Line_Preproc_Check `__LINE__
 
 //======================================================================
 // defines split arguments
@@ -239,11 +287,11 @@ Not a \`define
 
 //======================================================================
 
-`define CMT1 // NOT IN DEFINE
-`define CMT2 /* PART OF DEFINE */
-`define CMT3 /* NOT PART
+`define CMT1 // verilator NOT IN DEFINE
+`define CMT2 /* verilator PART OF DEFINE */
+`define CMT3 /* verilator NOT PART
 	        OF DEFINE */
-`define CMT4 /* PART \
+`define CMT4 /* verilator PART \
 	        OF DEFINE */
 `define CMT5 // CMT NOT \
   also in  // BUT TEXT IS \
@@ -302,4 +350,55 @@ EXP: This is fooed_2
 `define NOPARAM() np
 `NOPARAM()
 `NOPARAM( )
+//======================================================================
+// It's unclear if the spec allows this; is text_macro_idenitfier before or after substitution?
+`define NODS_DEFINED
+`define NODS_INDIRECT(x) x
+`ifndef `NODS_INDIRECT(NODS_DEFINED)
+   `error "Indirect failed"
+`endif
+`ifdef `NODS_INDIRECT(NODS_UNDEFINED)
+   `error "Indirect2 failed"
+`endif
+//======================================================================
+// Metaprogramming
+`define REPEAT_0(d)
+`define REPEAT_1(d) d
+`define REPEAT_2(d) `REPEAT_1(d)d
+`define REPEAT_3(d) `REPEAT_2(d)d
+`define REPEAT_4(d) `REPEAT_3(d)d
+
+`define CONCAT(a, b) a``b
+`define REPEATC(n, d) `CONCAT(`REPEAT_, n)(d)
+`define REPEATT(n, d) `REPEAT_``n(d)
+
+`REPEATC(3, hello3 )
+`REPEATT(4, hello4 )
+//======================================================================
+// Include from stringification
+`undef T_PREPROC_INC4
+`define NODS_CONC_VH(m) `"m.vh`"
+`include `NODS_CONC_VH(t_preproc_inc4)
+`ifndef T_PREPROC_INC4 `error_here `endif
+//======================================================================
+// Defines doing defines
+// Note the newline on the end - required to form the end of a define
+`define DEFINEIT(d) d \
+
+`define _DEFIF_Z_0 1
+`define DEFIF_NZ(d,n) `undef d `ifndef _DEFIF_Z_``n `DEFINEIT(`define d 1) `endif
+`DEFIF_NZ(TEMP,1)
+`ifndef TEMP  `error "bad1" `endif
+`DEFIF_NZ(TEMP,0)
+`ifdef TEMP  `error "bad0" `endif
+Line_Preproc_Check `__LINE__
+//======================================================================
+// Quoted multiline - track line numbers, and insure \\n gets propagated
+`define MULQUOTE "FOO \
+  BAR "
+`define MULQUOTE2(mq) `MULQUOTE mq `MULQUOTE
+Line_Preproc_Check `__LINE__
+`MULQUOTE2("arg_line1 \
+  arg_line2")
+Line_Preproc_Check `__LINE__
 //======================================================================

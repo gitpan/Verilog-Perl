@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:         Verilog-Perl
-version:      3.251
+version:      3.300
 version_from: Language.pm
 abstract:     Verilog language utilities and parsing
 license:      perl
@@ -13,9 +13,12 @@ resources:
 requires:
     Pod::Usage:                    1.34
     Data::Dumper:                  1
-    Test:                          1
-    Time::HiRes:                   1
     warnings:                      1
+build_requires:
+    Digest::SHA1:                  0
+    Test:                          1
+    Test::More:                    0
+    Time::HiRes:                   1
 
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.4.html

@@ -1,0 +1,661 @@
+/* A Bison parser, made by GNU Bison 2.3.  */
+
+/* Skeleton interface for Bison's Yacc-like parsers in C
+
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
+
+/* As a special exception, you may create a larger work that contains
+   part or all of the Bison parser skeleton and distribute that work
+   under terms of your choice, so long as that work isn't itself a
+   parser generator using the skeleton or a modified version thereof
+   as a parser skeleton.  Alternatively, if you modify or redistribute
+   the parser skeleton itself, you may (at your option) remove this
+   special exception, which will cause the skeleton and the resulting
+   Bison output files to be licensed under the GNU General Public
+   License without this special exception.
+
+   This special exception was added by the Free Software Foundation in
+   version 2.2 of Bison.  */
+
+/* Tokens.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+   /* Put the tokens into the symbol table, so that GDB and other debuggers
+      know about them.  */
+   enum yytokentype {
+     yaFLOATNUM = 258,
+     yaID__ETC = 259,
+     yaID__LEX = 260,
+     yaID__aCLASS = 261,
+     yaID__aCOVERGROUP = 262,
+     yaID__aPACKAGE = 263,
+     yaID__aTYPE = 264,
+     yaINTNUM = 265,
+     yaTIMENUM = 266,
+     yaSTRING = 267,
+     yaSTRING__IGNORE = 268,
+     yaTIMINGSPEC = 269,
+     ygenGATE = 270,
+     ygenCONFIGKEYWORD = 271,
+     ygenOPERATOR = 272,
+     ygenSTRENGTH = 273,
+     ygenSYSCALL = 274,
+     yACCEPT_ON = 275,
+     yALIAS = 276,
+     yALWAYS = 277,
+     yAND = 278,
+     yASSERT = 279,
+     yASSIGN = 280,
+     yASSUME = 281,
+     yAUTOMATIC = 282,
+     yBEFORE = 283,
+     yBEGIN = 284,
+     yBIND = 285,
+     yBINS = 286,
+     yBINSOF = 287,
+     yBIT = 288,
+     yBREAK = 289,
+     yBUF = 290,
+     yBYTE = 291,
+     yCASE = 292,
+     yCASEX = 293,
+     yCASEZ = 294,
+     yCHANDLE = 295,
+     yCHECKER = 296,
+     yCLASS = 297,
+     yCLOCK = 298,
+     yCLOCKING = 299,
+     yCONSTRAINT = 300,
+     yCONST__ETC = 301,
+     yCONST__LEX = 302,
+     yCONST__LOCAL = 303,
+     yCONST__REF = 304,
+     yCONTEXT = 305,
+     yCONTINUE = 306,
+     yCOVER = 307,
+     yCOVERGROUP = 308,
+     yCOVERPOINT = 309,
+     yCROSS = 310,
+     yDEASSIGN = 311,
+     yDEFAULT = 312,
+     yDEFPARAM = 313,
+     yDISABLE = 314,
+     yDIST = 315,
+     yDO = 316,
+     yEDGE = 317,
+     yELSE = 318,
+     yEND = 319,
+     yENDCASE = 320,
+     yENDCHECKER = 321,
+     yENDCLASS = 322,
+     yENDCLOCKING = 323,
+     yENDFUNCTION = 324,
+     yENDGENERATE = 325,
+     yENDGROUP = 326,
+     yENDINTERFACE = 327,
+     yENDMODULE = 328,
+     yENDPACKAGE = 329,
+     yENDPROGRAM = 330,
+     yENDPROPERTY = 331,
+     yENDSEQUENCE = 332,
+     yENDSPECIFY = 333,
+     yENDTABLE = 334,
+     yENDTASK = 335,
+     yENUM = 336,
+     yEVENT = 337,
+     yEVENTUALLY = 338,
+     yEXPECT = 339,
+     yEXPORT = 340,
+     yEXTENDS = 341,
+     yEXTERN = 342,
+     yFINAL = 343,
+     yFIRST_MATCH = 344,
+     yFOR = 345,
+     yFORCE = 346,
+     yFOREACH = 347,
+     yFOREVER = 348,
+     yFORK = 349,
+     yFORKJOIN = 350,
+     yFUNCTION__ETC = 351,
+     yFUNCTION__LEX = 352,
+     yFUNCTION__aPUREV = 353,
+     yGENERATE = 354,
+     yGENVAR = 355,
+     yGLOBAL__CLOCKING = 356,
+     yGLOBAL__LEX = 357,
+     yIF = 358,
+     yIFF = 359,
+     yIGNORE_BINS = 360,
+     yILLEGAL_BINS = 361,
+     yIMPLIES = 362,
+     yIMPORT = 363,
+     yINITIAL = 364,
+     yINOUT = 365,
+     yINPUT = 366,
+     yINSIDE = 367,
+     yINT = 368,
+     yINTEGER = 369,
+     yINTERFACE = 370,
+     yINTERSECT = 371,
+     yJOIN = 372,
+     yLET = 373,
+     yLOCAL__COLONCOLON = 374,
+     yLOCAL__ETC = 375,
+     yLOCAL__LEX = 376,
+     yLOCALPARAM = 377,
+     yLOGIC = 378,
+     yLONGINT = 379,
+     yMATCHES = 380,
+     yMODPORT = 381,
+     yMODULE = 382,
+     yNAND = 383,
+     yNEGEDGE = 384,
+     yNEW__ETC = 385,
+     yNEW__LEX = 386,
+     yNEW__PAREN = 387,
+     yNEXTTIME = 388,
+     yNOR = 389,
+     yNOT = 390,
+     yNULL = 391,
+     yOR = 392,
+     yOUTPUT = 393,
+     yPACKAGE = 394,
+     yPACKED = 395,
+     yPARAMETER = 396,
+     yPOSEDGE = 397,
+     yPRIORITY = 398,
+     yPROGRAM = 399,
+     yPROPERTY = 400,
+     yPROTECTED = 401,
+     yPURE = 402,
+     yRAND = 403,
+     yRANDC = 404,
+     yRANDCASE = 405,
+     yRANDSEQUENCE = 406,
+     yREAL = 407,
+     yREALTIME = 408,
+     yREF = 409,
+     yREG = 410,
+     yREJECT_ON = 411,
+     yRELEASE = 412,
+     yREPEAT = 413,
+     yRESTRICT = 414,
+     yRETURN = 415,
+     ySCALARED = 416,
+     ySEQUENCE = 417,
+     ySHORTINT = 418,
+     ySHORTREAL = 419,
+     ySIGNED = 420,
+     ySOLVE = 421,
+     ySPECIFY = 422,
+     ySPECPARAM = 423,
+     ySTATIC__CONSTRAINT = 424,
+     ySTATIC__ETC = 425,
+     ySTATIC__LEX = 426,
+     ySTRING = 427,
+     ySTRONG = 428,
+     ySTRUCT = 429,
+     ySUPER = 430,
+     ySUPPLY0 = 431,
+     ySUPPLY1 = 432,
+     ySYNC_ACCEPT_ON = 433,
+     ySYNC_REJECT_ON = 434,
+     yS_ALWAYS = 435,
+     yS_EVENTUALLY = 436,
+     yS_NEXTTIME = 437,
+     yS_UNTIL = 438,
+     yS_UNTIL_WITH = 439,
+     yTABLE = 440,
+     yTAGGED = 441,
+     yTASK__ETC = 442,
+     yTASK__LEX = 443,
+     yTASK__aPUREV = 444,
+     yTHIS = 445,
+     yTHROUGHOUT = 446,
+     yTIME = 447,
+     yTIMEPRECISION = 448,
+     yTIMEUNIT = 449,
+     yTRI = 450,
+     yTRI0 = 451,
+     yTRI1 = 452,
+     yTRIAND = 453,
+     yTRIOR = 454,
+     yTRIREG = 455,
+     yTYPE = 456,
+     yTYPEDEF = 457,
+     yUNION = 458,
+     yUNIQUE = 459,
+     yUNIQUE0 = 460,
+     yUNSIGNED = 461,
+     yUNTIL = 462,
+     yUNTIL_WITH = 463,
+     yUNTYPED = 464,
+     yVAR = 465,
+     yVECTORED = 466,
+     yVIRTUAL__CLASS = 467,
+     yVIRTUAL__ETC = 468,
+     yVIRTUAL__INTERFACE = 469,
+     yVIRTUAL__LEX = 470,
+     yVIRTUAL__anyID = 471,
+     yVOID = 472,
+     yWAIT = 473,
+     yWAIT_ORDER = 474,
+     yWAND = 475,
+     yWEAK = 476,
+     yWHILE = 477,
+     yWILDCARD = 478,
+     yWIRE = 479,
+     yWITHIN = 480,
+     yWITH__BRA = 481,
+     yWITH__CUR = 482,
+     yWITH__ETC = 483,
+     yWITH__LEX = 484,
+     yWITH__PAREN = 485,
+     yWOR = 486,
+     yXNOR = 487,
+     yXOR = 488,
+     yD_ERROR = 489,
+     yD_FATAL = 490,
+     yD_INFO = 491,
+     yD_ROOT = 492,
+     yD_UNIT = 493,
+     yD_WARNING = 494,
+     yP_TICK = 495,
+     yP_TICKBRA = 496,
+     yP_OROR = 497,
+     yP_ANDAND = 498,
+     yP_NOR = 499,
+     yP_XNOR = 500,
+     yP_NAND = 501,
+     yP_EQUAL = 502,
+     yP_NOTEQUAL = 503,
+     yP_CASEEQUAL = 504,
+     yP_CASENOTEQUAL = 505,
+     yP_WILDEQUAL = 506,
+     yP_WILDNOTEQUAL = 507,
+     yP_GTE = 508,
+     yP_LTE = 509,
+     yP_LTE__IGNORE = 510,
+     yP_SLEFT = 511,
+     yP_SRIGHT = 512,
+     yP_SSRIGHT = 513,
+     yP_POW = 514,
+     yP_PAR__IGNORE = 515,
+     yP_PAR__STRENGTH = 516,
+     yP_LTMINUSGT = 517,
+     yP_PLUSCOLON = 518,
+     yP_MINUSCOLON = 519,
+     yP_MINUSGT = 520,
+     yP_MINUSGTGT = 521,
+     yP_EQGT = 522,
+     yP_ASTGT = 523,
+     yP_ANDANDAND = 524,
+     yP_POUNDPOUND = 525,
+     yP_POUNDMINUSPD = 526,
+     yP_POUNDEQPD = 527,
+     yP_DOTSTAR = 528,
+     yP_ATAT = 529,
+     yP_COLONCOLON = 530,
+     yP_COLONEQ = 531,
+     yP_COLONDIV = 532,
+     yP_ORMINUSGT = 533,
+     yP_OREQGT = 534,
+     yP_BRASTAR = 535,
+     yP_BRAEQ = 536,
+     yP_BRAMINUSGT = 537,
+     yP_BRAPLUSKET = 538,
+     yP_PLUSPLUS = 539,
+     yP_MINUSMINUS = 540,
+     yP_PLUSEQ = 541,
+     yP_MINUSEQ = 542,
+     yP_TIMESEQ = 543,
+     yP_DIVEQ = 544,
+     yP_MODEQ = 545,
+     yP_ANDEQ = 546,
+     yP_OREQ = 547,
+     yP_XOREQ = 548,
+     yP_SLEFTEQ = 549,
+     yP_SRIGHTEQ = 550,
+     yP_SSRIGHTEQ = 551,
+     prUNARYARITH = 552,
+     prREDUCTION = 553,
+     prNEGATION = 554,
+     prEVENTBEGIN = 555,
+     prTAGGED = 556,
+     prSEQ_CLOCKING = 557,
+     prPOUNDPOUND_MULTI = 558,
+     prLOWER_THAN_ELSE = 559
+   };
+#endif
+/* Tokens.  */
+#define yaFLOATNUM 258
+#define yaID__ETC 259
+#define yaID__LEX 260
+#define yaID__aCLASS 261
+#define yaID__aCOVERGROUP 262
+#define yaID__aPACKAGE 263
+#define yaID__aTYPE 264
+#define yaINTNUM 265
+#define yaTIMENUM 266
+#define yaSTRING 267
+#define yaSTRING__IGNORE 268
+#define yaTIMINGSPEC 269
+#define ygenGATE 270
+#define ygenCONFIGKEYWORD 271
+#define ygenOPERATOR 272
+#define ygenSTRENGTH 273
+#define ygenSYSCALL 274
+#define yACCEPT_ON 275
+#define yALIAS 276
+#define yALWAYS 277
+#define yAND 278
+#define yASSERT 279
+#define yASSIGN 280
+#define yASSUME 281
+#define yAUTOMATIC 282
+#define yBEFORE 283
+#define yBEGIN 284
+#define yBIND 285
+#define yBINS 286
+#define yBINSOF 287
+#define yBIT 288
+#define yBREAK 289
+#define yBUF 290
+#define yBYTE 291
+#define yCASE 292
+#define yCASEX 293
+#define yCASEZ 294
+#define yCHANDLE 295
+#define yCHECKER 296
+#define yCLASS 297
+#define yCLOCK 298
+#define yCLOCKING 299
+#define yCONSTRAINT 300
+#define yCONST__ETC 301
+#define yCONST__LEX 302
+#define yCONST__LOCAL 303
+#define yCONST__REF 304
+#define yCONTEXT 305
+#define yCONTINUE 306
+#define yCOVER 307
+#define yCOVERGROUP 308
+#define yCOVERPOINT 309
+#define yCROSS 310
+#define yDEASSIGN 311
+#define yDEFAULT 312
+#define yDEFPARAM 313
+#define yDISABLE 314
+#define yDIST 315
+#define yDO 316
+#define yEDGE 317
+#define yELSE 318
+#define yEND 319
+#define yENDCASE 320
+#define yENDCHECKER 321
+#define yENDCLASS 322
+#define yENDCLOCKING 323
+#define yENDFUNCTION 324
+#define yENDGENERATE 325
+#define yENDGROUP 326
+#define yENDINTERFACE 327
+#define yENDMODULE 328
+#define yENDPACKAGE 329
+#define yENDPROGRAM 330
+#define yENDPROPERTY 331
+#define yENDSEQUENCE 332
+#define yENDSPECIFY 333
+#define yENDTABLE 334
+#define yENDTASK 335
+#define yENUM 336
+#define yEVENT 337
+#define yEVENTUALLY 338
+#define yEXPECT 339
+#define yEXPORT 340
+#define yEXTENDS 341
+#define yEXTERN 342
+#define yFINAL 343
+#define yFIRST_MATCH 344
+#define yFOR 345
+#define yFORCE 346
+#define yFOREACH 347
+#define yFOREVER 348
+#define yFORK 349
+#define yFORKJOIN 350
+#define yFUNCTION__ETC 351
+#define yFUNCTION__LEX 352
+#define yFUNCTION__aPUREV 353
+#define yGENERATE 354
+#define yGENVAR 355
+#define yGLOBAL__CLOCKING 356
+#define yGLOBAL__LEX 357
+#define yIF 358
+#define yIFF 359
+#define yIGNORE_BINS 360
+#define yILLEGAL_BINS 361
+#define yIMPLIES 362
+#define yIMPORT 363
+#define yINITIAL 364
+#define yINOUT 365
+#define yINPUT 366
+#define yINSIDE 367
+#define yINT 368
+#define yINTEGER 369
+#define yINTERFACE 370
+#define yINTERSECT 371
+#define yJOIN 372
+#define yLET 373
+#define yLOCAL__COLONCOLON 374
+#define yLOCAL__ETC 375
+#define yLOCAL__LEX 376
+#define yLOCALPARAM 377
+#define yLOGIC 378
+#define yLONGINT 379
+#define yMATCHES 380
+#define yMODPORT 381
+#define yMODULE 382
+#define yNAND 383
+#define yNEGEDGE 384
+#define yNEW__ETC 385
+#define yNEW__LEX 386
+#define yNEW__PAREN 387
+#define yNEXTTIME 388
+#define yNOR 389
+#define yNOT 390
+#define yNULL 391
+#define yOR 392
+#define yOUTPUT 393
+#define yPACKAGE 394
+#define yPACKED 395
+#define yPARAMETER 396
+#define yPOSEDGE 397
+#define yPRIORITY 398
+#define yPROGRAM 399
+#define yPROPERTY 400
+#define yPROTECTED 401
+#define yPURE 402
+#define yRAND 403
+#define yRANDC 404
+#define yRANDCASE 405
+#define yRANDSEQUENCE 406
+#define yREAL 407
+#define yREALTIME 408
+#define yREF 409
+#define yREG 410
+#define yREJECT_ON 411
+#define yRELEASE 412
+#define yREPEAT 413
+#define yRESTRICT 414
+#define yRETURN 415
+#define ySCALARED 416
+#define ySEQUENCE 417
+#define ySHORTINT 418
+#define ySHORTREAL 419
+#define ySIGNED 420
+#define ySOLVE 421
+#define ySPECIFY 422
+#define ySPECPARAM 423
+#define ySTATIC__CONSTRAINT 424
+#define ySTATIC__ETC 425
+#define ySTATIC__LEX 426
+#define ySTRING 427
+#define ySTRONG 428
+#define ySTRUCT 429
+#define ySUPER 430
+#define ySUPPLY0 431
+#define ySUPPLY1 432
+#define ySYNC_ACCEPT_ON 433
+#define ySYNC_REJECT_ON 434
+#define yS_ALWAYS 435
+#define yS_EVENTUALLY 436
+#define yS_NEXTTIME 437
+#define yS_UNTIL 438
+#define yS_UNTIL_WITH 439
+#define yTABLE 440
+#define yTAGGED 441
+#define yTASK__ETC 442
+#define yTASK__LEX 443
+#define yTASK__aPUREV 444
+#define yTHIS 445
+#define yTHROUGHOUT 446
+#define yTIME 447
+#define yTIMEPRECISION 448
+#define yTIMEUNIT 449
+#define yTRI 450
+#define yTRI0 451
+#define yTRI1 452
+#define yTRIAND 453
+#define yTRIOR 454
+#define yTRIREG 455
+#define yTYPE 456
+#define yTYPEDEF 457
+#define yUNION 458
+#define yUNIQUE 459
+#define yUNIQUE0 460
+#define yUNSIGNED 461
+#define yUNTIL 462
+#define yUNTIL_WITH 463
+#define yUNTYPED 464
+#define yVAR 465
+#define yVECTORED 466
+#define yVIRTUAL__CLASS 467
+#define yVIRTUAL__ETC 468
+#define yVIRTUAL__INTERFACE 469
+#define yVIRTUAL__LEX 470
+#define yVIRTUAL__anyID 471
+#define yVOID 472
+#define yWAIT 473
+#define yWAIT_ORDER 474
+#define yWAND 475
+#define yWEAK 476
+#define yWHILE 477
+#define yWILDCARD 478
+#define yWIRE 479
+#define yWITHIN 480
+#define yWITH__BRA 481
+#define yWITH__CUR 482
+#define yWITH__ETC 483
+#define yWITH__LEX 484
+#define yWITH__PAREN 485
+#define yWOR 486
+#define yXNOR 487
+#define yXOR 488
+#define yD_ERROR 489
+#define yD_FATAL 490
+#define yD_INFO 491
+#define yD_ROOT 492
+#define yD_UNIT 493
+#define yD_WARNING 494
+#define yP_TICK 495
+#define yP_TICKBRA 496
+#define yP_OROR 497
+#define yP_ANDAND 498
+#define yP_NOR 499
+#define yP_XNOR 500
+#define yP_NAND 501
+#define yP_EQUAL 502
+#define yP_NOTEQUAL 503
+#define yP_CASEEQUAL 504
+#define yP_CASENOTEQUAL 505
+#define yP_WILDEQUAL 506
+#define yP_WILDNOTEQUAL 507
+#define yP_GTE 508
+#define yP_LTE 509
+#define yP_LTE__IGNORE 510
+#define yP_SLEFT 511
+#define yP_SRIGHT 512
+#define yP_SSRIGHT 513
+#define yP_POW 514
+#define yP_PAR__IGNORE 515
+#define yP_PAR__STRENGTH 516
+#define yP_LTMINUSGT 517
+#define yP_PLUSCOLON 518
+#define yP_MINUSCOLON 519
+#define yP_MINUSGT 520
+#define yP_MINUSGTGT 521
+#define yP_EQGT 522
+#define yP_ASTGT 523
+#define yP_ANDANDAND 524
+#define yP_POUNDPOUND 525
+#define yP_POUNDMINUSPD 526
+#define yP_POUNDEQPD 527
+#define yP_DOTSTAR 528
+#define yP_ATAT 529
+#define yP_COLONCOLON 530
+#define yP_COLONEQ 531
+#define yP_COLONDIV 532
+#define yP_ORMINUSGT 533
+#define yP_OREQGT 534
+#define yP_BRASTAR 535
+#define yP_BRAEQ 536
+#define yP_BRAMINUSGT 537
+#define yP_BRAPLUSKET 538
+#define yP_PLUSPLUS 539
+#define yP_MINUSMINUS 540
+#define yP_PLUSEQ 541
+#define yP_MINUSEQ 542
+#define yP_TIMESEQ 543
+#define yP_DIVEQ 544
+#define yP_MODEQ 545
+#define yP_ANDEQ 546
+#define yP_OREQ 547
+#define yP_XOREQ 548
+#define yP_SLEFTEQ 549
+#define yP_SRIGHTEQ 550
+#define yP_SSRIGHTEQ 551
+#define prUNARYARITH 552
+#define prREDUCTION 553
+#define prNEGATION 554
+#define prEVENTBEGIN 555
+#define prTAGGED 556
+#define prSEQ_CLOCKING 557
+#define prPOUNDPOUND_MULTI 558
+#define prLOWER_THAN_ELSE 559
+
+
+
+
+#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+typedef int YYSTYPE;
+# define yystype YYSTYPE /* obsolescent; will be withdrawn */
+# define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
+#endif
+
+
+

@@ -47,6 +47,7 @@ public:
 	UNKNOWN = 3,	// Things that need scope, but don't know type yet
 	//
 	BLOCK,
+	CHECKER,
 	CLASS,		// For yaID__CLASS
 	CLOCKING,
 	COVERGROUP,	// For yaID__COVERGROUP
@@ -54,6 +55,7 @@ public:
 	FORK,
 	FUNCTION,
 	INTERFACE,
+	LET,
 	MODPORT,
 	MODULE,
 	PACKAGE,	// For yaID__PACKAGE
@@ -74,8 +76,8 @@ public:
     const char* ascii() const {
 	static const char* names[] = {
 	"NOT_FOUND", "netlist", "error", "unknown",
-	"block", "class", "clocking", "covergroup",
-	"enum", "fork", "function", "interface",
+	"block", "checker", "class", "clocking", "covergroup",
+	"enum", "fork", "function", "interface", "let",
 	"modport", "module", "package", "program", "property",
 	"sequence", "struct", "task", "type", "union",
 	"_MAX"
@@ -117,7 +119,7 @@ private:
     struct hv* subhash();
 
     /// Insert into current table
-    void insert(VAstEnt* newentp, const string& name);
+    void replaceInsert(VAstEnt* newentp, const string& name);
 
 public:
     // ACCESSORS
@@ -138,11 +140,11 @@ public:
     /// Return internal pointer for given name or null
     VAstEnt* findSym (const string& name);
 
-    /// Insert into current table
-    VAstEnt* insert(VAstType type, const string& name);
+    /// Find or create a symbol under current entry
+    VAstEnt* findInsert (VAstType type, const string& name);
 
-    /// Find or create a symbol entry under current entry
-    VAstEnt* findNewTable (VAstType type, const string& name);
+    /// Replace or create a symbol entry under current entry
+    VAstEnt* replaceInsert (VAstType type, const string& name);
 
     /// Insert into current table from another imported package's table
     void import(VAstEnt* fromEntp, const string& id_or_star);

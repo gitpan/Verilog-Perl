@@ -284,3 +284,67 @@ typedef enum [2:0] { ENUM_RANGED_VALUE } enum_ranged_t;
 
 typedef struct packed { logic val; } t_bug202_struct;
 typedef union packed { logic val; } t_bug202_union;
+
+class ln288;
+   extern virtual function string extvirtstr;
+   extern virtual task extvirttask;
+endclass
+
+class cl_to_init;
+  extern function new();
+  extern static function cl_to_init init();
+endclass
+function cl_to_init cl_to_init::init();
+endfunction
+function cl_to_init::new();
+endfunction
+cl_to_init cl_inited = cl_to_init::init();
+
+// pure virtual functions have no endfunction.
+virtual class pure_virt_func_class;
+   pure virtual function string pure_virt_func();
+   pure virtual task pure_virt_task();
+endclass
+
+class extend_base;
+   typedef enum { EN_A, EN_B } base_enum;
+   virtual function extend_base create(); return null; endfunction
+endclass
+class extended extends extend_base;
+   typedef base_enum be_t;  // type must come from base class
+   virtual function int create ();  // Must override base's create
+      be_t mye;
+   endfunction
+endclass
+
+task rand_with_ln320();
+   if (!randomize(v) with { v > 0 && v < maxval; }) begin end
+   if (randomize(null)) begin end
+endtask
+task apply_request(data_req, input bit randomize = 1);
+   if (randomize == 1) begin
+      data_req.randomize();  // Generic method, not std::randomize
+   end
+endtask
+
+task foreach_class_scope_ln330;
+   foreach (extended::some_array[i,j]) begin end
+endtask
+
+module clkif_334;
+   always @(posedge top.clk iff !top.clken_l) begin end
+endmodule
+
+module gen_ln338;
+   generate
+      case (P)
+	32'b0:    initial begin end
+	default:  initial begin end
+      endcase
+   endgenerate
+endmodule
+
+module par_packed;
+   parameter logic [31:0] P1 [3:0] = '{ 1, 2, 3, 4 } ; // unpacked array
+   wire struct packed { logic ecc; logic [7:0] data; } memsig;
+endmodule

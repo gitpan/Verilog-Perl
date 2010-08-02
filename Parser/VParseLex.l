@@ -40,7 +40,7 @@
 
 #define YY_SKIP_YYWRAP
 
-#define STATE_VERILOG_RECENT  S05		// State name for most recent Verilog Version
+#define STATE_VERILOG_RECENT  S09		// State name for most recent Verilog Version
 
 // Flex 2.5.35 has compile warning in ECHO, so we'll default our own rule
 #define ECHO yyerrorf("Missing VParseLex.l rule: ECHO rule invoked in state %d: %s", YY_START, yytext);
@@ -86,7 +86,7 @@ void yyerrorf(const char* format, ...) {
 /**********************************************************************/
 %}
 
-%s V95 V01 V05 S05
+%s V95 V01 V05 S05 S09
 %s STRING ATTRMODE
 %s CMTMODE PROTMODE
 %s DUMMY_TO_AVOID_WARNING
@@ -105,7 +105,7 @@ word	[a-zA-Z0-9_]+
 <INITIAL>.|\n 		{BEGIN STATE_VERILOG_RECENT; yyless(0); }
 
   /* Verilog 1995 */
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
   {ws}			{ StashPrefix; }	/* otherwise ignore white-space */
   {crnl}		{ StashPrefix; NEXTLINE(); }		/* Count line numbers */
   /*     Keywords */
@@ -121,7 +121,7 @@ word	[a-zA-Z0-9_]+
   "default"		{ FL; VALTEXT; CALLBACK(keywordCb); return yDEFAULT; }
   "defparam"		{ FL; VALTEXT; CALLBACK(keywordCb); return yDEFPARAM; }
   "disable"		{ FL; VALTEXT; CALLBACK(keywordCb); return yDISABLE; }
-  "edge"		{ FL; VALTEXT; CALLBACK(keywordCb); return yaTIMINGSPEC; }
+  "edge"		{ FL; VALTEXT; CALLBACK(keywordCb); return yEDGE; }
   "else"		{ FL; VALTEXT; CALLBACK(keywordCb); return yELSE; }
   "end"			{ FL; VALTEXT; CALLBACK(keywordCb); return yEND; }
   "endcase"		{ FL; VALTEXT; CALLBACK(keywordCb); return yENDCASE; }
@@ -136,7 +136,7 @@ word	[a-zA-Z0-9_]+
   "force"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFORCE; }
   "forever"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFOREVER; }
   "fork"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFORK; }
-  "function"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFUNCTION; }
+  "function"		{ FL; VALTEXT; CALLBACK(keywordCb); return yFUNCTION__LEX; }
   "if"			{ FL; VALTEXT; CALLBACK(keywordCb); return yIF; }
   "initial"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINITIAL; }
   "inout"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINOUT; }
@@ -165,7 +165,7 @@ word	[a-zA-Z0-9_]+
   "supply0"		{ FL; VALTEXT; CALLBACK(keywordCb); return ySUPPLY0; }
   "supply1"		{ FL; VALTEXT; CALLBACK(keywordCb); return ySUPPLY1; }
   "table"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTABLE; }
-  "task"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTASK; }
+  "task"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTASK__LEX; }
   "time"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTIME; }
   "tri"			{ FL; VALTEXT; CALLBACK(keywordCb); return yTRI; }
   "tri0"		{ FL; VALTEXT; CALLBACK(keywordCb); return yTRI0; }
@@ -215,7 +215,7 @@ word	[a-zA-Z0-9_]+
 }
 
   /* Verilog 2001 */
-<V01,V05,S05>{
+<V01,V05,S05,S09>{
   /*     Keywords*/
   "automatic"		{ FL; VALTEXT; CALLBACK(keywordCb); return yAUTOMATIC; }
   "endgenerate"		{ FL; VALTEXT; CALLBACK(keywordCb); return yENDGENERATE; }
@@ -243,16 +243,20 @@ word	[a-zA-Z0-9_]+
 }
 
   /* Verilog 2005 */
-<V05,S05>{
+<V05,S05,S09>{
   /*     Keywords */
   "uwire"		{ FL; VALTEXT; CALLBACK(keywordCb); return yWIRE; }
 }
 
   /* System Verilog 2005 */
-<S05>{
+<S05,S09>{
   /*     System Tasks */
+  "$error"		{ FL; VALTEXT; CALLBACK(keywordCb); return yD_ERROR; }
+  "$fatal"		{ FL; VALTEXT; CALLBACK(keywordCb); return yD_FATAL; }
+  "$info"		{ FL; VALTEXT; CALLBACK(keywordCb); return yD_INFO; }
   "$root"		{ FL; VALTEXT; CALLBACK(keywordCb); return yD_ROOT; }
   "$unit"		{ FL; VALTEXT; CALLBACK(keywordCb); return yD_UNIT; }
+  "$warning"		{ FL; VALTEXT; CALLBACK(keywordCb); return yD_WARNING; }
   /*     Keywords */
   "alias"		{ FL; VALTEXT; CALLBACK(keywordCb); return yALIAS; }
   "always_comb"		{ FL; VALTEXT; CALLBACK(keywordCb); return yALWAYS; }
@@ -307,7 +311,7 @@ word	[a-zA-Z0-9_]+
   "intersect"		{ FL; VALTEXT; CALLBACK(keywordCb); return yINTERSECT; }
   "join_any"		{ FL; VALTEXT; CALLBACK(keywordCb); return yJOIN; }
   "join_none"		{ FL; VALTEXT; CALLBACK(keywordCb); return yJOIN; }
-  "local"		{ FL; VALTEXT; CALLBACK(keywordCb); return yLOCAL; }
+  "local"		{ FL; VALTEXT; CALLBACK(keywordCb); return yLOCAL__LEX; }
   "logic"		{ FL; VALTEXT; CALLBACK(keywordCb); return yLOGIC; }
   "longint"		{ FL; VALTEXT; CALLBACK(keywordCb); return yLONGINT; }
   "matches"		{ FL; VALTEXT; CALLBACK(keywordCb); return yMATCHES; }
@@ -324,7 +328,6 @@ word	[a-zA-Z0-9_]+
   "rand"		{ FL; VALTEXT; CALLBACK(keywordCb); return yRAND; }
   "randc"		{ FL; VALTEXT; CALLBACK(keywordCb); return yRANDC; }
   "randcase"		{ FL; VALTEXT; CALLBACK(keywordCb); return yRANDCASE; }
-  "randomize"		{ FL; VALTEXT; CALLBACK(keywordCb); return yRANDOMIZE; }
   "randsequence"	{ FL; VALTEXT; CALLBACK(keywordCb); return yRANDSEQUENCE; }
   "ref"			{ FL; VALTEXT; CALLBACK(keywordCb); return yREF; }
   "return"		{ FL; VALTEXT; CALLBACK(keywordCb); return yRETURN; }
@@ -354,19 +357,47 @@ word	[a-zA-Z0-9_]+
   "within"		{ FL; VALTEXT; CALLBACK(keywordCb); return yWITHIN; }
 }
 
+  /* System Verilog 2009 */
+<S09>{
+  /*     Keywords */
+  "accept_on"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yACCEPT_ON; }
+  "checker"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yCHECKER; }
+  "endchecker"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yENDCHECKER; }
+  "eventually"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yEVENTUALLY; }
+  "global"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yGLOBAL__LEX; }
+  "implies"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yIMPLIES; }
+  "let"		 	{ FL; VALTEXT; CALLBACK(keywordCb); return yLET; }
+  "nexttime"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yNEXTTIME; }
+  "reject_on"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yREJECT_ON; }
+  "restrict"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yRESTRICT; }
+  "s_always"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yS_ALWAYS; }
+  "s_eventually" 	{ FL; VALTEXT; CALLBACK(keywordCb); return yS_EVENTUALLY; }
+  "s_nexttime"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yS_NEXTTIME; }
+  "s_until"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yS_UNTIL; }
+  "s_until_with" 	{ FL; VALTEXT; CALLBACK(keywordCb); return yS_UNTIL_WITH; }
+  "strong"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return ySTRONG; }
+  "sync_accept_on" 	{ FL; VALTEXT; CALLBACK(keywordCb); return ySYNC_ACCEPT_ON; }
+  "sync_reject_on" 	{ FL; VALTEXT; CALLBACK(keywordCb); return ySYNC_REJECT_ON; }
+  "unique0"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yUNIQUE0; }
+  "until"		{ FL; VALTEXT; CALLBACK(keywordCb); return yUNTIL; }
+  "until_with"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yUNTIL_WITH; }
+  "untyped"	 	{ FL; VALTEXT; CALLBACK(keywordCb); return yUNTYPED; }
+  "weak"            	{ FL; VALTEXT; CALLBACK(keywordCb); return yWEAK; }
+}
+
   /* Default PLI rule */
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
     "$"[a-zA-Z_$][a-zA-Z0-9_$]*	{ FL; VALTEXT; CALLBACK(sysfuncCb); return ygenSYSCALL; }
 }
 
   /************************************************************************/
 
   /* Single character operator thingies */
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
   "{"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "}"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
 }
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
   "!"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "#"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
   "$"			{ FL; VALTEXT; CALLBACK(operatorCb); return yytext[0]; }
@@ -398,7 +429,7 @@ word	[a-zA-Z0-9_]+
   /* Operators and multi-character symbols */
 
   /* Verilog 1995 Operators */
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
   "&&"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_ANDAND; }
   "||"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_OROR; }
   "<="			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_LTE; }
@@ -420,7 +451,7 @@ word	[a-zA-Z0-9_]+
 }
 
   /* Verilog 2001 Operators */
-<V01,V05,S05>{
+<V01,V05,S05,S09>{
   "<<<"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_SLEFT; }
   ">>>"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_SSRIGHT; }
   "**"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_POW; }
@@ -429,8 +460,8 @@ word	[a-zA-Z0-9_]+
   ".*"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_DOTSTAR; }
 }
 
-  /* SystemVerilog Operators */
-<S05>{
+  /* SystemVerilog 2005 Operators */
+<S05,S09>{
   "'"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_TICK; }
   "'{"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_TICKBRA; }
   "==?"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_WILDEQUAL; }
@@ -461,10 +492,18 @@ word	[a-zA-Z0-9_]+
   "["{ws}*"*"		{ FL; VALTEXT; CALLBACK(operatorCb); return yP_BRASTAR; }
   "["{ws}*"="		{ FL; VALTEXT; CALLBACK(operatorCb); return yP_BRAEQ; }
   "["{ws}*"->"		{ FL; VALTEXT; CALLBACK(operatorCb); return yP_BRAMINUSGT; }
+  "["{ws}*"+"{ws}*"]"	{ FL; VALTEXT; CALLBACK(operatorCb); return yP_BRAPLUSKET; }
+}
+
+  /* SystemVerilog 2009 Operators */
+<S09>{
+  "#-#"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_POUNDMINUSPD; }
+  "#=#"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_POUNDEQPD; }
+  "<->"			{ FL; VALTEXT; CALLBACK(operatorCb); return yP_LTMINUSGT; }
 }
 
   /* Identifiers and numbers */
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
   /* Consume a following space, as we're going to add one to the symbol, we'd like to avoid inserting an extra */
   {escid}{space}	{ if (VParseLex::symEscapeless(yytext+1,yyleng-1-1)) {
 			      string sym = string(yytext+1,yyleng-1-1);
@@ -558,13 +597,13 @@ word	[a-zA-Z0-9_]+
 
   /************************************************************************/
   /* Attributes */
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
     "(*"/{ws}*[^)]	{ FL; yymore(); yy_push_state(ATTRMODE); }	// Doesn't match (*)
 }
 
   /************************************************************************/
   /* Preprocessor */
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
   "`accelerate"				{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`autoexpand_vectornets"		{ FL; VALTEXT; CALLBACK(preprocCb); } // Verilog-XL compatibility
   "`celldefine"				{ FL; VALTEXT; CALLBACK(preprocCb); LEXP->m_inCellDefine=true; }
@@ -604,13 +643,14 @@ word	[a-zA-Z0-9_]+
   "`begin_keywords"[ \t]*\"1364-2001-noconfig\"	{ yy_push_state(V01); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1364-2005\"		{ yy_push_state(V05); CALLBACK(preprocCb); }
   "`begin_keywords"[ \t]*\"1800-2005\"		{ yy_push_state(S05); CALLBACK(preprocCb); }
+  "`begin_keywords"[ \t]*\"1800-2009\"		{ yy_push_state(S09); CALLBACK(preprocCb); }
   "`end_keywords"				{ yy_pop_state();     CALLBACK(preprocCb); }
 }
 
   /************************************************************************/
   /* Default rules - leave last */
 
-<V95,V01,V05,S05>{
+<V95,V01,V05,S05,S09>{
   "`"[a-zA-Z_0-9]+	{ FL; VALTEXT;
 			  if (LPARSEP->sigParser()) { yyerrorf("Define or directive not defined: %s",yytext); }
 			  else { CALLBACK(preprocCb); } }
@@ -654,7 +694,97 @@ int VParseLex::lexToken(VParseBisonYYSType* yylvalp) {
 	s_yylvalp = yylvalp;  // Read by yylex()
 	token = yylex();
     }
+    // If a paren, read another
+    if (token == '('
+	|| token == yCONST__LEX
+	|| token == yGLOBAL__LEX
+	|| token == yLOCAL__LEX
+	|| token == yNEW__LEX
+	|| token == ySTATIC__LEX
+	|| token == yVIRTUAL__LEX
+	|| token == yWITH__LEX
+	// Never put yID_* here; below symbol table resolution would break
+	) {
+#ifdef FLEX_DEBUG
+	if (yy_flex_debug) { cout<<"   lexToken: reading ahead to find possible strength"<<endl; }
+#endif
+	VParseBisonYYSType curValue = *s_yylvalp;  // Remember value, as about to read ahead
+	int nexttok = yylex();
+	m_ahead = true;
+	m_aheadToken = nexttok;
+	m_aheadVal = *s_yylvalp;
+	*s_yylvalp = curValue;
+	// Now potentially munge the current token
+	if (token == '(' && (nexttok == ygenSTRENGTH
+			     || nexttok == ySUPPLY0
+			     || nexttok == ySUPPLY1)) {
+	    token = yP_PAR__STRENGTH;
+	}
+	else if (token == yCONST__LEX) {
+	    if (nexttok == yREF) token = yCONST__REF;
+	    else token = yCONST__ETC;
+	}
+	else if (token == yGLOBAL__LEX) {
+	    if (nexttok == yCLOCKING) token = yGLOBAL__CLOCKING;
+	    else { token = yaID__LEX; s_yylvalp->str = "global"; }  // Avoid 2009 "global" conflicting with old code when we can
+	}
+	else if (token == yLOCAL__LEX) {
+	    if (nexttok == yP_COLONCOLON) token = yLOCAL__COLONCOLON;
+	    else token = yLOCAL__ETC;
+	}
+	else if (token == yNEW__LEX) {
+	    if (nexttok == '(') token = yNEW__PAREN;
+	    else token = yNEW__ETC;
+	}
+	else if (token == ySTATIC__LEX) {
+	    if (nexttok == yCONSTRAINT) token = ySTATIC__CONSTRAINT;
+	    else token = ySTATIC__ETC;
+	}
+	else if (token == yVIRTUAL__LEX) {
+	    if (nexttok == yCLASS) token = yVIRTUAL__CLASS;
+	    else if (nexttok == yINTERFACE) token = yVIRTUAL__INTERFACE;
+	    else if (nexttok == yaID__ETC || nexttok == yaID__LEX)
+		     // || nexttok == yaID__aINTERFACE	// but we may not know interfaces yet.
+		token = yVIRTUAL__anyID;
+	    else token = yVIRTUAL__ETC;
+	}
+	else if (token == yWITH__LEX) {
+	    if (nexttok == '(') token = yWITH__PAREN;
+	    else if (nexttok == '[') token = yWITH__BRA;
+	    else if (nexttok == '{') token = yWITH__CUR;
+	    else token = yWITH__ETC;
+	}
+	// If add to above "else if", also add to "if (token" further above
+    }
+
+    // Non-lookahead conversions
+    // If a function/task convert token based on earlier detection of yPURE yVIRTUAL
+    switch (token) {
+    case yPURE:
+	m_pvstate = 1;  // found pure
+	break;
+    case yVIRTUAL__ETC:
+	if (m_pvstate == 1) m_pvstate = 2;  // found pure virtual
+	else m_pvstate = 0;
+	break;
+    case yFUNCTION__LEX:
+	token = (m_pvstate==2) ? yFUNCTION__aPUREV : yFUNCTION__ETC;
+	m_pvstate = 0;
+	break;
+    case yTASK__LEX:
+	token = (m_pvstate==2) ? yTASK__aPUREV : yTASK__ETC;
+	m_pvstate = 0;
+	break;
+    case ';':  // Just to be safe
+	m_pvstate = 0;
+	break;
+    default:
+	if (m_pvstate == 1) m_pvstate = 0;
+	break;
+    }
+
     // If an id, change the type based on symbol table
+    // Note above sometimes converts yGLOBAL to a yaID__LEX
     s_yylvalp->scp = NULL;
     if (token == yaID__LEX) {
 	VAstEnt* scp;
@@ -679,57 +809,6 @@ int VParseLex::lexToken(VParseBisonYYSType* yylvalp) {
 	} else {  // Not found
 	    token = yaID__ETC;
 	}
-    }
-    // If a paren, read another
-    else if (token == '('
-	|| token == yCONST__LEX
-	|| token == yNEW__LEX
-	|| token == ySTATIC__LEX
-	|| token == yVIRTUAL__LEX
-	|| token == yWITH__LEX
-	// Never put yID_* here; above symbol table resolution would break
-	) {
-#ifdef FLEX_DEBUG
-	if (yy_flex_debug) { cout<<"   lexToken: reading ahead to find possible strength"<<endl; }
-#endif
-	VParseBisonYYSType curValue = *s_yylvalp;  // Remember value, as about to read ahead
-	int nexttok = yylex();
-	m_ahead = true;
-	m_aheadToken = nexttok;
-	m_aheadVal = *s_yylvalp;
-	*s_yylvalp = curValue;
-	// Now potentially munge the current token
-	if (token == '(' && (nexttok == ygenSTRENGTH
-			     || nexttok == ySUPPLY0
-			     || nexttok == ySUPPLY1)) {
-	    token = yP_PAR__STRENGTH;
-	}
-	else if (token == yCONST__LEX) {
-	    if (nexttok == yREF) token = yCONST__REF;
-	    else token = yCONST__ETC;
-	}
-	else if (token == yNEW__LEX) {
-	    if (nexttok == '(') token = yNEW__PAREN;
-	    else token = yNEW__ETC;
-	}
-	else if (token == ySTATIC__LEX) {
-	    if (nexttok == yCONSTRAINT) token = ySTATIC__CONSTRAINT;
-	    else token = ySTATIC__ETC;
-	}
-	else if (token == yVIRTUAL__LEX) {
-	    if (nexttok == yCLASS) token = yVIRTUAL__CLASS;
-	    else if (nexttok == yINTERFACE) token = yVIRTUAL__INTERFACE;
-	    else if (nexttok == yaID__ETC || nexttok == yaID__LEX)
-		     // || nexttok == yaID__aINTERFACE	// but we may not know interfaces yet.
-		token = yVIRTUAL__anyID;
-	    else token = yVIRTUAL__ETC;
-	}
-	else if (token == yWITH__LEX) {
-	    if (nexttok == '(') token = yWITH__PAREN;
-	    else if (nexttok == '[') token = yWITH__BRA;
-	    else token = yWITH__ETC;
-	}
-	// If add to above "else if", also add to "if (token" further above
     }
     return token;
 }
@@ -757,6 +836,7 @@ void VParseLex::language(const char* value) {
     else if (0==strcmp(value,"1364-2001-noconfig")) { BEGIN V01; }
     else if (0==strcmp(value,"1364-2005"))	{ BEGIN V05; }
     else if (0==strcmp(value,"1800-2005"))	{ BEGIN S05; }
+    else if (0==strcmp(value,"1800-2009"))	{ BEGIN S09; }
     else yyerrorf("Unknown setLanguage code: %s", value);
 }
 

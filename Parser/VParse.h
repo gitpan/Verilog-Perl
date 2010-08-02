@@ -81,9 +81,6 @@ public:  // But for internalish use only
 	}
 	m_symTableNextId = entp;
     }
-    void symReinsert(VAstType type, const string& name) {
-	m_syms.reinsert(type,name);
-    }
     string symObjofUpward() {
 	return m_syms.objofUpward();
     }
@@ -92,7 +89,7 @@ public:  // But for internalish use only
     }
     void symPushNewUnder(VAstType type, const string& name, VAstEnt* parentp) {
 	if (!parentp) parentp = m_syms.currentSymp();
-	m_syms.pushScope(parentp->findNewTable(type,name));
+	m_syms.pushScope(parentp->replaceInsert(type,name));
     }
     void symPushNewAnon(VAstType type) {
 	string name = "__anon";
@@ -130,7 +127,7 @@ public:
     VFileLine* inFilelinep() const;		///< File/Line number for last callback
     void inFileline(const string& filename, int lineno) { m_inFilelinep = m_inFilelinep->create(filename, lineno); }
     void inFilelineInc() { m_inFilelinep = inFilelinep()->create(inFilelinep()->lineno()+1); }
-    void inLineDirective(const char* text) { m_inFilelinep = inFilelinep()->lineDirective(text); }
+    void inLineDirective(const char* text) { int ign; m_inFilelinep = inFilelinep()->lineDirective(text, ign/*ref*/); }
 
     string unreadback() const { return (m_useUnreadback ? m_unreadback : "new(...,use_unreadback=>0) was used"); }
     void unreadback(const string& text) { if (m_useUnreadback && callbackMasterEna()) m_unreadback = text; }
