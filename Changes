@@ -3,6 +3,16 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.302 2010/08/26
+
+****	Increase define recursions before error.  [Paul Liu]
+
+***	Fix documentation on verilog_text and link, bug278. [Mike Z]
+
+****	Use Digest::SHA instead of SHA1, bug189.  [Ahmed El-Mahmoudy]
+
+****	Fix false test failure if Math::BigInt not installed.
+
 * Verilog::Language 3.301 2010/08/04
 
 ****	Improve Bison/flex skipping to increase CPAN-Testers pass rate.

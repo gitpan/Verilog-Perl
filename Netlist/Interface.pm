@@ -14,7 +14,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Interface::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.301';
+$VERSION = '3.302';
 
 structs('new',
 	'Verilog::Netlist::Interface::Struct'
@@ -384,7 +384,8 @@ Prints debugging information for this interface.
 =item $self->verilog_text
 
 Returns verilog code which represents this interface.  Returned as an array
-that must be joined together to form the final text string.
+that must be joined together to form the final text string.  The netlist
+must be already ->link'ed for this to work correctly.
 
 =back
 

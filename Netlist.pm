@@ -14,7 +14,7 @@ use base qw(Verilog::Netlist::Subclass);
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.301';
+$VERSION = '3.302';
 
 ######################################################################
 #### Error Handling
@@ -647,7 +647,8 @@ lookup.  Return undef if not found.
 
 =item $self->verilog_text
 
-Returns verilog code which represents the netlist.
+Returns verilog code which represents the netlist.  The netlist must be
+already ->link'ed for this to work correctly.
 
 =back
 
