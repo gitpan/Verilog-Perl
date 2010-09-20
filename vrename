@@ -23,7 +23,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Crypt_All $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '3.302';
+$VERSION = '3.303';
 
 ######################################################################
 
@@ -60,7 +60,8 @@ $Opt_Crypt_All = 0;   # Global scope, used in sub-package
 $Opt_Write = 1;
 $Opt_Keywords = 0;
 my $opt_read = 0;
-my $change_filename = "signals.vrename";
+my $opt_change_filename = "signals.vrename";
+my $opt_change_lang;
 my $output_dir = "";
 @Files = ();
 
@@ -68,15 +69,17 @@ if (! GetOptions (
 		  "help"	=> \&usage,
 		  "debug"	=> \&debug,
 		  "version"	=> sub { print "Version $VERSION\n"; exit(0); },
+		  "change!"	=> \$opt_change,
+		  "changefile=s"=> \$opt_change_filename,
+		  "changelang!"	=> \$opt_change_lang,
 		  "crypt!"	=> \$Opt_Crypt,
 		  "cryptall!"	=> \$Opt_Crypt_All,
-		  "change!"	=> \$opt_change,
-		  "changefile=s"=> \$change_filename,
+		  "keywords!"	=> \$Opt_Keywords,
+		  "language=s"	=> sub { shift; Verilog::Language::language_standard(shift); },
+		  "list!"	=> \$opt_list,
 		  "o=s"		=> \$output_dir,
 		  "read!"	=> \$opt_read,
 		  "write!"	=> \$Opt_Write,
-		  "keywords!"	=> \$Opt_Keywords,
-		  "list!"	=> \$opt_list,
 		  "xref!"	=> \$Opt_Xref,
 		  "<>"		=> \&parameter,
 		  )) {
@@ -97,7 +100,7 @@ if ($output_dir eq "" && $Opt_Crypt && $opt_change) {
 }
 
 if ($opt_read || $opt_change) {
-    changes_read ($change_filename);
+    changes_read ($opt_change_filename);
 }
 
 if ($opt_change) {
@@ -114,7 +117,10 @@ if ($opt_list) {
 	changes_crypt();
     }
     changes_from_loc ();
-    changes_write ($change_filename);
+    if ($opt_change_lang) {
+	changes_lang();
+    }
+    changes_write ($opt_change_filename);
 }
 
 exit (0);
@@ -294,6 +300,16 @@ sub changes_read {
     $fh->close();
 }
 
+sub changes_lang {
+    # Grab keywords from most recent spec, not current --language
+    my %kwds = Verilog::Language::language_keywords(Verilog::Language::language_maximum());
+    foreach my $kwd (keys %kwds) {
+	next if Verilog::Language::is_keyword($kwd);  # Already a keyword in sources
+	next if !$Signal_Newname{$kwd};  # Not needed for the current file
+	$Signal_Newname{$kwd} = '\\'.$kwd.' ';
+    }
+}
+
 ######################################################################
 
 sub crypt_string {
@@ -430,7 +446,7 @@ sub verilog_change_sig {
 	if ($new ne $sig) {
 	    my $magic = "@@@@@!~${hadrepl}~!@@@@@";
 	    my $sig_quoted = quotemeta $sig;
-	    if ($filestrg =~ s/([^a-zA-Z0-9_\$\%\'\"])$sig_quoted(?=[^a-zA-Z0-9_])/$1$magic/g) {
+	    if ($filestrg =~ s/([^a-zA-Z0-9_\$\%\'\"\\])$sig_quoted(?=[^a-zA-Z0-9_])/$1$magic/g) {
 		print "match s$sig n$new m$magic\n" if $Debug;
 		$hadrepl ++;
 		$signal_magic{$sig} = $magic;
@@ -601,6 +617,15 @@ signals file.  Either --list or --change must be specified.
 
 Use the given filename instead of "signals.vrename".
 
+=item --changelang
+
+Include in the signals.vrename file the template needed to change the
+language standard for the file.  For the first run, use "--list
+--changelang" and --language to specify the file's original language, then
+rerun with the "--change" option.  The files will get escaped identifiers
+for the most recent Verilog standard.  For example with --language
+1364-2005, "do" will become "\do ".
+
 =item --crypt
 
 With --list, randomize the signal renames.  With --change, compress spaces
@@ -629,6 +654,12 @@ Include keywords in the renaming list.  Default is to ignore keywords, as
 changing a keyword will probably result in unrunnable code, however,
 occasionally it may be necessary to rename signals which happen to match
 the name of keywords recently added to the language (such as 'bit').
+
+=item --language <1364-1995|1364-2001|1364-2005|1800-2005|1800-2009>
+
+Set the language standard for the files.  This determines which tokens are
+signals versus keywords, such as the ever-common "do" (data-out signal,
+versus a do-while loop keyword).
 
 =item --list
 
