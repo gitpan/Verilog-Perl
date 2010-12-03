@@ -36,7 +36,7 @@ use vars qw ($VERSION $Debug $Opt %Vpassert_Conversions
 	     %Files %Files_Read
 	     %File_Dest
 	     );
-$VERSION = '3.304';
+$VERSION = '3.305';
 
 ######################################################################
 # configuration
@@ -200,7 +200,7 @@ sub debug {
 sub parameter {
     my $param = shift;
     (-r $param) or die "%Error: Can't open $param";
-    push @files, $param;
+    push @files, "$param"; # Must quote to convert Getopt to string, bug298
 }
 
 ######################################################################

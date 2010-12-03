@@ -17,7 +17,7 @@ use Verilog::Getopt;
 use strict;
 use vars qw ($Debug $VERSION);
 
-$VERSION = '3.304';
+$VERSION = '3.305';
 
 ######################################################################
 # main
@@ -95,7 +95,7 @@ sub parameter {
     if ($param =~ /^--?/) {
 	die "%Error: vhier: Unknown parameter: $param\n";
     } else {
-	push @opt_files, $param;
+	push @opt_files, "$param"; # Must quote to convert Getopt to string, bug298
     }
 }
 
@@ -308,10 +308,19 @@ programs.
 
 Defines the given preprocessor symbol.
 
+=item -F I<file>
+
+Read the specified file, and act as if all text inside it was specified as
+command line parameters.  Any relative paths are relative to the directory
+containing the specified file.  Unlike some tools, -y, +incdir, and -v are
+treated as relative, but standalone filenames in the specified file
+("foo.v") are not.  Use use "-y ." to work around this.
+
 =item -f I<file>
 
-Read the specified file, and act as if all text inside it was
-specified as command line parameters.
+Read the specified file, and act as if all text inside it was specified as
+command line parameters.  Any relative paths are relative to the current
+directory.
 
 =item +incdir+I<dir>
 =item -II<dir>

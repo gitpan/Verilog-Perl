@@ -3,7 +3,17 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.305 2010/12/03
+
+***	Add -F option to read relative option files, bug297. [Neil Hamilton]
+
+***	Fix env var expansion from Getopt, bug298.  [John Dickol]
+
+****	Fix removing defines without ` when non-SystemC, bug300. [John Dickol]
+
 * Verilog::Language 3.304 2010/10/25
+
+****	Fix file_substitute expanding ~, msg382.  [Neil Hamilton]
 
 ****	Fix wrong filename on include file errors, bug289. [Brad Parker]
 
