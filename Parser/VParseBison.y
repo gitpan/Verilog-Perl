@@ -10,7 +10,7 @@
 //
 //*************************************************************************
 //
-// Copyright 2001-2010 by Wilson Snyder.  This program is free software;
+// Copyright 2001-2011 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -1666,7 +1666,7 @@ c_genItemList:			// (for checkers)
 		BISONPRE_COPY(genItemList,{s/~c~/c_/g})		// {copied}
 	;
 
-generate_item:			// IEEE: generate_item
+generate_item:			// IEEE: module_or_interface_or_generate_item
 	//			// Only legal when in a generate under a module (or interface under a module)
 		module_or_generate_item			{ }
 	//			// Only legal when in a generate under an interface

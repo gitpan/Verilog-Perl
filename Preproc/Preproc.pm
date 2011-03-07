@@ -11,7 +11,7 @@ use base qw(DynaLoader);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '3.305';
+$VERSION = '3.306';
 
 ######################################################################
 #### Configuration Section
@@ -286,8 +286,8 @@ With keep_comments set to zero, strip all comments.  When set to one (the
 default), insert comments in output streams.  When set to 'sub', call the
 comment() function so that meta-comments can be processed outside of the
 output stream.  Note that some programs use meta-comments to embed useful
-information (synthesis and lint), so use this with caution if feeding to
-tools other than your own.  Defaults to 1.
+information (synthesis and lint), so strip with caution if feeding to tools
+other than your own.  Defaults to 1.
 
 =item keep_whitespace=>0
 
@@ -409,7 +409,7 @@ Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.org/verilog-perl>.
 
-Copyright 2000-2010 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2011 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 

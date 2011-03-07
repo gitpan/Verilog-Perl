@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2010 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2011 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -692,13 +692,18 @@ int VPreProcImp::getStateToken() {
 	if (tok==VP_WHITE && state !=ps_STRIFY) return (tok);
 	if (tok==VP_BACKQUOTE && state !=ps_STRIFY) { tok = VP_TEXT; }
 	if (tok==VP_COMMENT) {
-	    if (!m_off && m_lexp->m_keepComments) {
+	    if (!m_off) {
 		if (m_lexp->m_keepComments == KEEPCMT_SUB
 		    || m_lexp->m_keepComments == KEEPCMT_EXP) {
 		    string rtn; rtn.assign(yyourtext(),yyourleng());
 		    m_preprocp->comment(rtn);
-		} else {
+		    // Need to insure "foo/**/bar" becomes two tokens
+		    insertUnreadback (" ");
+		} else if (m_lexp->m_keepComments) {
 		    return (tok);
+		} else {
+		    // Need to insure "foo/**/bar" becomes two tokens
+		    insertUnreadback (" ");
 		}
 	    }
 	    // We're off or processed the comment specially.  If there are newlines
