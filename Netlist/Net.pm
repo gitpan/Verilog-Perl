@@ -11,7 +11,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Net::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.306';
+$VERSION = '3.307';
 
 my %_Type_Widths = (
     'bit'	=> 1,
@@ -133,6 +133,19 @@ sub netlist {
 sub _used_in_inc { $_[0]->_used_in(1+($_[0]->_used_in()||0)); }
 sub _used_out_inc { $_[0]->_used_out(1+($_[0]->_used_out()||0)); }
 sub _used_inout_inc { $_[0]->_used_inout(1+($_[0]->_used_inout()||0)); }
+sub _used_in_dec {
+    return if !$_[0]->_used_in();
+    $_[0]->_used_in(-1+$_[0]->_used_in());
+}
+sub _used_out_dec {
+    return if !$_[0]->_used_out();
+    $_[0]->_used_out(-1+$_[0]->_used_out());
+}
+sub _used_inout_dec {
+    return if !$_[0]->_used_inout();
+    $_[0]->_used_inout(-1+$_[0]->_used_inout());
+}
+
 sub stored_lsb { defined $_[0]->SUPER::stored_lsb ? $_[0]->SUPER::stored_lsb : $_[0]->lsb; }
 
 sub width {

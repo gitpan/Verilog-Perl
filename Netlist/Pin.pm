@@ -16,7 +16,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::Pin::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.306';
+$VERSION = '3.307';
 
 structs('new',
 	'Verilog::Netlist::Pin::Struct'
@@ -44,6 +44,11 @@ structs('new',
 
 sub delete {
     my $self = shift;
+    if ($self->net && $self->port) {
+	$self->net->_used_in_dec()    if ($self->port->direction eq 'in');
+	$self->net->_used_out_dec()   if ($self->port->direction eq 'out');
+	$self->net->_used_inout_dec() if ($self->port->direction eq 'inout');
+    }
     my $h = $self->cell->_pins;
     delete $h->{$self->name};
     return undef;
