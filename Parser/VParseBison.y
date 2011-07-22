@@ -48,7 +48,6 @@
 
 #define NEWSTRING(text) (string((text)))
 #define SPACED(a,b)	((a)+(((a)=="" || (b)=="")?"":" ")+(b))
-#define SPACED3(a,b,c)	(SPACED(SPACED(a,b),c))
 
 #define VARRESET_LIST(decl)    { GRAMMARP->pinNum(1); VARRESET(); VARDECL(decl); }	// Start of pinlist
 #define VARRESET_NONLIST(decl) { GRAMMARP->pinNum(0); VARRESET(); VARDECL(decl); }	// Not in a pinlist
@@ -3819,21 +3818,21 @@ sexpr<str>:			// ==IEEE: sequence_expr  (The name sexpr is important as regexps 
 	//			// As sequence_expr includes expression_or_dist, and boolean_abbrev includes sequence_abbrev:
 	//			// '(' sequence_expr {',' sequence_match_item } ')' [ boolean_abbrev ]
 	//			// "'(' sexpr ')' boolean_abbrev" matches "[sexpr:'(' expr ')'] boolean_abbrev" so we can simply drop it
-	|	'(' ~p~sexpr ')'			{ }
+	|	'(' ~p~sexpr ')'			{ $<fl>$=$<fl>1; $$=$1+$2+$3; }
 	|	'(' ~p~sexpr ',' sequence_match_itemList ')'	{ }
 	//
 	//			// AND/OR are between pexprs OR sexprs
-	|	~p~sexpr yAND ~p~sexpr			{ }
-	|	~p~sexpr yOR ~p~sexpr			{ }
+	|	~p~sexpr yAND ~p~sexpr			{ $<fl>$=$<fl>1; $$=$1+$2+$3; }
+	|	~p~sexpr yOR ~p~sexpr			{ $<fl>$=$<fl>1; $$=$1+$2+$3; }
 	//			// Intersect always has an sexpr rhs
-	|	~p~sexpr yINTERSECT sexpr		{ }
+	|	~p~sexpr yINTERSECT sexpr		{ $<fl>$=$<fl>1; $$=$1+$2+$3; }
 	//
 	|	yFIRST_MATCH '(' sexpr ')'		{ }
 	|	yFIRST_MATCH '(' sexpr ',' sequence_match_itemList ')'	{ }
 	|	~p~sexpr/*sexpression_or_dist*/ yTHROUGHOUT sexpr		{ }
 	//			// Below pexpr's are really sequence_expr, but avoid conflict
 	//			// IEEE: sexpr yWITHIN sexpr
-	|	~p~sexpr yWITHIN sexpr			{ }
+	|	~p~sexpr yWITHIN sexpr			{ $<fl>$=$<fl>1; $$=$1+$2+$3; }
 	//			// Note concurrent_assertion had duplicate rule for below
 	|	clocking_event ~p~sexpr %prec prSEQ_CLOCKING	{ }
 	//
@@ -3922,14 +3921,18 @@ let_port_listE:			// ==IEEE: let_port_list
 covergroup_declaration:		// ==IEEE: covergroup_declaration
 		covergroup_declarationFront coverage_eventE ';' coverage_spec_or_optionListE
 			yENDGROUP endLabelE
-			{ PARSEP->symPopScope(VAstType::COVERGROUP); }
+			{ PARSEP->endgroupCb($<fl>5,$5);
+			  PARSEP->symPopScope(VAstType::COVERGROUP); }
 	|	covergroup_declarationFront '(' tf_port_listE ')' coverage_eventE ';' coverage_spec_or_optionListE
 			yENDGROUP endLabelE
-			{ PARSEP->symPopScope(VAstType::COVERGROUP); }
+			{ PARSEP->endgroupCb($<fl>8,$8);
+			  PARSEP->symPopScope(VAstType::COVERGROUP); }
 	;
 
 covergroup_declarationFront:	// IEEE: part of covergroup_declaration
-		yCOVERGROUP idAny 			{ PARSEP->symPushNew(VAstType::COVERGROUP,$2); }
+		yCOVERGROUP idAny
+ 			{ PARSEP->symPushNew(VAstType::COVERGROUP,$2);
+			  PARSEP->covergroupCb($<fl>1,$1,$2); }
 	;
 
 coverage_spec_or_optionListE:	// IEEE: [{coverage_spec_or_option}]
@@ -4333,7 +4336,7 @@ ps_type<str>:			// IEEE: ps_parameter_identifier | ps_type_identifier
 	;
 
 ps_covergroup_identifier<str>:	// ==IEEE: ps_covergroup_identifier
-		package_scopeIdFollowsE yaID__aCOVERGROUP	{ $<fl>$=$<fl>1; $$=$1; }
+		package_scopeIdFollowsE yaID__aCOVERGROUP	{ $<fl>$=$<fl>1; $$=$1+$2; }
 	;
 
 class_scope_type<str>:		// class_scope + type

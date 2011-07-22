@@ -576,23 +576,7 @@ verilog/inc1.v:333:
 verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
 verilog/inc1.v:333:    do 
 verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:       /* synopsys translate_off */ 
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:   
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:     
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:  
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:       if (start("verilog/inc1.v", 333)) begin 
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:  
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333: 	 message({"Blah-", "clx_scen", " end"}); 
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:       end 
-verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
-verilog/inc1.v:333:       /* synopsys translate_on */ 
+verilog/inc1.v:333:       /* synopsys translate_off *//* synopsys translate_on */ 
 verilog/inc1.v:333: `line 333 "verilog/inc1.v" 0
 verilog/inc1.v:333:    while(0);
 verilog/inc1.v:334: 
@@ -736,8 +720,8 @@ verilog/inc1.v:447: integer/*NEED_SPACE*/foo;
 verilog/inc1.v:448: //======================================================================
 verilog/inc1.v:449: synth_test:
 verilog/inc1.v:450: // synopsys translate_off
-verilog/inc1.v:451: synthesis_turned_off
 verilog/inc1.v:452: // synthesis translate_on
+verilog/inc1.v:453: 
 verilog/inc1.v:453: EXP: on
 verilog/inc1.v:454: 
 verilog/inc1.v:455: `line 455 "verilog/inc1.v" 2
