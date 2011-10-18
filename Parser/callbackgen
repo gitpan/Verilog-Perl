@@ -14,7 +14,7 @@ use vars qw ($Debug $VERSION);
 require "../Language.pm";
 package main;
 
-$VERSION = '3.310';
+$VERSION = '3.311';
 
 # xs_manual=>1,   -> The .xs file makes the handler itself
 
@@ -30,10 +30,12 @@ my %Cbs =
      symbol	=> {which=>'Parser', args => [text=>'string']},
      sysfunc	=> {which=>'Parser', args => [text=>'string']},
      #
+     class      => {which=>'SigParser', args => [kwd=>'string', name=>'string', virt=>'string']},
      contassign => {which=>'SigParser', args => [kwd=>'string', lhs=>'string', rhs=>'string']},
      covergroup => {which=>'SigParser', args => [kwd=>'string', name=>'string']},
      defparam   => {which=>'SigParser', args => [kwd=>'string', lhs=>'string', rhs=>'string']},
      endcell	=> {which=>'SigParser', args => [kwd=>'string']},
+     endclass	=> {which=>'SigParser', args => [kwd=>'string']},
      endgroup	=> {which=>'SigParser', args => [kwd=>'string']},
      endinterface=>{which=>'SigParser', args => [kwd=>'string']},
      endmodport => {which=>'SigParser', args => [kwd=>'string']},
@@ -81,7 +83,7 @@ process();
 
 sub usage {
     print "Version $VERSION\n";
-    pod2usage(-verbose=>2, -exitval => 2);
+    pod2usage(-verbose=>2, -exitval=>2, -output=>\*STDOUT);
     exit (1);
 }
 

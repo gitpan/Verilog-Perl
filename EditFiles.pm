@@ -13,7 +13,7 @@ use vars qw ($VERSION $Debug);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.310';
+$VERSION = '3.311';
 
 #######################################################################
 # CONSTRUCTORS
@@ -80,13 +80,12 @@ sub _read_split_file {
 	    }
 	}
 
-	(my $l2 = $line) =~ s!//.*$!!;
-	if ($l2 =~ s!.*?\*/!!) {
-	    $commented = 0;
-	}
-	while ($l2 =~ s!.*?/\*!!) {
-	    $commented = 1;
-	    if ($l2 =~ s!.*?\*/!!) {
+	while ($line =~ m!.*?(/\*|//|\*/)!g) {
+	    if (!$commented && $1 eq '//') {
+		last;
+	    } elsif (!$commented && $1 eq '/*') {
+		$commented = 1;
+	    } elsif ($commented && $1 eq '*/') {
 		$commented = 0;
 	    }
 	}

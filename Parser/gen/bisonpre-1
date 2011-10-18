@@ -2715,15 +2715,15 @@ static const yytype_uint16 yyrline[] =
     4230,  4236,  4243,  4247,  4248,  4252,  4253,  4257,  4258,  4260,
     4261,  4262,  4263,  4267,  4268,  4269,  4270,  4271,  4272,  4273,
     4274,  4275,  4276,  4277,  4282,  4283,  4284,  4286,  4293,  4302,
-    4308,  4313,  4314,  4320,  4321,  4322,  4331,  4335,  4339,  4343,
-    4347,  4354,  4359,  4366,  4370,  4376,  4377,  4382,  4388,  4389,
-    4396,  4396,  4398,  4398,  4400,  4400,  4407,  4408,  4412,  4413,
-    4417,  4418,  4419,  4421,  4422,  4423,  4424,  4425,  4426,  4428,
-    4432,  4433,  4434,  4437,  4445,  4446,  4447,  4453,  4454,  4458,
-    4459,  4464,  4466,  4468,  4470,  4472,  4480,  4482,  4483,  4484,
-    4488,  4492,  4493,  4497,  4498,  4502,  4503,  4508,  4512,  4513,
-    4517,  4521,  4522,  4524,  4528,  4529,  4533,  4534,  4538,  4539,
-    4540,  4544,  4548,  4549
+    4309,  4315,  4316,  4322,  4323,  4324,  4333,  4337,  4341,  4345,
+    4349,  4356,  4361,  4368,  4372,  4378,  4379,  4384,  4390,  4391,
+    4398,  4398,  4400,  4400,  4402,  4402,  4409,  4410,  4414,  4415,
+    4419,  4420,  4421,  4423,  4424,  4425,  4426,  4427,  4428,  4430,
+    4434,  4435,  4436,  4439,  4447,  4448,  4449,  4455,  4456,  4460,
+    4461,  4466,  4468,  4470,  4472,  4474,  4482,  4484,  4485,  4486,
+    4490,  4494,  4495,  4499,  4500,  4504,  4505,  4510,  4514,  4515,
+    4519,  4523,  4524,  4526,  4530,  4531,  4535,  4536,  4540,  4541,
+    4542,  4546,  4550,  4551
 };
 #endif
 
@@ -37500,432 +37500,434 @@ yyreduce:
 
   case 2989:
 #line 4304 "VParseBison.y"
-    { PARSEP->symPopScope(VAstType::CLASS); ;}
+    { PARSEP->endclassCb((yyvsp[(6) - (7)].fl),(yyvsp[(6) - (7)].str));
+			  PARSEP->symPopScope(VAstType::CLASS); ;}
     break;
 
   case 2990:
-#line 4309 "VParseBison.y"
-    { PARSEP->symPushNew(VAstType::CLASS, (yyvsp[(4) - (4)].str)); ;}
+#line 4310 "VParseBison.y"
+    { PARSEP->symPushNew(VAstType::CLASS, (yyvsp[(4) - (4)].str));
+			  PARSEP->classCb((yyvsp[(1) - (4)].fl),(yyvsp[(2) - (4)].str),(yyvsp[(4) - (4)].str),(yyvsp[(1) - (4)].str)); ;}
     break;
 
   case 2991:
-#line 4313 "VParseBison.y"
-    { ;}
+#line 4315 "VParseBison.y"
+    { (yyval.str)=""; ;}
     break;
 
   case 2992:
-#line 4314 "VParseBison.y"
-    { ;}
+#line 4316 "VParseBison.y"
+    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
   case 2993:
-#line 4320 "VParseBison.y"
+#line 4322 "VParseBison.y"
     { ;}
     break;
 
   case 2994:
-#line 4321 "VParseBison.y"
+#line 4323 "VParseBison.y"
     { PARSEP->syms().import((yyvsp[(1) - (2)].fl),(yyvsp[(2) - (2)].str),(yyvsp[(2) - (2)].scp),"*"); ;}
     break;
 
   case 2995:
-#line 4322 "VParseBison.y"
+#line 4324 "VParseBison.y"
     { PARSEP->syms().import((yyvsp[(1) - (5)].fl),(yyvsp[(2) - (5)].str),(yyvsp[(2) - (5)].scp),"*"); ;}
     break;
 
   case 2996:
-#line 4331 "VParseBison.y"
+#line 4333 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 2997:
-#line 4335 "VParseBison.y"
+#line 4337 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 2998:
-#line 4339 "VParseBison.y"
+#line 4341 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 2999:
-#line 4343 "VParseBison.y"
+#line 4345 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 3000:
-#line 4347 "VParseBison.y"
+#line 4349 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.scp)=(yyvsp[(1) - (2)].scp); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 3001:
-#line 4354 "VParseBison.y"
+#line 4356 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(2) - (2)].fl); (yyval.scp)=(yyvsp[(2) - (2)].scp); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 3002:
-#line 4359 "VParseBison.y"
+#line 4361 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.scp)=(yyvsp[(1) - (1)].scp); (yyval.str)=(yyvsp[(1) - (1)].str); PARSEP->symTableNextId(NULL); ;}
     break;
 
   case 3003:
-#line 4366 "VParseBison.y"
+#line 4368 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(2) - (2)].fl); (yyval.scp)=(yyvsp[(2) - (2)].scp); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 3004:
-#line 4370 "VParseBison.y"
+#line 4372 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.scp)=(yyvsp[(1) - (2)].scp); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); PARSEP->symTableNextId((yyvsp[(1) - (2)].scp)); ;}
     break;
 
   case 3005:
-#line 4376 "VParseBison.y"
+#line 4378 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.scp)=(yyvsp[(1) - (1)].scp); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
   case 3006:
-#line 4377 "VParseBison.y"
+#line 4379 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.scp)=(yyvsp[(2) - (2)].scp); (yyval.str)=(yyvsp[(1) - (2)].str)+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 3007:
-#line 4383 "VParseBison.y"
+#line 4385 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.scp)=(yyvsp[(1) - (2)].scp); (yyval.str)=(yyvsp[(1) - (2)].str); ;}
     break;
 
   case 3008:
-#line 4388 "VParseBison.y"
+#line 4390 "VParseBison.y"
     { (yyval.str)=""; ;}
     break;
 
   case 3009:
-#line 4389 "VParseBison.y"
+#line 4391 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
   case 3010:
-#line 4396 "VParseBison.y"
+#line 4398 "VParseBison.y"
     { PARSEP->symTableNextId(PARSEP->syms().netlistSymp()); ;}
     break;
 
   case 3011:
-#line 4397 "VParseBison.y"
-    { (yyval.fl)=(yyvsp[(1) - (3)].fl); (yyval.str)=(yyvsp[(1) - (3)].str)+(yyvsp[(3) - (3)].str); ;}
-    break;
-
-  case 3012:
-#line 4398 "VParseBison.y"
-    { PARSEP->symTableNextId((yyvsp[(1) - (1)].scp)); ;}
-    break;
-
-  case 3013:
 #line 4399 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (3)].fl); (yyval.str)=(yyvsp[(1) - (3)].str)+(yyvsp[(3) - (3)].str); ;}
     break;
 
-  case 3014:
+  case 3012:
 #line 4400 "VParseBison.y"
     { PARSEP->symTableNextId((yyvsp[(1) - (1)].scp)); ;}
     break;
 
-  case 3015:
+  case 3013:
 #line 4401 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (3)].fl); (yyval.str)=(yyvsp[(1) - (3)].str)+(yyvsp[(3) - (3)].str); ;}
     break;
 
+  case 3014:
+#line 4402 "VParseBison.y"
+    { PARSEP->symTableNextId((yyvsp[(1) - (1)].scp)); ;}
+    break;
+
+  case 3015:
+#line 4403 "VParseBison.y"
+    { (yyval.fl)=(yyvsp[(1) - (3)].fl); (yyval.str)=(yyvsp[(1) - (3)].str)+(yyvsp[(3) - (3)].str); ;}
+    break;
+
   case 3016:
-#line 4407 "VParseBison.y"
+#line 4409 "VParseBison.y"
     { ;}
     break;
 
   case 3017:
-#line 4408 "VParseBison.y"
+#line 4410 "VParseBison.y"
     { ;}
     break;
 
   case 3018:
-#line 4412 "VParseBison.y"
+#line 4414 "VParseBison.y"
     { ;}
     break;
 
   case 3019:
-#line 4413 "VParseBison.y"
+#line 4415 "VParseBison.y"
     { ;}
     break;
 
   case 3020:
-#line 4417 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3021:
-#line 4418 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3022:
 #line 4419 "VParseBison.y"
     { ;}
     break;
 
-  case 3023:
+  case 3021:
+#line 4420 "VParseBison.y"
+    { ;}
+    break;
+
+  case 3022:
 #line 4421 "VParseBison.y"
     { ;}
     break;
 
-  case 3024:
-#line 4422 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3025:
+  case 3023:
 #line 4423 "VParseBison.y"
     { ;}
     break;
 
-  case 3026:
+  case 3024:
 #line 4424 "VParseBison.y"
     { ;}
     break;
 
-  case 3027:
+  case 3025:
 #line 4425 "VParseBison.y"
     { ;}
     break;
 
-  case 3028:
+  case 3026:
 #line 4426 "VParseBison.y"
     { ;}
     break;
 
-  case 3029:
+  case 3027:
+#line 4427 "VParseBison.y"
+    { ;}
+    break;
+
+  case 3028:
 #line 4428 "VParseBison.y"
     { ;}
     break;
 
+  case 3029:
+#line 4430 "VParseBison.y"
+    { ;}
+    break;
+
   case 3030:
-#line 4432 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3031:
-#line 4433 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3032:
 #line 4434 "VParseBison.y"
     { ;}
     break;
 
+  case 3031:
+#line 4435 "VParseBison.y"
+    { ;}
+    break;
+
+  case 3032:
+#line 4436 "VParseBison.y"
+    { ;}
+    break;
+
   case 3033:
-#line 4437 "VParseBison.y"
+#line 4439 "VParseBison.y"
     { ;}
     break;
 
   case 3034:
-#line 4445 "VParseBison.y"
-    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
-    break;
-
-  case 3035:
-#line 4446 "VParseBison.y"
-    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
-    break;
-
-  case 3036:
 #line 4447 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
+  case 3035:
+#line 4448 "VParseBison.y"
+    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
+    break;
+
+  case 3036:
+#line 4449 "VParseBison.y"
+    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
+    break;
+
   case 3037:
-#line 4453 "VParseBison.y"
+#line 4455 "VParseBison.y"
     { VARRESET(); VARDTYPE(""); ;}
     break;
 
   case 3038:
-#line 4454 "VParseBison.y"
+#line 4456 "VParseBison.y"
     { VARRESET(); VARDTYPE((yyvsp[(1) - (1)].str)); ;}
     break;
 
   case 3039:
-#line 4458 "VParseBison.y"
+#line 4460 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
   case 3040:
-#line 4459 "VParseBison.y"
+#line 4461 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.str)=SPACED((yyvsp[(1) - (2)].str),(yyvsp[(2) - (2)].str)); ;}
     break;
 
   case 3041:
-#line 4464 "VParseBison.y"
-    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
-    break;
-
-  case 3042:
 #line 4466 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
-  case 3043:
+  case 3042:
 #line 4468 "VParseBison.y"
+    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
+    break;
+
+  case 3043:
+#line 4470 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (2)].fl); (yyval.str)=(yyvsp[(1) - (2)].str)+" "+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 3044:
-#line 4470 "VParseBison.y"
-    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
-    break;
-
-  case 3045:
 #line 4472 "VParseBison.y"
     { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
-  case 3046:
-#line 4480 "VParseBison.y"
-    { ;}
+  case 3045:
+#line 4474 "VParseBison.y"
+    { (yyval.fl)=(yyvsp[(1) - (1)].fl); (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
-  case 3047:
+  case 3046:
 #line 4482 "VParseBison.y"
     { ;}
     break;
 
-  case 3048:
-#line 4483 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3049:
+  case 3047:
 #line 4484 "VParseBison.y"
     { ;}
     break;
 
+  case 3048:
+#line 4485 "VParseBison.y"
+    { ;}
+    break;
+
+  case 3049:
+#line 4486 "VParseBison.y"
+    { ;}
+    break;
+
   case 3050:
-#line 4488 "VParseBison.y"
+#line 4490 "VParseBison.y"
     { ;}
     break;
 
   case 3051:
-#line 4492 "VParseBison.y"
+#line 4494 "VParseBison.y"
     { ;}
     break;
 
   case 3052:
-#line 4493 "VParseBison.y"
+#line 4495 "VParseBison.y"
     { ;}
     break;
 
   case 3053:
-#line 4497 "VParseBison.y"
+#line 4499 "VParseBison.y"
     { ;}
     break;
 
   case 3054:
-#line 4498 "VParseBison.y"
+#line 4500 "VParseBison.y"
     { ;}
     break;
 
   case 3055:
-#line 4502 "VParseBison.y"
+#line 4504 "VParseBison.y"
     { ;}
     break;
 
   case 3056:
-#line 4503 "VParseBison.y"
+#line 4505 "VParseBison.y"
     { ;}
     break;
 
   case 3057:
-#line 4508 "VParseBison.y"
+#line 4510 "VParseBison.y"
     { ;}
     break;
 
   case 3058:
-#line 4512 "VParseBison.y"
+#line 4514 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
   case 3059:
-#line 4513 "VParseBison.y"
+#line 4515 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (2)].str)+" "+(yyvsp[(2) - (2)].str); ;}
     break;
 
   case 3060:
-#line 4517 "VParseBison.y"
+#line 4519 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (2)].str); ;}
     break;
 
   case 3061:
-#line 4521 "VParseBison.y"
+#line 4523 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (5)].str); ;}
     break;
 
   case 3062:
-#line 4522 "VParseBison.y"
+#line 4524 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (7)].str);;}
     break;
 
   case 3063:
-#line 4524 "VParseBison.y"
+#line 4526 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (5)].str); ;}
     break;
 
   case 3064:
-#line 4528 "VParseBison.y"
+#line 4530 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (1)].str); ;}
     break;
 
   case 3065:
-#line 4529 "VParseBison.y"
+#line 4531 "VParseBison.y"
     { (yyval.str)=(yyvsp[(1) - (3)].str)+(yyvsp[(2) - (3)].str)+(yyvsp[(3) - (3)].str); ;}
     break;
 
   case 3066:
-#line 4533 "VParseBison.y"
+#line 4535 "VParseBison.y"
     { ;}
     break;
 
   case 3067:
-#line 4534 "VParseBison.y"
+#line 4536 "VParseBison.y"
     { ;}
     break;
 
   case 3068:
-#line 4538 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3069:
-#line 4539 "VParseBison.y"
-    { ;}
-    break;
-
-  case 3070:
 #line 4540 "VParseBison.y"
     { ;}
     break;
 
+  case 3069:
+#line 4541 "VParseBison.y"
+    { ;}
+    break;
+
+  case 3070:
+#line 4542 "VParseBison.y"
+    { ;}
+    break;
+
   case 3071:
-#line 4544 "VParseBison.y"
+#line 4546 "VParseBison.y"
     { ;}
     break;
 
   case 3072:
-#line 4548 "VParseBison.y"
+#line 4550 "VParseBison.y"
     { ;}
     break;
 
   case 3073:
-#line 4549 "VParseBison.y"
+#line 4551 "VParseBison.y"
     { ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 37929 "VParseBison.c"
+#line 37931 "VParseBison.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -38139,7 +38141,7 @@ yyreturn:
 }
 
 
-#line 4553 "VParseBison.y"
+#line 4555 "VParseBison.y"
 
 
 int VParseGrammar::parse() {
