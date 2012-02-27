@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2011 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2012 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -58,9 +58,13 @@ private:
 
 public:
     // CONSTANTS
-    static const unsigned DEFINE_RECURSION_LEVEL_MAX = 1000;	///< How many `def substitutions before an error
-    static const unsigned INCLUDE_DEPTH_MAX = 500;	///< How many `includes deep before an error
-    static const unsigned NEWLINES_VS_TICKLINE = 20;	///< Use `line in place of this many newlines
+    enum MiscConsts {
+ 	DEFINE_RECURSION_LEVEL_MAX = 1000,	// How many `def substitutions before an error
+ 	INCLUDE_DEPTH_MAX = 500,		// How many `includes deep before an error
+	STREAM_DEPTH_LEVEL_MAX = 2000,		// How many streams deep (sometimes `def deep) before an error
+	//					// Set more than DEFINE_RECURSION_LEVEL_MAX or INCLUDE_DEPTH_MAX
+ 	NEWLINES_VS_TICKLINE = 20		// Use `line in place of this many newlines
+    };
 
     // ACCESSORS
     /// Insert given file into this point in input stream

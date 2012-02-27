@@ -10,7 +10,7 @@
 //
 //*************************************************************************
 //
-// Copyright 2001-2011 by Wilson Snyder.  This program is free software;
+// Copyright 2001-2012 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -1253,7 +1253,7 @@ data_type<str>:			// ==IEEE: data_type, excluding class_type etc references
 	//			// IEEE: class_type
 	|	class_typeWithoutId			{ $<fl>$=$<fl>1; $$=$<str>1; }
 	//			// IEEE: ps_covergroup_identifier
-	|	ps_covergroup_identifier		{ $<fl>$=$<fl>1; $$=$1; }
+	//			// we put covergroups under ps_type, so can ignore this
 	;
 
 // IEEE: struct_union - not needed, expanded in data_type
@@ -1383,7 +1383,9 @@ enum_base_typeE<str>:	// IEEE: enum_base_type
 	//
 	|	integer_atom_type signingE		{ $<fl>$=$<fl>1; $$=$1; }
 	|	integer_vector_type signingE regrangeE	{ $<fl>$=$<fl>1; $$=$1; }
-	|	yaID__aTYPE regrangeE			{ $<fl>$=$<fl>1; $$=$1; }
+	//			// below can be idAny or yaID__aTYPE
+	//			// IEEE requires a type, though no shift conflict if idAny
+	|	idAny regrangeE			{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 enum_nameList:
@@ -1804,7 +1806,7 @@ netSigList:			// IEEE: list_of_port_identifiers
 netSig:				// IEEE: net_decl_assignment -  one element from list_of_port_identifiers
 		netId sigAttrListE			{ VARDONE($<fl>1, $1, "", ""); }
 	|	netId sigAttrListE '=' expr		{ VARDONE($<fl>1, $1, "", $4); }
-	|	netId rangeList sigAttrListE		{ VARDONE($<fl>1, $1, $2, ""); }
+	|	netId variable_dimension sigAttrListE		{ VARDONE($<fl>1, $1, $2, ""); }
 	;
 
 netId<str>:
@@ -4339,14 +4341,14 @@ ps_id_etc<str>:			// package_scope + general id
 
 ps_type<str>:			// IEEE: ps_parameter_identifier | ps_type_identifier
 		package_scopeIdFollowsE yaID__aTYPE	{ $<fl>$=$<fl>1; $$=$1+$2; }
-	;
-
-ps_covergroup_identifier<str>:	// ==IEEE: ps_covergroup_identifier
-		package_scopeIdFollowsE yaID__aCOVERGROUP	{ $<fl>$=$<fl>1; $$=$1+$2; }
+	//			// Simplify typing - from ps_covergroup_identifier
+	|	package_scopeIdFollowsE yaID__aCOVERGROUP	{ $<fl>$=$<fl>1; $$=$1+$2; }
 	;
 
 class_scope_type<str>:		// class_scope + type
 		class_scopeIdFollows yaID__aTYPE	{ $<fl>$=$<fl>1; $$=$<str>1+$2; }
+	//			// Spec expansion: combined covergroups here to simplify typing
+	|	class_scopeIdFollows yaID__aCOVERGROUP	{ $<fl>$=$<fl>1; $$=$<str>1+$2; }
 	;
 
 class_scope_id<str_scp>:	// class_scope + id etc
@@ -4407,6 +4409,9 @@ class_typeOneType<str_scp>:	// As with class_typeOneList but allow yaID__aTYPE
 		yaID__aCLASS parameter_value_assignmentE
 			{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$=$<str>1; }
 	|	yaID__aTYPE parameter_value_assignmentE
+			{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$=$<str>1; }
+	//			// Spec expansion: combined covergroups here to simplify typing
+	|	yaID__aCOVERGROUP parameter_value_assignmentE
 			{ $<fl>$=$<fl>1; $<scp>$=$<scp>1; $<str>$=$<str>1; }
 	;
 

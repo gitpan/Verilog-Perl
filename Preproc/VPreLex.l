@@ -14,7 +14,7 @@
  *
  ******************************************************************************
  *
- * Copyright 2000-2011 by Wilson Snyder.  This program is free software;
+ * Copyright 2000-2012 by Wilson Snyder.  This program is free software;
  * you can redistribute it and/or modify it under the terms of either the GNU
  * Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
  *
@@ -28,6 +28,7 @@
  * lost characters.
  *****************************************************************************/
 
+#include "VPreProc.h"
 #include "VPreLex.h"
 #include <cstdio>
 #include <cstdarg>
@@ -88,6 +89,7 @@ crnl		[\r]*[\n]
 quote		[\"]
 tickquote	[`][\"]
 /* Where we use symb/symbdef, we must also look for a `` join */
+/* Note in the preprocessor \ESCaped is *not* always special; mantis1537/bug441 */
 backslash	[\\]
 symb		([a-zA-Z_][a-zA-Z0-9_$]*|\\[^ \t\f\r\n]+)
 symbdef		([a-zA-Z_][a-zA-Z0-9_$]*|\\[^ \t\f\r\n`]+)
@@ -447,7 +449,7 @@ string VPreLex::endOfStream(bool& againr) {
 void VPreLex::initFirstBuffer(VFileLine* filelinep) {
     // Called from constructor to make first buffer
     // yy_create_buffer also sets yy_fill_buffer=1 so reads from YY_INPUT
-    VPreStream* streamp = new VPreStream(filelinep);
+    VPreStream* streamp = new VPreStream(filelinep, this);
     streamp->m_eof = true;
     m_streampStack.push(streamp);
     //
@@ -458,10 +460,16 @@ void VPreLex::initFirstBuffer(VFileLine* filelinep) {
 
 void VPreLex::scanNewFile(VFileLine* filelinep) {
     // Called on new open file.  scanBytesBack will be called next.
-    VPreStream* streamp = new VPreStream(filelinep);
-    m_tokFilelinep = curFilelinep();
-    streamp->m_file = true;
-    scanSwitchStream(streamp);
+    if (streamDepth() > VPreProc::DEFINE_RECURSION_LEVEL_MAX) {
+	// The recursive `include in VPreProcImp should trigger first
+	yyerrorf("Recursive `define or other nested inclusion");
+	curStreamp()->m_eof = true;  // Fake it to stop recursion
+    } else {
+	VPreStream* streamp = new VPreStream(filelinep, this);
+	m_tokFilelinep = curFilelinep();
+	streamp->m_file = true;
+	scanSwitchStream(streamp);
+    }
 }
 
 void VPreLex::scanBytes(const string& str) {
@@ -470,9 +478,16 @@ void VPreLex::scanBytes(const string& str) {
     // to take effect immediately, in the middle of the current buffer
     // Also we don't use scan_bytes that would set yy_fill_buffer
     // which would force Flex to bypass our YY_INPUT routine.
-    VPreStream* streamp = new VPreStream(curFilelinep());
-    streamp->m_buffers.push_front(str);
-    scanSwitchStream(streamp);
+    if (streamDepth() > VPreProc::DEFINE_RECURSION_LEVEL_MAX) {
+	// More streams if recursive `define with complex insertion
+	// More buffers mostly if something internal goes funky
+	yyerrorf("Recursive `define or other nested inclusion");
+	curStreamp()->m_eof = true;  // Fake it to stop recursion
+    } else {
+	VPreStream* streamp = new VPreStream(curFilelinep(), this);
+	streamp->m_buffers.push_front(str);
+	scanSwitchStream(streamp);
+    }
 }
 
 void VPreLex::scanSwitchStream(VPreStream* streamp) {

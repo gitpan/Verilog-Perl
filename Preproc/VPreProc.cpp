@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //*************************************************************************
 //
-// Copyright 2000-2011 by Wilson Snyder.  This program is free software;
+// Copyright 2000-2012 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -206,7 +206,7 @@ private:
     void parsingOff() { m_off++; }
 
     int getRawToken();
-    int getStateToken();
+    int getStateToken(string& buf);
     int getFinalToken(string& buf);
 
     void statePush(ProcState state) {
@@ -454,16 +454,18 @@ string VPreProcImp::defineSubst(VPreDefRef* refp) {
 	string argName;
 	string prev;
 	bool quote = false;
+	bool backslashesc = false;  // In \.....{space} block
 	// Note we go through the loop once more at the NULL end-of-string
 	for (const char* cp=value.c_str(); (*cp) || argName!=""; cp=(*cp?cp+1:cp)) {
 	    //cout << "CH "<<*cp<<"  an "<<argName<<"\n";
-	    if (!quote) {
-		if ( isalpha(*cp) || *cp=='_'
-		     || *cp=='$' // Won't replace system functions, since no $ in argValueByName
-		     || (argName!="" && (isdigit(*cp) || *cp=='$'))) {
-		    argName += *cp;
-		    continue;
-		}
+	    if (!quote && *cp == '\\') { backslashesc = true; }
+	    else if (isspace(*cp)) { backslashesc = false; }
+	    // We don't check for quotes; some simulators expand even inside quotes
+	    if ( isalpha(*cp) || *cp=='_'
+		 || *cp=='$' // Won't replace system functions, since no $ in argValueByName
+		 || (argName!="" && (isdigit(*cp) || *cp=='$'))) {
+		argName += *cp;
+		continue;
 	    }
 	    if (argName != "") {
 		// Found a possible variable substitution
@@ -480,7 +482,11 @@ string VPreProcImp::defineSubst(VPreDefRef* refp) {
 	    if (!quote) {
 		// Check for `` only after we've detected end-of-argname
 		if (cp[0]=='`' && cp[1]=='`') {
-		    out += "``";   // `` must get removed later, as `FOO```BAR must pre-expand FOO and BAR
+		    if (backslashesc) {
+			// Don't put out the ``, we're forming an escape which will not expand further later
+		    } else {
+			out += "``";   // `` must get removed later, as `FOO```BAR must pre-expand FOO and BAR
+		    }
 		    cp++;
 		    continue;
 		}
@@ -511,10 +517,16 @@ string VPreProcImp::defineSubst(VPreDefRef* refp) {
 		    continue;
 		}
 	    }
-	    if (cp[0]=='\\' && cp[1]) {
-		out += cp[0]; // \{any} Put out literal next character, including the escape
+	    if (cp[0]=='\\' && cp[1]=='\"') {
+		out += cp[0]; // \{any} Put out literal next character
 		out += cp[1];
 		cp++;
+		continue;
+	    }
+	    else if (cp[0]=='\\') {
+		// Normally \{any} would put out literal next character
+		// Instead we allow "`define A(nm) \nm" to expand, per proposed mantis1537
+		out += cp[0];
 		continue;
 	    }
 	    if (*cp=='"') quote=!quote;
@@ -691,16 +703,22 @@ void VPreProcImp::debugToken(int tok, const char* cmtp) {
 // Sorry, we're not using bison/yacc. It doesn't handle returning white space
 // in the middle of parsing other tokens.
 
-int VPreProcImp::getStateToken() {
+int VPreProcImp::getStateToken(string& buf) {
     // Return the next state-determined token
     while (1) {
       next_tok:
-	if (isEof()) return VP_EOF;
+	if (isEof()) {
+	    buf = string (yyourtext(), yyourleng());
+	    return VP_EOF;
+	}
 	int tok = getRawToken();
 	ProcState state = m_states.top();
 
 	// Most states emit white space and comments between tokens. (Unless collecting a string)
-	if (tok==VP_WHITE && state !=ps_STRIFY) return (tok);
+	if (tok==VP_WHITE && state !=ps_STRIFY) {
+	    buf = string (yyourtext(), yyourleng());
+	    return (tok);
+	}
 	if (tok==VP_BACKQUOTE && state !=ps_STRIFY) { tok = VP_TEXT; }
 	if (tok==VP_COMMENT) {
 	    if (!m_off) {
@@ -711,6 +729,7 @@ int VPreProcImp::getStateToken() {
 		    // Need to insure "foo/**/bar" becomes two tokens
 		    insertUnreadback (" ");
 		} else if (m_lexp->m_keepComments) {
+		    buf = string (yyourtext(), yyourleng());
 		    return (tok);
 		} else {
 		    // Need to insure "foo/**/bar" becomes two tokens
@@ -819,7 +838,10 @@ int VPreProcImp::getStateToken() {
 	    }
 	    else if (tok==VP_TEXT) {
 		// IE, something like comment between define and symbol
-		if (!m_off) return tok;
+		if (!m_off) {
+		    buf = string (yyourtext(), yyourleng());
+		    return tok;
+		}
 		else goto next_tok;
 	    }
 	    else if (tok==VP_DEFREF) {
@@ -840,7 +862,10 @@ int VPreProcImp::getStateToken() {
 		goto next_tok;
 	    } else if (tok==VP_TEXT) {
 		// IE, something like comment in formals
-		if (!m_off) return tok;
+		if (!m_off) {
+		    buf = string (yyourtext(), yyourleng());
+		    return tok;
+		}
 		else goto next_tok;
 	    } else {
 		error((string)"Expecting define formal arguments. Found: "+tokenName(tok)+"\n");
@@ -886,7 +911,7 @@ int VPreProcImp::getStateToken() {
 	    statePop();
 	    // DEFVALUE is terminated by a return, but lex can't return both tokens.
 	    // Thus, we emit a return here.
-	    yyourtext(newlines.c_str(), newlines.length());
+	    buf = newlines;
 	    return(VP_WHITE);
 	}
 	case ps_DEFPAREN: {
@@ -1117,6 +1142,7 @@ int VPreProcImp::getStateToken() {
 		if (m_off) {
 		    goto next_tok;
 		} else {
+		    buf = string (yyourtext(), yyourleng());
 		    return (VP_TEXT);
 		}
 	    }
@@ -1161,6 +1187,7 @@ int VPreProcImp::getStateToken() {
 	    if (!m_ifdefStack.empty()) {
 		error("`ifdef not terminated at EOF\n");
 	    }
+	    buf = string (yyourtext(), yyourleng());
 	    return tok;
 	case VP_UNDEFINEALL:
 	    if (!m_off) {
@@ -1179,7 +1206,10 @@ int VPreProcImp::getStateToken() {
 	case VP_PSL:
 	case VP_TEXT: {
 	    m_defDepth = 0;
-	    if (!m_off) return tok;
+	    if (!m_off) {
+		buf = string (yyourtext(), yyourleng());
+		return tok;
+	    }
 	    else goto next_tok;
 	}
 	case VP_WHITE:		// Handled at top of loop
@@ -1190,6 +1220,7 @@ int VPreProcImp::getStateToken() {
 	    fatalSrc((string)"Internal error: Unexpected token "+tokenName(tok)+"\n");
 	    break;
 	}
+	buf = string (yyourtext(), yyourleng());
 	return tok;
     }
 }
@@ -1199,8 +1230,7 @@ int VPreProcImp::getFinalToken(string& buf) {
     // Includes and such are handled here, and are never seen by the caller.
     if (!m_finAhead) {
 	m_finAhead = true;
-	m_finToken = getStateToken();
-	m_finBuf = string (yyourtext(), yyourleng());
+	m_finToken = getStateToken(m_finBuf);
     }
     int tok = m_finToken;
     buf = m_finBuf;

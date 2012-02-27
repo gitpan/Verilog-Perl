@@ -16,7 +16,7 @@ use Verilog::Getopt;
 use strict;
 use vars qw ($Debug $VERSION);
 
-$VERSION = '3.313';
+$VERSION = '3.314';
 
 ######################################################################
 # main
@@ -32,9 +32,12 @@ autoflush STDOUT 1;
 autoflush STDERR 1;
 
 # Option parsing
-my $Opt = new Verilog::Getopt();
+Getopt::Long::config ("no_auto_abbrev","pass_through");
+GetOptions ("debug" => \&debug);  # Snarf --debug ASAP, before parse -f files
+
+my $Opt = new Verilog::Getopt(filename_expansion=>1);
 @ARGV = $Opt->parameter(@ARGV);
-Getopt::Long::config ("no_auto_abbrev");
+Getopt::Long::config ("no_auto_abbrev","no_pass_through");
 if (! GetOptions (
 		  "help"	=> \&usage,
 		  "debug"	=> \&debug,
@@ -101,6 +104,7 @@ sub usage {
 
 sub debug {
     $Debug = 1;
+    #$Verilog::Getopt::Debug = 1;
 }
 
 sub parameter {
@@ -154,6 +158,12 @@ Defines the given preprocessor symbol.
 
 Read the specified file, and act as if all text inside it was
 specified as command line parameters.
+
+=item -f I<file>
+
+Read the specified file, and act as if all text inside it was specified as
+command line parameters.  Any relative paths are relative to the current
+directory.
 
 =item +incdir+I<dir>
 =item -II<dir>
@@ -261,7 +271,7 @@ Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.org/verilog-perl>.
 
-Copyright 2000-2011 by Wilson Snyder.  This package is free software; you
+Copyright 2000-2012 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 

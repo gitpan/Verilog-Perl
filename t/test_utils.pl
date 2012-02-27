@@ -1,6 +1,6 @@
 # DESCRIPTION: Perl ExtUtils: Common routines required by package tests
 #
-# Copyright 2000-2011 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2012 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
@@ -30,6 +30,14 @@ sub run_system {
     system "$command";
     my $status = $?;
     ($status == 0) or die "%Error: Command Failed $command, $status, stopped";
+}
+
+sub run_system_no_die {
+    # Run a system command, check errors
+    my $command = shift;
+    print "\t$command\n";
+    system "$command";
+    return $?;
 }
 
 sub wholefile {

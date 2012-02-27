@@ -17,7 +17,7 @@ use Verilog::Getopt;
 use strict;
 use vars qw ($Debug $VERSION);
 
-$VERSION = '3.313';
+$VERSION = '3.312';
 
 ######################################################################
 # main
@@ -30,7 +30,7 @@ autoflush STDOUT 1;
 autoflush STDERR 1;
 
 # Option parsing
-my $Opt = new Verilog::Getopt();
+my $Opt = new Verilog::Getopt(filename_expansion=>1);
 my $Opt_Cells;
 my $Opt_Modules;
 my $Opt_ModFiles;
@@ -40,9 +40,15 @@ my $Opt_Missing_Modules;
 my $Opt_TopModule;
 my $Opt_ResolveFiles;
 my $Opt_Synthesis;
+my $Opt_Instance;
+my $Opt_Forest;
 my $Opt_Xml;
+
+Getopt::Long::config ("no_auto_abbrev","pass_through");
+GetOptions ("debug" => \&debug);  # Snarf --debug ASAP, before parse -f files
+
 @ARGV = $Opt->parameter(@ARGV);
-Getopt::Long::config ("no_auto_abbrev");
+Getopt::Long::config ("no_auto_abbrev","no_pass_through");
 if (! GetOptions (
 		  "help"	=> \&usage,
 		  "debug"	=> \&debug,
@@ -59,6 +65,8 @@ if (! GetOptions (
 		  "synthesis!"		=> \$Opt_Synthesis,
 		  "top-module=s"	=> \$Opt_TopModule,
 		  "version"	=> sub { print "Version $VERSION\n"; exit(0); },
+		  "forest"	=> \$Opt_Forest,
+		  "instance"	=> \$Opt_Instance,
 		  "xml!"	=> \$Opt_Xml,
 		  "<>"		=> \&parameter,
 		  )) {
@@ -156,7 +164,7 @@ sub vhier {
 	}
     }
 
-    if ($Opt_Cells) {
+    if ($Opt_Cells || $Opt_Forest) {
 	$fh->print(" <cells>\n") if $Opt_Xml;
 	foreach my $mod ($nl->modules_sorted) {
 	    if ($mod->is_top) {
@@ -292,14 +300,49 @@ sub show_hier {
     my $indent = shift;
     my $hier = shift;
     my $submodname = shift;
-    print "%-38s %s\n", $indent."Module ".$mod->name,$hier if $Debug;
-    $fh->printf("%s%s\n", $indent, $mod->name) if !$Opt_Xml;
-    $fh->printf("%s<cell name=\"%s\" submodname=\"%s\" hier=\"%s\">\n",
-		$indent, $parcell ? $parcell->name : $mod->name, $mod->name, $hier) if $Opt_Xml;
+    # print the design hierarchy starting at mod (recursive)
+
+    printf "%-38s %s\n", $indent."Module ".$mod->name,$hier if $Debug;
+    my $instance = $parcell ? $parcell->name : $mod->name;
+
+    # print the mod instance
+    $Opt_Xml ?
+        $fh->printf("%s<cell name=\"%s\" submodname=\"%s\" hier=\"%s\">\n",
+            $indent, $parcell ? $parcell->name : $mod->name, $mod->name, $hier) :
+            $Opt_Instance ?
+                $fh->printf("%s%s %s\n", $indent, $instance, $mod->name) :
+                $fh->printf("%s%s\n",    $indent,            $mod->name);
+
+    # print the design hierarchy of each cell in mod
+    my $i = 0;
+    my $suffix;
+
+    my @cellCount = $mod->cells_sorted; # Returns list of name sorted references to Verilog::Netlist::Cell in the module
+    $fh->printf("\t\t%d cells_sorted for %s\n", $#cellCount+1, $mod->name) if $Debug;
+
+    my @subMods = grep($_->submod, $mod->cells_sorted); # list of submods of the current mod
+
+    $fh->printf("\t\t%d submods in cells_sorted.\t", $#subMods+1) if $Debug;
+    $fh->printf("\t\tsubmods=%s\n", join(',',map($_->name, @subMods))) if $Debug;
+
     foreach my $cell ($mod->cells_sorted) {
-	if ($cell->submod) {
-	    show_hier ($fh, $cell->submod, $cell, $indent."  ", $hier.".".$cell->name);
-	}
+        if ($cell->submod) {    # Reference to the Verilog::Netlist::Module the cell instantiates
+	    # true if the cell refers to a defined module
+
+            # set the suffix characters used to indent lower level of hierarchy
+            if ($Opt_Forest) {
+                if ($i < $#subMods) {
+                    $suffix = "|--";    # indent chars for not last cell in the module
+                } else {
+                    $suffix = "\\--";    # tweak indent chars for last cell in the module
+                }
+                $indent =~ tr/-\\/  /;   # clear out higher-level indent chars
+            } else {
+                $suffix = "  "; # simple indenting with spaces
+            }
+            show_hier ($fh, $cell->submod, $cell, $indent.$suffix, $hier.".".$cell->name);
+            $i++;
+        }
     }
     $fh->printf("%s</cell>\n", $indent) if $Opt_Xml;
 }
@@ -342,9 +385,7 @@ Defines the given preprocessor symbol.
 
 Read the specified file, and act as if all text inside it was specified as
 command line parameters.  Any relative paths are relative to the directory
-containing the specified file.  Unlike some tools, -y, +incdir, and -v are
-treated as relative, but standalone filenames in the specified file
-("foo.v") are not.  Use use "-y ." to work around this.
+containing the specified file.
 
 =item -f I<file>
 
@@ -392,10 +433,18 @@ Use the given filename for output instead of stdout.
 
 Show the module name of all cells in top-down order.
 
+=item --forest
+
+Show "ASCII-art" hierarchy tree of all cells (like ps --forest)
+
 =item --input-files
 
 Show all input filenames.  Copying all of these files should result in only
 those files needed to represent the entire design.
+
+=item --instance
+
+Show module instance names.
 
 =item --language <1364-1995|1364-2001|1364-2005|1800-2005|1800-2009>
 
@@ -429,7 +478,7 @@ Do not complain about references to missing modules.
 
 With --nomissing, show all modules that are not found.
 
-=item --sythesis
+=item --synthesis
 
 Define SYNTHESIS, and ignore text bewteen "ambit", "pragma", "synopsys" or
 "synthesis" translate_off and translate_on meta comments.  Note using
@@ -465,7 +514,7 @@ Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.org/verilog-perl>.
 
-Copyright 2005-2011 by Wilson Snyder.  This package is free software; you
+Copyright 2005-2012 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
