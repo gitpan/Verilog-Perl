@@ -36,7 +36,7 @@ use vars qw ($VERSION $Debug $Opt %Vpassert_Conversions
 	     %Files %Files_Read
 	     %File_Dest
 	     );
-$VERSION = '3.314';
+$VERSION = '3.315';
 
 ######################################################################
 # configuration
@@ -190,7 +190,7 @@ sub usage {
 	print "\tToken $tok\n";
     }
     print "\n";
-    pod2usage(-verbose=>2, -exitval=>2, -output=>\*STDOUT);
+    pod2usage(-verbose=>2, -exitval=>2, -output=>\*STDOUT, -noperldoc=>1);
     exit (1);
 }
 

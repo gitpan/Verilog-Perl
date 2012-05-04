@@ -4282,7 +4282,7 @@ YY_RULE_SETUP
 case 361:
 YY_RULE_SETUP
 #line 574 "VParseLex.l"
-{ FL; VALTEXT; CALLBACK(commentCb); yy_pop_state(); }
+{ VALTEXT; CALLBACK(commentCb); yy_pop_state(); } // No FL; it's at comment begin
 	YY_BREAK
 case 362:
 YY_RULE_SETUP
@@ -4585,7 +4585,7 @@ YY_RULE_SETUP
 case 414:
 YY_RULE_SETUP
 #line 659 "VParseLex.l"
-{ yy_push_state(CMTMODE); yymore(); }
+{ FL; yy_push_state(CMTMODE); yymore(); }  // FL; marks start for COMMENT callback
 	YY_BREAK
 case 415:
 YY_RULE_SETUP

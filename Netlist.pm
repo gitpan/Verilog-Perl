@@ -14,7 +14,7 @@ use base qw(Verilog::Netlist::Subclass);
 use strict;
 use vars qw($Debug $Verbose $VERSION);
 
-$VERSION = '3.314';
+$VERSION = '3.315';
 
 ######################################################################
 #### Error Handling
@@ -137,6 +137,15 @@ sub new_module {
     $self->{_modules}{$modref->name} = $modref;
     push @{$self->{_need_link}}, $modref;
     return $modref;
+}
+
+sub new_root_module {
+    my $self = shift;
+    $self->{_modules}{'$root'} ||=
+	$self->new_module(keyword=>'root_module',
+			  name=>'$root',
+			  @_);
+    return $self->{_modules}{'$root'};
 }
 
 sub defvalue_nowarn {
@@ -580,6 +589,11 @@ be first, the top most module will be last.
 =item $netlist->new_module
 
 Creates a new Verilog::Netlist::Module.
+
+=item $netlist->new_root_module
+
+Creates a new Verilog::Netlist::Module for $root, if one doesn't already
+exist.
 
 =item $netlist->top_modules_sorted
 

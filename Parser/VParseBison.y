@@ -1423,7 +1423,6 @@ data_declaration:		// ==IEEE: data_declaration
 
 class_property:			// ==IEEE: class_property, which is {property_qualifier} data_declaration
 		memberQualResetListE data_declarationVarClass		{ }
-	|	yCONST__ETC memberQualResetListE data_declarationVarClass	{ }
 	|	memberQualResetListE type_declaration			{ }
 	|	memberQualResetListE package_import_declaration	{ }
 	//			// IEEE: virtual_interface_declaration
@@ -1621,7 +1620,7 @@ bind_instantiation:		// ==IEEE: bind_instantiation
 // different, so we copy all rules for checkers.
 
 generate_region:		// ==IEEE: generate_region
-		yGENERATE ~c~genTopBlock yENDGENERATE	{ }
+		yGENERATE ~c~genItemList yENDGENERATE	{ }
 	|	yGENERATE yENDGENERATE			{ }
 	;
 
@@ -1630,6 +1629,7 @@ c_generate_region:		// IEEE: generate_region (for checkers)
 	;
 
 generate_block:			// IEEE: generate_block
+	//			// Either a single item, or a begin-end block
 		~c~generate_item			{ }
 	|	~c~genItemBegin				{ }
 	;
@@ -1638,31 +1638,31 @@ c_generate_block:		// IEEE: generate_block (for checkers)
 		BISONPRE_COPY(generate_block,{s/~c~/c_/g})	// {copied}
 	;
 
-genTopBlock:
-		~c~genItemList				{ }
-	|	~c~genItemBegin				{ }
-	;
-
-c_genTopBlock:			// (for checkers)
-		BISONPRE_COPY(genTopBlock,{s/~c~/c_/g})		// {copied}
-	;
-
 genItemBegin:			// IEEE: part of generate_block
 		yBEGIN ~c~genItemList yEND		{ }
 	|	yBEGIN yEND				{ }
 	|	id ':' yBEGIN ~c~genItemList yEND endLabelE	{ }
-	|	id ':' yBEGIN             yEND endLabelE	{ }
+	|	id ':' yBEGIN                yEND endLabelE	{ }
 	|	yBEGIN ':' idAny ~c~genItemList yEND endLabelE	{ }
-	|	yBEGIN ':' idAny             yEND endLabelE	{ }
+	|	yBEGIN ':' idAny                yEND endLabelE	{ }
 	;
 
 c_genItemBegin:			// IEEE: part of generate_block (for checkers)
 		BISONPRE_COPY(genItemBegin,{s/~c~/c_/g})		// {copied}
 	;
 
-genItemList:
+genItemOrBegin:			// Not in IEEE, but our begin isn't under generate_item
 		~c~generate_item			{ }
-	|	~c~genItemList ~c~generate_item		{ }
+	|	~c~genItemBegin				{ }
+	;
+
+c_genItemOrBegin:		// (for checkers)
+		BISONPRE_COPY(genItemOrBegin,{s/~c~/c_/g})	// {copied}
+	;
+
+genItemList:
+		~c~genItemOrBegin			{ }
+	|	~c~genItemList ~c~genItemOrBegin	{ }
 	;
 
 c_genItemList:			// (for checkers)
@@ -4502,6 +4502,8 @@ memberQualOne<str>:			// IEEE: property_qualifier + method_qualifier
 	|	random_qualifier			{ $<fl>$=$<fl>1; $$=$1; }
 	//			// Part of lifetime, but here as ySTATIC can be in different positions
 	|	yAUTOMATIC		 		{ $<fl>$=$<fl>1; $$=$1; }
+	//			// Part of data_declaration, but not in data_declarationVarFrontClass
+	|	yCONST__ETC				{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 //**********************************************************************

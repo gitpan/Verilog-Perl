@@ -23,7 +23,7 @@ use vars qw ($VERSION %Vrename_Dont_Crypt %Vrename_Left_Edge_Define
 	     $Debug $Opt_Xref $Opt_Crypt $Opt_Crypt_All $Opt_Write $Opt_Keywords
 	     @Files);
 
-$VERSION = '3.314';
+$VERSION = '3.315';
 
 ######################################################################
 
@@ -131,7 +131,7 @@ sub nop{}
 
 sub usage {
     print "Version: $VERSION\n";
-    pod2usage(-verbose=>2, -exitval=>2, -output=>\*STDOUT);
+    pod2usage(-verbose=>2, -exitval=>2, -output=>\*STDOUT, -noperldoc=>1);
     exit (1);
 }
 
