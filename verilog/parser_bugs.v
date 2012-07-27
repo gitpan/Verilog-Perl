@@ -467,3 +467,11 @@ module bug461;
       for (g=0; g<100; g++) begin end
    endgenerate
 endmodule
+
+module bug507;
+   integer x = 32'd
+	   6;
+endmodule
+
+// bug_msg_887;
+bind path.to.example_mod example_mod_fcov uexample_mod_fcov (.*);
