@@ -14,7 +14,7 @@ use vars qw ($VERSION);
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.318';
+$VERSION = '3.400';
 
 #######################################################################
 # ACCESSORS
@@ -43,7 +43,7 @@ __DATA__
 
 `line 1 "Perl_Verilog::Std_module" 0
 // Verilog-Perl Verilog::Std
-// The basis for this package is described in IEEE 1800-2009 Annex G
+// The basis for this package is described in IEEE 1800-2012 Annex G
 package std;
 
 class semaphore;
@@ -122,7 +122,7 @@ Verilog-Perl is part of the L<http://www.veripool.org/> free Verilog EDA
 software tool suite.  The latest version is available from CPAN and from
 L<http://www.veripool.org/verilog-perl>.
 
-Copyright 2009-2012 by Wilson Snyder.  This package is free software; you
+Copyright 2009-2013 by Wilson Snyder.  This package is free software; you
 can redistribute it and/or modify it under the terms of either the GNU
 Lesser General Public License Version 3 or the Perl Artistic License
 Version 2.0.

@@ -1,14 +1,14 @@
 #!/usr/bin/perl -w
 # DESCRIPTION: Perl ExtUtils: Type 'make test' to test this package
 #
-# Copyright 2000-2012 by Wilson Snyder.  This program is free software;
+# Copyright 2000-2013 by Wilson Snyder.  This program is free software;
 # you can redistribute it and/or modify it under the terms of either the GNU
 # Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 
 use strict;
 use Test::More;
 
-BEGIN { plan tests => 24 }
+BEGIN { plan tests => 25 }
 BEGIN { require "t/test_utils.pl"; }
 
 use Verilog::Language;
@@ -18,7 +18,8 @@ ok (Verilog::Language::is_keyword("input"));
 ok (!Verilog::Language::is_keyword("not_input"));
 ok (Verilog::Language::is_compdirect("`define"));
 
-is (Verilog::Language::language_standard(), '1800-2009');
+is (Verilog::Language::language_standard(), '1800-2012');
+is (Verilog::Language::language_standard('1800-2012'), '1800-2012');
 is (Verilog::Language::language_standard('1800-2009'), '1800-2009');
 ok (Verilog::Language::is_keyword("checker"));
 is (Verilog::Language::language_standard('1800-2005'), '1800-2005');
@@ -32,7 +33,7 @@ ok (Verilog::Language::is_keyword("generate"));
 is (Verilog::Language::language_standard(1995), '1364-1995');
 ok (!Verilog::Language::is_keyword("generate"));
 
-is (Verilog::Language::language_maximum(), '1800-2009', 'language_maximum');
+is (Verilog::Language::language_maximum(), '1800-2012', 'language_maximum');
 
 is (Verilog::Language::strip_comments("he/**/l/**/lo"), "hello");
 is (Verilog::Language::strip_comments("he//xx/*\nllo"), "he\nllo");
