@@ -10,7 +10,7 @@
 //
 //*************************************************************************
 //
-// Copyright 2001-2013 by Wilson Snyder.  This program is free software;
+// Copyright 2001-2014 by Wilson Snyder.  This program is free software;
 // you can redistribute it and/or modify it under the terms of either the GNU
 // Lesser General Public License Version 3 or the Perl Artistic License Version 2.0.
 //
@@ -675,7 +675,7 @@ package_or_generate_item_declaration:	// ==IEEE: package_or_generate_item_declar
 
 package_import_declarationList:
 		package_import_declaration		{ }
-	|	package_import_declarationList ',' package_import_declaration { }
+	|	package_import_declarationList package_import_declaration { }
 	;
 
 package_import_declaration:	// ==IEEE: package_import_declaration
