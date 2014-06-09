@@ -121,9 +121,12 @@ static void NEED_S09(VFileLine*, const string&) {
 
 %}
 
-%pure_parser
-%token_table
-BISONPRE_VERSION(2.4, %define lr.keep_unreachable_states)
+BISONPRE_VERSION(0.0, 2.999, %pure_parser)
+BISONPRE_VERSION(3.0,        %pure-parser)
+BISONPRE_VERSION(0.0, 2.999, %token_table)
+BISONPRE_VERSION(3.0,        %token-table)
+BISONPRE_VERSION(2.4, 2.999, %define lr.keep_unreachable_states)
+BISONPRE_VERSION(3.0,        %define lr.keep-unreachable-state)
 
 // When writing Bison patterns we use yTOKEN instead of "token",
 // so Bison will error out on unknown "token"s.
@@ -1189,6 +1192,8 @@ port_declaration:		// ==IEEE: port_declaration
 	|	port_directionReset port_declNetE signingE rangeList  { VARDTYPE(SPACED($3,$4)); } list_of_variable_decl_assignments	{ }
 	|	port_directionReset port_declNetE signing	      { VARDTYPE($3); } list_of_variable_decl_assignments	{ }
 	|	port_directionReset port_declNetE /*implicit*/        { VARDTYPE("");/*default_nettype*/} list_of_variable_decl_assignments	{ }
+	//			// IEEE: interface_declaration
+	//			// Looks just like variable declaration unless has a period
 	;
 
 tf_port_declaration:		// ==IEEE: tf_port_declaration
@@ -1263,6 +1268,8 @@ data_typeVar<str>:		// IEEE: data_type + virtual_interface_declaration
 	//			// IEEE-2012: part of data_type
 	|	yVIRTUAL__INTERFACE yINTERFACE id/*interface*/ parameter_value_assignmentE '.' id/*modport*/
 			{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
+	|	yVIRTUAL__anyID id/*interface*/ parameter_value_assignmentE '.' id/*modport*/
+			{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
 	;
 
 data_type<str>:			// ==IEEE: data_type, excluding class_type etc references
@@ -1280,8 +1287,11 @@ data_type<str>:			// ==IEEE: data_type, excluding class_type etc references
 	|	yCHANDLE				{ $<fl>$=$<fl>1; $$=$1; }
 	//			// Rules overlap virtual_interface_declaration
 	//			// Parameters here are SV2009
+	//			// IEEE has ['.' modport] but that will conflict with port
+	//			// declarations which decode '.' modport themselves, so
+	//			// instead see data_typeVar
 	|	yVIRTUAL__INTERFACE yINTERFACE id/*interface*/ parameter_value_assignmentE
-			{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
+ 			{ $<fl>$=$<fl>1; $$=SPACED($1,SPACED($2,$3)); }
 	|	yVIRTUAL__anyID                id/*interface*/ parameter_value_assignmentE
 			{ $<fl>$=$<fl>1; $$=SPACED($1,$2); }
 	//
@@ -1973,6 +1983,7 @@ instName<str>:
 	//			//       or udp_identifier
 	//			//       or module_identifier
 	|	id					{ $<fl>$=$<fl>1; $$=$1; }
+	|	id '.' id/*modport*/			{ $<fl>$=$<fl>1; $$=$1; }
 	;
 
 instnameList:

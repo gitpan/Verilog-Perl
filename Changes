@@ -3,7 +3,22 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
-* Verilog::Language 3.403 devel
+* Verilog::Language 3.404 2014-06-08
+
+***	Added Verilog::Netlist/Verilog::Parser parser option.
+
+****	In vppreproc, add option -P as alias of --noline to match GCC.
+
+****	Fix modport outside ANSI header, bug777. [Joe Dudas]
+
+****	Fix virtual modport without interface, bug778. [Jon Nall]
+
+****	Fix string corruption, bug780. [Derek Lockhart]
+
+****	Fix Bison 4.0 warnings.
+
+
+* Verilog::Language 3.403 2014-03-11
 
 ****	Fix parsing "#0 'b0", bug256.
 

@@ -383,3 +383,20 @@ class bug627 #(type TYPE=bug627sub);
       return types;
   endfunction
 endclass
+
+interface if_bug777;
+    wire a;
+    modport master (input a);
+    modport slave (output a);
+endinterface
+module bug777 (clk, ifport);
+   input clk;
+   if_bug777 ifport ();
+   if_bug777.mp ifportmp ();
+   // Currently unsupported, parens required so VP knows is instance
+   //if_bug777 ifport;
+   //if_bug777.mp ifportmp;
+endmodule
+module bug778 ();
+   virtual if_bug777.master bar;
+endmodule
