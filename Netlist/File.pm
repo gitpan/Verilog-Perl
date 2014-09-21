@@ -12,7 +12,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.404';
+$VERSION = '3.406';
 
 structs('new',
 	'Verilog::Netlist::File::Struct'
@@ -23,6 +23,7 @@ structs('new',
 	   attributes	=> '%', #'	# Misc attributes for systemperl or other processors
 	   comment	=> '$', #'	# Comment provided by user
 	   is_libcell	=> '$',	#'	# True if is a library cell
+	   preproc	=> '$',	#'	# Preprocessor object
 	   # For special procedures
 	   _interfaces	=> '%',		# For autosubcell_include
 	   _modules	=> '%',		# For autosubcell_include
@@ -65,7 +66,7 @@ sub new {
 	die "%Error: 'metacomment' arg of Netlist or read_file() must be a hash,"
 	    unless (ref($meta) eq 'HASH');
 	push @opt, metacomments=>[ grep({ $meta->{$_} } keys %$meta) ];
-	push @opt, keep_comments=>1;
+	push @opt, keep_comments=>($params{netlist}{keep_comments} || 1);
     } elsif ($params{netlist}{keep_comments}) {
 	push @opt, keep_comments=>$params{netlist}{keep_comments};
     } else {
@@ -74,7 +75,9 @@ sub new {
     push @opt, keep_whitespace=>1;  # So we don't loose newlines
     push @opt, include_open_nonfatal=>1 if $params{netlist}{include_open_nonfatal};
     push @opt, synthesis=>1 if $params{netlist}{synthesis};
-    my $preproc = $preproc_class->new(@opt);
+    my $preproc = $preproc_class->new(@opt,
+				      parent => $params{fileref});
+    $params{fileref}->preproc($preproc);
     $preproc->open($params{filename});
     $parser->parse_preproc_file ($preproc);
     return $parser;
@@ -411,6 +414,7 @@ package Verilog::Netlist::File;
 sub delete {
     my $self = shift;
     $self->netlist(undef);  # Break circular
+    $self->preproc(undef);  # Break circular
 }
 
 sub logger {
@@ -508,6 +512,10 @@ The filename of the file with any path and . suffix stripped off.
 =item $self->name
 
 The filename of the file.
+
+=item $self->preproc
+
+The Verilog::Preproc object this file is using.
 
 =back
 

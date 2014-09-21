@@ -19,6 +19,8 @@ sub MY::postamble {
     }
     # Note OPTIMIZE is passed from upper makefile, so this code needed there too.
     my $optimize = $Config{optimize};  $optimize =~ s/(^| )-O2( |$)/\1-O\2/g;
+    # pass hardening flags
+    $optimize .= " $ENV{CFLAGS} $ENV{CPPFLAGS}";
     $out .= "OPTIMIZE = $optimize\n";
     if ($Config{osname} =~ /cygwin/i || $Config{archname} =~ /cygwin/i) {
 	# Cygwin ExtUtils::MakeMaker ignores our LIBS declaration and says
@@ -67,12 +69,12 @@ VPreLex_pretmp.cpp: VPreLex.l
 VPreLex.cpp: $(FLEXFIX) VPreLex_pretmp.cpp
 	$(PERL) $(FLEXFIX) VPreLex < VPreLex_pretmp.cpp > $@
 
-Preproc_cleaned.c: Preproc.c
-	$(PERL) $(XSUBPPFIX) < Preproc.c > Preproc_cleaned.c
+Preproc_cleaned.cpp: Preproc.c
+	$(PERL) $(XSUBPPFIX) < Preproc.c > Preproc_cleaned.cpp
 
 clean::
 	-$(RM_RF) test *.d *.o *.output
-	-$(RM_RF) VPreLex*.cpp Preproc_cleaned.c
+	-$(RM_RF) VPreLex*.cpp Preproc_cleaned.*
 	-$(RM_RF) VPreprocLex*
 ';
     return $out;

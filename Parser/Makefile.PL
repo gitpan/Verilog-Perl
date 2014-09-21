@@ -19,6 +19,8 @@ sub MY::postamble {
     }
     # Note OPTIMIZE is passed from upper makefile, so this code needed there too.
     my $optimize = $Config{optimize};  $optimize =~ s/(^| )-O2( |$)/\1-O\2/g;
+    # pass hardening flags
+    $optimize .= " $ENV{CFLAGS} $ENV{CPPFLAGS}";
     $out .= "OPTIMIZE = $optimize\n";
     if ($Config{osname} =~ /cygwin/i || $Config{archname} =~ /cygwin/i) {
 	# Cygwin ExtUtils::MakeMaker ignores our LIBS declaration and says
@@ -93,12 +95,12 @@ VParseBison.cpp:	VParseBison.y bisonpre
 Parser_callbackgen.cpp: callbackgen
 	$(PERL) callbackgen
 
-Parser_cleaned.c: Parser.c $(VHEADERS)
-	$(PERL) $(XSUBPPFIX) < Parser.c > Parser_cleaned.c
+Parser_cleaned.cpp: Parser.c $(VHEADERS)
+	$(PERL) $(XSUBPPFIX) < Parser.c > Parser_cleaned.cpp
 
 clean::
 	-$(RM_RF) test *.d *.o *.output *.pre.* *_pretmp.*
-	-$(RM_RF) VParseLex*.cpp VParseBison.h VParseBison.cpp Parser_cleaned.c
+	-$(RM_RF) VParseLex*.cpp VParseBison.h VParseBison.cpp Parser_cleaned.*
 	-$(RM_RF) Parser_callbackgen.cpp
 ';
     return $out;

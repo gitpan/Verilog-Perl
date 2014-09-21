@@ -3,6 +3,19 @@ Revision history for Perl extension Verilog::Language.
 The contributors that suggested a given feature are shown in [].  [by ...]
 indicates the contributor was also the author of the fix; Thanks!
 
+* Verilog::Language 3.406 2014-09-21
+
+***     Add Verilog::Preproc->parent() method, bug813. [Ed Carstens]
+
+***     Add Verilog::Netlist::File->preproc() method, bug813. [Ed Carstens]
+
+****	Pass CFLAGS/CPPFLAGS for easier packaging, bug786. [Florian Schlichting]
+
+****	Fix width of byte, bug812. [Ed Carstens]
+
+****    Fix interfaces with variable dimension, bug818. [Glen Gibb]
+
+
 * Verilog::Language 3.404 2014-06-08
 
 ***	Added Verilog::Netlist/Verilog::Parser parser option.
