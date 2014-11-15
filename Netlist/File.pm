@@ -12,7 +12,7 @@ use strict;
 @ISA = qw(Verilog::Netlist::File::Struct
 	Verilog::Netlist::Subclass);
 
-$VERSION = '3.406';
+$VERSION = '3.408';
 
 structs('new',
 	'Verilog::Netlist::File::Struct'
@@ -283,6 +283,7 @@ sub var {
 	 signed=>$signed, value=>$value,
 	);
     $net->data_type($data_type);  # If it was declared earlier as in/out etc
+    $net->net_type($net_type) if $net_type;
     # (from a single non-typed input/output stmt), remark the type now
     $self->{_cmtref} = $net;
 }

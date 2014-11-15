@@ -16,7 +16,7 @@ use Cwd;
 ######################################################################
 #### Configuration Section
 
-$VERSION = '3.406';
+$VERSION = '3.408';
 
 # Basenames we should ignore when recursing directories,
 # Because they contain large files of no relevance
@@ -129,9 +129,11 @@ sub _parameter_parse {
 	elsif ($param =~ /^\+incdir\+(.*)$/ && $self->{vcs_style}) {
 	    $self->incdir($self->_parse_file_arg($optdir, $1));
 	}
-	elsif (($param =~ /^\+define\+([^+=]*)[+=](.*)$/
-		|| $param =~ /^\+define\+(.*?)()$/) && $self->{vcs_style}) {
-	    $self->define($1,$2,undef,1);
+	elsif ($param =~ /^\+define\+(.*)$/ && $self->{vcs_style}) {
+	    foreach my $tok (split("\\+", $1)) {
+		my ($a, $b) = $tok =~ m/^([^=]*)=?(.*)$/;
+		$self->define($a,$b,undef,1);
+	    }
 	}
 	# Ignored
 	elsif ($param =~ /^\+librescan$/ && $self->{vcs_style}) {
@@ -542,7 +544,11 @@ sub define {
 	    && (($oldval ne $value)
 		|| (($oldparams||'') ne ($params||'')))
 	    && $self->{define_warnings}) {
-	    warn "%Warning: ".$self->fileline().": Redefining `$token\n";
+	    warn "%Warning: ".$self->fileline().": Redefining `$token"
+		# Don't make errors too long or have strange chars
+		.((len($oldval)<40 && $oldval =~ /^[^\n\r\f]$/
+		   && len($value)<40 && $value =~ /^[^\n\r\f]$/)
+		  ? "to '$value', was '$oldval'\n" : "\n");
 	}
 	if ($params || $cmdline) {
 	    $self->{defines}{$token} = [$value, $params, $cmdline];
@@ -665,7 +671,7 @@ functions that are called:
 
     +libext+I<ext>+I<ext>...	libext (I<ext>)
     +incdir+I<dir>		incdir (I<dir>)
-    +define+I<var>[+=]I<value>	define (I<var>,I<value>)
+    +define+I<var>=I<value>	define (I<var>,I<value>)
     +define+I<var>		define (I<var>,undef)
     +librescan		Ignored
     -F I<file>		Parse parameters in file relatively
